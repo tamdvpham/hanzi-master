@@ -1,0 +1,1640 @@
+[
+  {
+    "hanzi": "阿姨",
+    "pinyin": "āyí",
+    "meaning": "Cô, dì, bác gái",
+    "ex1": "阿姨好，请问您找谁？"
+  },
+  {
+    "hanzi": "啊",
+    "pinyin": "a",
+    "meaning": "A, à, chà (trợ từ ngữ khí)",
+    "ex1": "啊，太好了！"
+  },
+  {
+    "hanzi": "矮",
+    "pinyin": "ǎi",
+    "meaning": "Thấp, lùn",
+    "ex1": "他比我矮一点。"
+  },
+  {
+    "hanzi": "爱好",
+    "pinyin": "àihào",
+    "meaning": "Sở thích",
+    "ex1": "我的爱好是看书。"
+  },
+  {
+    "hanzi": "安静",
+    "pinyin": "ānjìng",
+    "meaning": "Yên tĩnh",
+    "ex1": "图书馆里非常安静。"
+  },
+  {
+    "hanzi": "把",
+    "pinyin": "bǎ",
+    "meaning": "Cầm, chiếc; câu chữ 把",
+    "ex1": "请把门关上。"
+  },
+  {
+    "hanzi": "班",
+    "pinyin": "bān",
+    "meaning": "Lớp học, ca làm",
+    "ex1": "我们班有二十个学生。"
+  },
+  {
+    "hanzi": "搬",
+    "pinyin": "bān",
+    "meaning": "Dời, chuyển, dọn",
+    "ex1": "下个周末我想搬家。"
+  },
+  {
+    "hanzi": "办法",
+    "pinyin": "bànfǎ",
+    "meaning": "Cách, biện pháp",
+    "ex1": "我想到了一个好办法。"
+  },
+  {
+    "hanzi": "办公室",
+    "pinyin": "bàngōngshì",
+    "meaning": "Văn phòng làm việc",
+    "ex1": "李老师在办公室等你。"
+  },
+  {
+    "hanzi": "半",
+    "pinyin": "bàn",
+    "meaning": "Nửa, rưỡi",
+    "ex1": "现在是下午三点半。"
+  },
+  {
+    "hanzi": "帮忙",
+    "pinyin": "bāngmáng",
+    "meaning": "Giúp đỡ",
+    "ex1": "你能帮忙我一下吗？"
+  },
+  {
+    "hanzi": "包",
+    "pinyin": "bāo",
+    "meaning": "Túi, bao, bọc",
+    "ex1": "我的书包放在桌子上。"
+  },
+  {
+    "hanzi": "饱",
+    "pinyin": "bǎo",
+    "meaning": "No (bụng)",
+    "ex1": "我已经吃饱了，谢谢。"
+  },
+  {
+    "hanzi": "北方",
+    "pinyin": "běifāng",
+    "meaning": "Phương bắc, miền Bắc",
+    "ex1": "中国北方冬天常常下雪。"
+  },
+  {
+    "hanzi": "被",
+    "pinyin": "bèi",
+    "meaning": "Bị, được (bị động)",
+    "ex1": "桌上的苹果被他吃了。"
+  },
+  {
+    "hanzi": "鼻子",
+    "pinyin": "bízi",
+    "meaning": "Mũi",
+    "ex1": "小狗的鼻子非常灵敏。"
+  },
+  {
+    "hanzi": "比较",
+    "pinyin": "bǐjiào",
+    "meaning": "Khá là, so sánh",
+    "ex1": "今天天气比较冷。"
+  },
+  {
+    "hanzi": "比赛",
+    "pinyin": "bǐsài",
+    "meaning": "Thi đấu, cuộc thi",
+    "ex1": "今天有一场精彩的比赛。"
+  },
+  {
+    "hanzi": "笔记本",
+    "pinyin": "bǐjìběn",
+    "meaning": "Vở ghi, máy tính laptop",
+    "ex1": "请记在笔记本上。"
+  },
+  {
+    "hanzi": "必须",
+    "pinyin": "bìxū",
+    "meaning": "Phải, nhất định phải",
+    "ex1": "明天你必须来上课。"
+  },
+  {
+    "hanzi": "变化",
+    "pinyin": "biànhuà",
+    "meaning": "Thay đổi, biến đổi",
+    "ex1": "几年不见变化真大！"
+  },
+  {
+    "hanzi": "别人",
+    "pinyin": "biéren",
+    "meaning": "Người khác",
+    "ex1": "我们要学会尊重别人。"
+  },
+  {
+    "hanzi": "宾馆",
+    "pinyin": "bīnguǎn",
+    "meaning": "Khách sạn",
+    "ex1": "我们住在这家宾馆。"
+  },
+  {
+    "hanzi": "冰箱",
+    "pinyin": "bīngxiāng",
+    "meaning": "Tủ lạnh",
+    "ex1": "把水果放进冰箱里。"
+  },
+  {
+    "hanzi": "不但",
+    "pinyin": "búdàn",
+    "meaning": "Không những",
+    "ex1": "他不但会说中文，而且说得好。"
+  },
+  {
+    "hanzi": "而且",
+    "pinyin": "érqiě",
+    "meaning": "Hơn nữa, mà còn",
+    "ex1": "这道菜好吃，而且不贵。"
+  },
+  {
+    "hanzi": "迟到",
+    "pinyin": "chídào",
+    "meaning": "Đến muộn, trễ giờ",
+    "ex1": "上课千万不要迟到。"
+  },
+  {
+    "hanzi": "出现",
+    "pinyin": "chūxiàn",
+    "meaning": "Xuất hiện",
+    "ex1": "天空中出现了一道彩虹。"
+  },
+  {
+    "hanzi": "厨房",
+    "pinyin": "chúfáng",
+    "meaning": "Nhà bếp",
+    "ex1": "妈妈在厨房做晚饭。"
+  },
+  {
+    "hanzi": "除了",
+    "pinyin": "chúle",
+    "meaning": "Ngoài ra, trừ ra",
+    "ex1": "除了他，大家都到了。"
+  },
+  {
+    "hanzi": "春",
+    "pinyin": "chūn",
+    "meaning": "Mùa xuân",
+    "ex1": "春天到了，百花盛开。"
+  },
+  {
+    "hanzi": "词典",
+    "pinyin": "cídiǎn",
+    "meaning": "Từ điển",
+    "ex1": "查词典找生词意思。"
+  },
+  {
+    "hanzi": "聪明",
+    "pinyin": "cōngming",
+    "meaning": "Thông minh",
+    "ex1": "这个孩子真聪明。"
+  },
+  {
+    "hanzi": "打扫",
+    "pinyin": "dǎsǎo",
+    "meaning": "Dọn dẹp, quét dọn",
+    "ex1": "周末打扫房间。"
+  },
+  {
+    "hanzi": "打算",
+    "pinyin": "dǎsuan",
+    "meaning": "Dự định, kế hoạch",
+    "ex1": "暑假你打算去哪儿？"
+  },
+  {
+    "hanzi": "带",
+    "pinyin": "dài",
+    "meaning": "Mang theo, dẫn dắt",
+    "ex1": "出门记得带钥匙。"
+  },
+  {
+    "hanzi": "担心",
+    "pinyin": "dānxīn",
+    "meaning": "Lo lắng",
+    "ex1": "别担心，一切都会好。"
+  },
+  {
+    "hanzi": "蛋糕",
+    "pinyin": "dàngāo",
+    "meaning": "Bánh ngọt, bánh kem",
+    "ex1": "吃生日蛋糕。"
+  },
+  {
+    "hanzi": "当然",
+    "pinyin": "dāngrán",
+    "meaning": "Đương nhiên",
+    "ex1": "当然可以！"
+  },
+  {
+    "hanzi": "地",
+    "pinyin": "de",
+    "meaning": "Một cách... (trợ từ)",
+    "ex1": "他高兴地笑了。"
+  },
+  {
+    "hanzi": "灯",
+    "pinyin": "dēng",
+    "meaning": "Đèn",
+    "ex1": "天黑了开灯吧。"
+  },
+  {
+    "hanzi": "地方",
+    "pinyin": "dìfang",
+    "meaning": "Nơi, chỗ, địa điểm",
+    "ex1": "这是什么地方？"
+  },
+  {
+    "hanzi": "地铁",
+    "pinyin": "dìtiě",
+    "meaning": "Tàu điện ngầm",
+    "ex1": "坐地铁很方便快捷。"
+  },
+  {
+    "hanzi": "地图",
+    "pinyin": "dìtú",
+    "meaning": "Bản đồ",
+    "ex1": "看地图学地理。"
+  },
+  {
+    "hanzi": "电梯",
+    "pinyin": "diàntī",
+    "meaning": "Thang máy",
+    "ex1": "坐电梯上楼。"
+  },
+  {
+    "hanzi": "电子邮件",
+    "pinyin": "diànzǐ yóujiàn",
+    "meaning": "Email, thư điện tử",
+    "ex1": "我给你发了电子邮件。"
+  },
+  {
+    "hanzi": "东",
+    "pinyin": "dōng",
+    "meaning": "Phía đông",
+    "ex1": "太阳从东方升起。"
+  },
+  {
+    "hanzi": "冬",
+    "pinyin": "dōng",
+    "meaning": "Mùa đông",
+    "ex1": "冬天北方很冷。"
+  },
+  {
+    "hanzi": "动物",
+    "pinyin": "dòngwù",
+    "meaning": "Động vật",
+    "ex1": "我很喜欢可爱动物。"
+  },
+  {
+    "hanzi": "短",
+    "pinyin": "duǎn",
+    "meaning": "Ngắn",
+    "ex1": "这篇课文很短。"
+  },
+  {
+    "hanzi": "段",
+    "pinyin": "duàn",
+    "meaning": "Đoạn, quãng",
+    "ex1": "请读这段课文。"
+  },
+  {
+    "hanzi": "锻炼",
+    "pinyin": "duànliàn",
+    "meaning": "Rèn luyện, tập thể dục",
+    "ex1": "坚持锻炼身体好。"
+  },
+  {
+    "hanzi": "多么",
+    "pinyin": "duōme",
+    "meaning": "Biết bao, dường nào",
+    "ex1": "天气多么晴朗啊！"
+  },
+  {
+    "hanzi": "饿",
+    "pinyin": "è",
+    "meaning": "Đói bụng",
+    "ex1": "我肚子饿了想吃面条。"
+  },
+  {
+    "hanzi": "耳朵",
+    "pinyin": "ěrduo",
+    "meaning": "Tai",
+    "ex1": "小兔子的长耳朵。"
+  },
+  {
+    "hanzi": "发烧",
+    "pinyin": "fāshāo",
+    "meaning": "Phát sốt",
+    "ex1": "孩子发烧要去医院看医生。"
+  },
+  {
+    "hanzi": "发现",
+    "pinyin": "fāxiàn",
+    "meaning": "Phát hiện, nhận ra",
+    "ex1": "我发现了一个汉字规律。"
+  },
+  {
+    "hanzi": "方便",
+    "pinyin": "fāngbiàn",
+    "meaning": "Thuận tiện, tiện lợi",
+    "ex1": "坐地铁出门很方便。"
+  },
+  {
+    "hanzi": "放",
+    "pinyin": "fàng",
+    "meaning": "Để, đặt, thả",
+    "ex1": "把书包放在桌子上。"
+  },
+  {
+    "hanzi": "放心",
+    "pinyin": "fàngxīn",
+    "meaning": "Yên tâm",
+    "ex1": "请你放心，我会做好的。"
+  },
+  {
+    "hanzi": "分",
+    "pinyin": "fēn",
+    "meaning": "Phút, điểm, chia",
+    "ex1": "这次他考了一百分。"
+  },
+  {
+    "hanzi": "复习",
+    "pinyin": "fùxí",
+    "meaning": "Ôn tập",
+    "ex1": "认真复习准备考试。"
+  },
+  {
+    "hanzi": "干净",
+    "pinyin": "gānjìng",
+    "meaning": "Sạch sẽ",
+    "ex1": "房间打扫得很干净。"
+  },
+  {
+    "hanzi": "敢",
+    "pinyin": "gǎn",
+    "meaning": "Dám",
+    "ex1": "要敢于面对困难。"
+  },
+  {
+    "hanzi": "感冒",
+    "pinyin": "gǎnmào",
+    "meaning": "Cảm cúm",
+    "ex1": "天气冷容易患感冒。"
+  },
+  {
+    "hanzi": "刚才",
+    "pinyin": "gāngcái",
+    "meaning": "Vừa mới, ban nãy",
+    "ex1": "刚才谁来找我？"
+  },
+  {
+    "hanzi": "跟",
+    "pinyin": "gēn",
+    "meaning": "Cùng, với, theo",
+    "ex1": "请跟我一起读。"
+  },
+  {
+    "hanzi": "根据",
+    "pinyin": "gēnjù",
+    "meaning": "Căn cứ vào",
+    "ex1": "根据天气预报明天晴天。"
+  },
+  {
+    "hanzi": "更",
+    "pinyin": "gèng",
+    "meaning": "Càng, hơn nữa",
+    "ex1": "多练习会更好。"
+  },
+  {
+    "hanzi": "公园",
+    "pinyin": "gōngyuán",
+    "meaning": "Công viên",
+    "ex1": "去公园散步。"
+  },
+  {
+    "hanzi": "故事",
+    "pinyin": "gùshi",
+    "meaning": "Câu chuyện",
+    "ex1": "讲一个有趣的中国故事。"
+  },
+  {
+    "hanzi": "刮风",
+    "pinyin": "guāfēng",
+    "meaning": "Nổi gió",
+    "ex1": "外面突然刮起了风。（刮风）"
+  },
+  {
+    "hanzi": "关",
+    "pinyin": "guān",
+    "meaning": "Đóng, tắt",
+    "ex1": "出门前请关门关灯。"
+  },
+  {
+    "hanzi": "关系",
+    "pinyin": "guānxì",
+    "meaning": "Mối quan hệ",
+    "ex1": "好朋友关系。"
+  },
+  {
+    "hanzi": "关心",
+    "pinyin": "guānxīn",
+    "meaning": "Quan tâm, chăm sóc",
+    "ex1": "我们要关心父母。"
+  },
+  {
+    "hanzi": "关于",
+    "pinyin": "guānyú",
+    "meaning": "Về, liên quan tới",
+    "ex1": "一本关于中国历史的书。"
+  },
+  {
+    "hanzi": "国家",
+    "pinyin": "guójiā",
+    "meaning": "Đất nước",
+    "ex1": "中国是一个历史悠久的国家。"
+  },
+  {
+    "hanzi": "果汁",
+    "pinyin": "guǒzhī",
+    "meaning": "Nước ép hoa quả",
+    "ex1": "喝一杯冰苹果汁。"
+  },
+  {
+    "hanzi": "过去",
+    "pinyin": "guòqù",
+    "meaning": "Quá khứ, trước đây",
+    "ex1": "总结过去，展望未来。"
+  },
+  {
+    "hanzi": "害怕",
+    "pinyin": "hàipà",
+    "meaning": "Sợ hãi, sợ",
+    "ex1": "不要害怕，勇敢一点。"
+  },
+  {
+    "hanzi": "航班",
+    "pinyin": "hángbān",
+    "meaning": "Chuyến bay",
+    "ex1": "查询去北京的航班。"
+  },
+  {
+    "hanzi": "黑板",
+    "pinyin": "hēibǎn",
+    "meaning": "Bảng đen",
+    "ex1": "请看黑板上的汉字。"
+  },
+  {
+    "hanzi": "后来",
+    "pinyin": "hòulái",
+    "meaning": "Về sau, sau này",
+    "ex1": "后来他去中国留学了。"
+  },
+  {
+    "hanzi": "护照",
+    "pinyin": "hùzhào",
+    "meaning": "Hộ chiếu",
+    "ex1": "出国旅游要带好护照。"
+  },
+  {
+    "hanzi": "花",
+    "pinyin": "huā",
+    "meaning": "Bông hoa; tiêu (tiền)",
+    "ex1": "公园里的花开了。"
+  },
+  {
+    "hanzi": "画",
+    "pinyin": "huà",
+    "meaning": "Vẽ tranh, bức tranh",
+    "ex1": "他喜欢画中国画。"
+  },
+  {
+    "hanzi": "坏",
+    "pinyin": "huài",
+    "meaning": "Hỏng, xấu, tệ",
+    "ex1": "电脑坏了需要修理。"
+  },
+  {
+    "hanzi": "环境",
+    "pinyin": "huánjìng",
+    "meaning": "Môi trường",
+    "ex1": "这里的学习环境真好。"
+  },
+  {
+    "hanzi": "换",
+    "pinyin": "huàn",
+    "meaning": "Đổi, thay",
+    "ex1": "我想在银行换钱。"
+  },
+  {
+    "hanzi": "黄河",
+    "pinyin": "Huáng Hé",
+    "meaning": "Sông Hoàng Hà",
+    "ex1": "黄河水奔流不息。"
+  },
+  {
+    "hanzi": "会议",
+    "pinyin": "huìyì",
+    "meaning": "Cuộc họp, hội nghị",
+    "ex1": "下午参加重要会议。"
+  },
+  {
+    "hanzi": "或者",
+    "pinyin": "huòzhě",
+    "meaning": "Hoặc là (khẳng định)",
+    "ex1": "喝茶或者咖啡都可以。"
+  },
+  {
+    "hanzi": "几乎",
+    "pinyin": "jīhū",
+    "meaning": "Hầu như, suýt nữa",
+    "ex1": "我几乎天天都在学中文。"
+  },
+  {
+    "hanzi": "机会",
+    "pinyin": "jīhuì",
+    "meaning": "Cơ hội, thời cơ",
+    "ex1": "这是一个极好的机会。"
+  },
+  {
+    "hanzi": "极",
+    "pinyin": "jí",
+    "meaning": "Cực kỳ, hết sức",
+    "ex1": "今天天气好极了！"
+  },
+  {
+    "hanzi": "记得",
+    "pinyin": "jìde",
+    "meaning": "Nhớ, còn nhớ",
+    "ex1": "你还记得李老师吗？"
+  },
+  {
+    "hanzi": "季节",
+    "pinyin": "jìjié",
+    "meaning": "Mùa trong năm",
+    "ex1": "一年有四个季节。"
+  },
+  {
+    "hanzi": "检查",
+    "pinyin": "jiǎnchá",
+    "meaning": "Kiểm tra",
+    "ex1": "认真检查作业。"
+  },
+  {
+    "hanzi": "简单",
+    "pinyin": "jiǎndān",
+    "meaning": "Đơn giản",
+    "ex1": "这个问题很简单。"
+  },
+  {
+    "hanzi": "见面",
+    "pinyin": "jiànmiàn",
+    "meaning": "Gặp mặt, gặp gỡ",
+    "ex1": "明天在学校门口见面。"
+  },
+  {
+    "hanzi": "健康",
+    "pinyin": "jiànkāng",
+    "meaning": "Khỏe mạnh, sức khỏe",
+    "ex1": "祝你身体健康！"
+  },
+  {
+    "hanzi": "讲",
+    "pinyin": "jiǎng",
+    "meaning": "Giảng, kể, nói",
+    "ex1": "老师认真讲课。"
+  },
+  {
+    "hanzi": "角",
+    "pinyin": "jiǎo",
+    "meaning": "Góc, hào (tiền)",
+    "ex1": "桌子的一角。"
+  },
+  {
+    "hanzi": "脚",
+    "pinyin": "jiǎo",
+    "meaning": "Bàn chân",
+    "ex1": "走得脚酸了。"
+  },
+  {
+    "hanzi": "接",
+    "pinyin": "jiē",
+    "meaning": "Đón, nhận (điện thoại)",
+    "ex1": "我去机场接好朋友。"
+  },
+  {
+    "hanzi": "街道",
+    "pinyin": "jiēdào",
+    "meaning": "Đường phố",
+    "ex1": "街道两旁很干净。"
+  },
+  {
+    "hanzi": "结婚",
+    "pinyin": "jiéhūn",
+    "meaning": "Kết hôn, lấy nhau",
+    "ex1": "祝你们新婚快乐！（结婚）"
+  },
+  {
+    "hanzi": "结束",
+    "pinyin": "jiéshù",
+    "meaning": "Kết thúc, xong",
+    "ex1": "会议圆满结束了。"
+  },
+  {
+    "hanzi": "节目",
+    "pinyin": "jiémù",
+    "meaning": "Tiết mục, chương trình",
+    "ex1": "精彩的演出节目。"
+  },
+  {
+    "hanzi": "节日",
+    "pinyin": "jiérì",
+    "meaning": "Ngày lễ, ngày hội",
+    "ex1": "祝大家节日快乐！"
+  },
+  {
+    "hanzi": "解决",
+    "pinyin": "jiějué",
+    "meaning": "Giải quyết",
+    "ex1": "齐心协力解决问题。"
+  },
+  {
+    "hanzi": "借",
+    "pinyin": "jiè",
+    "meaning": "Mượn, vay",
+    "ex1": "我想借一本书看。"
+  },
+  {
+    "hanzi": "经常",
+    "pinyin": "jīngcháng",
+    "meaning": "Thường xuyên",
+    "ex1": "他经常去图书馆。"
+  },
+  {
+    "hanzi": "经过",
+    "pinyin": "jīngguò",
+    "meaning": "Trải qua, đi qua",
+    "ex1": "经过努力考了好成绩。"
+  },
+  {
+    "hanzi": "经理",
+    "pinyin": "jīnglǐ",
+    "meaning": "Giám đốc, quản lý",
+    "ex1": "经理正在开会。"
+  },
+  {
+    "hanzi": "久",
+    "pinyin": "jiǔ",
+    "meaning": "Lâu, dài",
+    "ex1": "好久不见！"
+  },
+  {
+    "hanzi": "旧",
+    "pinyin": "jiù",
+    "meaning": "Cũ",
+    "ex1": "这是一本旧书。"
+  },
+  {
+    "hanzi": "句子",
+    "pinyin": "jùzi",
+    "meaning": "Câu văn, câu",
+    "ex1": "请读这个汉语句子。"
+  },
+  {
+    "hanzi": "决定",
+    "pinyin": "juédìng",
+    "meaning": "Quyết định",
+    "ex1": "做出正确的决定。"
+  },
+  {
+    "hanzi": "渴",
+    "pinyin": "kě",
+    "meaning": "Khát nước",
+    "ex1": "我很渴想喝水。"
+  },
+  {
+    "hanzi": "刻",
+    "pinyin": "kè",
+    "meaning": "Khắc, 15 phút",
+    "ex1": "现在差一刻八点。"
+  },
+  {
+    "hanzi": "客人",
+    "pinyin": "kèrén",
+    "meaning": "Khách khứa",
+    "ex1": "家里来客人了。"
+  },
+  {
+    "hanzi": "空调",
+    "pinyin": "kōngtiáo",
+    "meaning": "Máy điều hòa",
+    "ex1": "开空调凉快一点。"
+  },
+  {
+    "hanzi": "口",
+    "pinyin": "kǒu",
+    "meaning": "Miệng, ngụm",
+    "ex1": "喝一口热茶。"
+  },
+  {
+    "hanzi": "哭",
+    "pinyin": "kū",
+    "meaning": "Khóc",
+    "ex1": "别哭，坚强一点。"
+  },
+  {
+    "hanzi": "裤子",
+    "pinyin": "kùzi",
+    "meaning": "Cái quần",
+    "ex1": "这条裤子真合适。"
+  },
+  {
+    "hanzi": "筷子",
+    "pinyin": "kuàizi",
+    "meaning": "Đôi đũa",
+    "ex1": "用筷子吃中餐。"
+  },
+  {
+    "hanzi": "蓝",
+    "pinyin": "lán",
+    "meaning": "Xanh da trời",
+    "ex1": "蓝蓝的天空。"
+  },
+  {
+    "hanzi": "老",
+    "pinyin": "lǎo",
+    "meaning": "Già, cũ",
+    "ex1": "尊老爱幼。"
+  },
+  {
+    "hanzi": "离开",
+    "pinyin": "líkāi",
+    "meaning": "Rời đi, xa rời",
+    "ex1": "我明天离开这里。"
+  },
+  {
+    "hanzi": "历史",
+    "pinyin": "lìshǐ",
+    "meaning": "Lịch sử",
+    "ex1": "学习中国历史。"
+  },
+  {
+    "hanzi": "脸",
+    "pinyin": "liǎn",
+    "meaning": "Khuôn mặt",
+    "ex1": "脸上带着微笑。"
+  },
+  {
+    "hanzi": "聊天",
+    "pinyin": "liáotiān",
+    "meaning": "Nói chuyện, tán gẫu",
+    "ex1": "喝茶聊天很开心。"
+  },
+  {
+    "hanzi": "了解",
+    "pinyin": "liǎojiě",
+    "meaning": "Hiểu rõ",
+    "ex1": "了解中国文化。"
+  },
+  {
+    "hanzi": "邻居",
+    "pinyin": "línjū",
+    "meaning": "Hàng xóm",
+    "ex1": "邻居很热情。"
+  },
+  {
+    "hanzi": "留学",
+    "pinyin": "liúxué",
+    "meaning": "Du học",
+    "ex1": "去中国留学学汉语。"
+  },
+  {
+    "hanzi": "楼",
+    "pinyin": "lóu",
+    "meaning": "Tầng, tòa nhà",
+    "ex1": "我住在五楼。"
+  },
+  {
+    "hanzi": "绿",
+    "pinyin": "lǜ",
+    "meaning": "Xanh lá cây",
+    "ex1": "春天树叶绿了。"
+  },
+  {
+    "hanzi": "马",
+    "pinyin": "mǎ",
+    "meaning": "Con ngựa",
+    "ex1": "大马跑得很快。"
+  },
+  {
+    "hanzi": "马上",
+    "pinyin": "mǎshàng",
+    "meaning": "Ngay lập tức",
+    "ex1": "我马上就来。"
+  },
+  {
+    "hanzi": "满意",
+    "pinyin": "mǎnyì",
+    "meaning": "Hài lòng, vừa ý",
+    "ex1": "他对成绩很满意。"
+  },
+  {
+    "hanzi": "帽子",
+    "pinyin": "màozi",
+    "meaning": "Cái mũ, nón",
+    "ex1": "冬天出门戴帽子。"
+  },
+  {
+    "hanzi": "米",
+    "pinyin": "mǐ",
+    "meaning": "Gạo, mét (m)",
+    "ex1": "这条路长一百米。"
+  },
+  {
+    "hanzi": "面包",
+    "pinyin": "miànbāo",
+    "meaning": "Bánh mì",
+    "ex1": "早上吃面包喝牛奶。"
+  },
+  {
+    "hanzi": "明白",
+    "pinyin": "míngbai",
+    "meaning": "Hiểu rõ",
+    "ex1": "你听明白了吗？"
+  },
+  {
+    "hanzi": "母亲",
+    "pinyin": "mǔqīn",
+    "meaning": "Mẹ",
+    "ex1": "祝母亲节快乐！"
+  },
+  {
+    "hanzi": "奶奶",
+    "pinyin": "nǎinai",
+    "meaning": "Bà nội",
+    "ex1": "奶奶讲故事最好听。"
+  },
+  {
+    "hanzi": "南",
+    "pinyin": "nán",
+    "meaning": "Phía nam",
+    "ex1": "南方很温暖。"
+  },
+  {
+    "hanzi": "难",
+    "pinyin": "nán",
+    "meaning": "Khó khăn",
+    "ex1": "汉字并不难学。"
+  },
+  {
+    "hanzi": "难过",
+    "pinyin": "nánguò",
+    "meaning": "Buồn rầu, đau lòng",
+    "ex1": "不要难过了。"
+  },
+  {
+    "hanzi": "年级",
+    "pinyin": "niánjí",
+    "meaning": "Lớp, năm học",
+    "ex1": "大学二年级学生。"
+  },
+  {
+    "hanzi": "年轻",
+    "pinyin": "niánqīng",
+    "meaning": "Trẻ trung",
+    "ex1": "年轻人充满朝气。"
+  },
+  {
+    "hanzi": "鸟",
+    "pinyin": "niǎo",
+    "meaning": "Con chim",
+    "ex1": "小鸟在枝头唱歌。"
+  },
+  {
+    "hanzi": "努力",
+    "pinyin": "nǔlì",
+    "meaning": "Chăm chỉ, nỗ lực",
+    "ex1": "努力学好汉语。"
+  },
+  {
+    "hanzi": "爬山",
+    "pinyin": "páshān",
+    "meaning": "Leo núi",
+    "ex1": "周末去爬山锻炼。"
+  },
+  {
+    "hanzi": "盘子",
+    "pinyin": "pánzi",
+    "meaning": "Cái đĩa",
+    "ex1": "盘子里装着新鲜水果。"
+  },
+  {
+    "hanzi": "胖",
+    "pinyin": "pàng",
+    "meaning": "Béo, mập",
+    "ex1": "胖乎乎的小猫真可爱。"
+  },
+  {
+    "hanzi": "皮鞋",
+    "pinyin": "píxié",
+    "meaning": "Giày da",
+    "ex1": "穿黑色皮鞋。"
+  },
+  {
+    "hanzi": "啤酒",
+    "pinyin": "píjiǔ",
+    "meaning": "Bia",
+    "ex1": "喝冰爽啤酒。"
+  },
+  {
+    "hanzi": "瓶子",
+    "pinyin": "píngzi",
+    "meaning": "Chai, bình",
+    "ex1": "瓶子里有水。"
+  },
+  {
+    "hanzi": "其实",
+    "pinyin": "qíshí",
+    "meaning": "Thực ra",
+    "ex1": "其实并不难。"
+  },
+  {
+    "hanzi": "其他",
+    "pinyin": "qítā",
+    "meaning": "Khác",
+    "ex1": "其他人都到了。"
+  },
+  {
+    "hanzi": "奇怪",
+    "pinyin": "qíguài",
+    "meaning": "Kỳ lạ",
+    "ex1": "这件事真奇怪。"
+  },
+  {
+    "hanzi": "骑",
+    "pinyin": "qí",
+    "meaning": "Cưỡi, đi (xe đạp)",
+    "ex1": "骑自行车去学校。"
+  },
+  {
+    "hanzi": "起飞",
+    "pinyin": "qǐfēi",
+    "meaning": "Cất cánh",
+    "ex1": "飞机准时起飞。"
+  },
+  {
+    "hanzi": "清楚",
+    "pinyin": "qīngchu",
+    "meaning": "Rõ ràng",
+    "ex1": "字迹看得很清楚。"
+  },
+  {
+    "hanzi": "秋",
+    "pinyin": "qiū",
+    "meaning": "Mùa thu",
+    "ex1": "秋天凉爽宜人。"
+  },
+  {
+    "hanzi": "裙子",
+    "pinyin": "qúnzi",
+    "meaning": "Váy, đầm",
+    "ex1": "红裙子很漂亮。"
+  },
+  {
+    "hanzi": "然后",
+    "pinyin": "ránhòu",
+    "meaning": "Sau đó",
+    "ex1": "洗手然后吃饭。"
+  },
+  {
+    "hanzi": "热情",
+    "pinyin": "rèqíng",
+    "meaning": "Nhiệt tình",
+    "ex1": "人民非常热情友好。"
+  },
+  {
+    "hanzi": "认为",
+    "pinyin": "rènwéi",
+    "meaning": "Cho rằng",
+    "ex1": "我认为这个办法可行。"
+  },
+  {
+    "hanzi": "认真",
+    "pinyin": "rènzhēn",
+    "meaning": "Chăm chỉ, nghiêm túc",
+    "ex1": "认真写好每一个汉字。"
+  },
+  {
+    "hanzi": "容易",
+    "pinyin": "róngyì",
+    "meaning": "Dễ dàng",
+    "ex1": "掌握方法就很容​​易。（容易）"
+  },
+  {
+    "hanzi": "如果",
+    "pinyin": "rúguǒ",
+    "meaning": "Nếu như",
+    "ex1": "如果努力就会进步。"
+  },
+  {
+    "hanzi": "伞",
+    "pinyin": "sǎn",
+    "meaning": "Cái ô, dù",
+    "ex1": "下雨了带伞出门。"
+  },
+  {
+    "hanzi": "上网",
+    "pinyin": "shàngwǎng",
+    "meaning": "Lên mạng",
+    "ex1": "上网学中文很方便。"
+  },
+  {
+    "hanzi": "生气",
+    "pinyin": "shēngqì",
+    "meaning": "Tức giận",
+    "ex1": "不要轻易生气。"
+  },
+  {
+    "hanzi": "声音",
+    "pinyin": "shēngyīn",
+    "meaning": "Âm thanh",
+    "ex1": "声音真好听。"
+  },
+  {
+    "hanzi": "世界",
+    "pinyin": "shìjiè",
+    "meaning": "Thế giới",
+    "ex1": "世界很大我想去看看。"
+  },
+  {
+    "hanzi": "试",
+    "pinyin": "shì",
+    "meaning": "Thử",
+    "ex1": "试一试这件新衣服。"
+  },
+  {
+    "hanzi": "瘦",
+    "pinyin": "shòu",
+    "meaning": "Gầy, ốm",
+    "ex1": "他比以前瘦了。"
+  },
+  {
+    "hanzi": "叔叔",
+    "pinyin": "shūshu",
+    "meaning": "Chú, bác",
+    "ex1": "叔叔好！"
+  },
+  {
+    "hanzi": "舒服",
+    "pinyin": "shūfu",
+    "meaning": "Thoải mái",
+    "ex1": "洗完澡真舒服。"
+  },
+  {
+    "hanzi": "树",
+    "pinyin": "shù",
+    "meaning": "Cái cây",
+    "ex1": "路旁种满大树。"
+  },
+  {
+    "hanzi": "数学",
+    "pinyin": "shùxué",
+    "meaning": "Môn toán",
+    "ex1": "他很擅长数学。"
+  },
+  {
+    "hanzi": "刷牙",
+    "pinyin": "shuāyá",
+    "meaning": "Đánh răng",
+    "ex1": "早晚认真刷牙。"
+  },
+  {
+    "hanzi": "双",
+    "pinyin": "shuāng",
+    "meaning": "Đôi, cặp",
+    "ex1": "一双明亮的眼睛。"
+  },
+  {
+    "hanzi": "水平",
+    "pinyin": "shuǐpíng",
+    "meaning": "Trình độ",
+    "ex1": "汉语水平不断提高。"
+  },
+  {
+    "hanzi": "司机",
+    "pinyin": "sījī",
+    "meaning": "Tài xế, bác tài",
+    "ex1": "出租车司机师傅。"
+  },
+  {
+    "hanzi": "太阳",
+    "pinyin": "tàiyáng",
+    "meaning": "Mặt trời",
+    "ex1": "太阳升起来了。"
+  },
+  {
+    "hanzi": "特别",
+    "pinyin": "tèbié",
+    "meaning": "Đặc biệt",
+    "ex1": "今天特别高兴！"
+  },
+  {
+    "hanzi": "疼",
+    "pinyin": "téng",
+    "meaning": "Đau",
+    "ex1": "头疼需要休息。"
+  },
+  {
+    "hanzi": "提高",
+    "pinyin": "tígāo",
+    "meaning": "Nâng cao",
+    "ex1": "提高口语发音水平。"
+  },
+  {
+    "hanzi": "体育",
+    "pinyin": "tǐyù",
+    "meaning": "Thể dục, thể thao",
+    "ex1": "体育锻炼身体强健。"
+  },
+  {
+    "hanzi": "甜",
+    "pinyin": "tián",
+    "meaning": "Ngọt",
+    "ex1": "西瓜真甜！"
+  },
+  {
+    "hanzi": "条",
+    "pinyin": "tiáo",
+    "meaning": "Chiếc, con (dài)",
+    "ex1": "一条漂亮的裙子。"
+  },
+  {
+    "hanzi": "同事",
+    "pinyin": "tóngshì",
+    "meaning": "Đồng nghiệp",
+    "ex1": "好同事互相帮助。"
+  },
+  {
+    "hanzi": "同意",
+    "pinyin": "tóngyì",
+    "meaning": "Đồng ý",
+    "ex1": "大家都同意这项计划。"
+  },
+  {
+    "hanzi": "头发",
+    "pinyin": "tóufa",
+    "meaning": "Tóc, mái tóc",
+    "ex1": "乌黑的长头发。"
+  },
+  {
+    "hanzi": "突然",
+    "pinyin": "tūrán",
+    "meaning": "Đột nhiên",
+    "ex1": "天突然下大雨了。"
+  },
+  {
+    "hanzi": "图书馆",
+    "pinyin": "túshūguǎn",
+    "meaning": "Thư viện",
+    "ex1": "在图书馆安静自习。"
+  },
+  {
+    "hanzi": "腿",
+    "pinyin": "tuǐ",
+    "meaning": "Chân",
+    "ex1": "跑步锻炼双腿。"
+  },
+  {
+    "hanzi": "完成",
+    "pinyin": "wánchéng",
+    "meaning": "Hoàn thành",
+    "ex1": "准时完成各项任务。"
+  },
+  {
+    "hanzi": "碗",
+    "pinyin": "wǎn",
+    "meaning": "Cái bát, chén",
+    "ex1": "吃一碗香喷喷的面条。"
+  },
+  {
+    "hanzi": "万",
+    "pinyin": "wàn",
+    "meaning": "Mười nghìn (10.000)",
+    "ex1": "一万个汉字。"
+  },
+  {
+    "hanzi": "忘记",
+    "pinyin": "wàngjì",
+    "meaning": "Quên mất",
+    "ex1": "不要忘记初衷。"
+  },
+  {
+    "hanzi": "为",
+    "pinyin": "wèi",
+    "meaning": "Vì, cho",
+    "ex1": "为你加油鼓劲！"
+  },
+  {
+    "hanzi": "为了",
+    "pinyin": "wèile",
+    "meaning": "Để, vì mục đích",
+    "ex1": "为了学好汉语每天练习。"
+  },
+  {
+    "hanzi": "位",
+    "pinyin": "wèi",
+    "meaning": "Vị (người lịch sự)",
+    "ex1": "这位是李老师。"
+  },
+  {
+    "hanzi": "文化",
+    "pinyin": "wénhuà",
+    "meaning": "Văn hóa",
+    "ex1": "博大精深的中国文化。"
+  },
+  {
+    "hanzi": "西",
+    "pinyin": "xī",
+    "meaning": "Phía tây",
+    "ex1": "太阳从西方落下。"
+  },
+  {
+    "hanzi": "洗手间",
+    "pinyin": "xǐshǒujiān",
+    "meaning": "Nhà vệ sinh",
+    "ex1": "洗手间在二楼拐角。"
+  },
+  {
+    "hanzi": "洗澡",
+    "pinyin": "xǐzǎo",
+    "meaning": "Tắm rửa",
+    "ex1": "洗澡消除一天的疲惫。"
+  },
+  {
+    "hanzi": "夏",
+    "pinyin": "xià",
+    "meaning": "Mùa hè",
+    "ex1": "夏天吃西瓜最舒服。"
+  },
+  {
+    "hanzi": "先",
+    "pinyin": "xiān",
+    "meaning": "Trước, đầu tiên",
+    "ex1": "先做作业然后再玩。"
+  },
+  {
+    "hanzi": "相信",
+    "pinyin": "xiāngxìn",
+    "meaning": "Tin tưởng",
+    "ex1": "我相信你一定能成功！"
+  },
+  {
+    "hanzi": "香蕉",
+    "pinyin": "xiāngjiāo",
+    "meaning": "Quả chuối",
+    "ex1": "香蕉非常甜。"
+  },
+  {
+    "hanzi": "向",
+    "pinyin": "xiàng",
+    "meaning": "Hướng về",
+    "ex1": "天天向上。"
+  },
+  {
+    "hanzi": "像",
+    "pinyin": "xiàng",
+    "meaning": "Giống như",
+    "ex1": "他长得像爸爸。"
+  },
+  {
+    "hanzi": "小心",
+    "pinyin": "xiǎoxīn",
+    "meaning": "Cẩn thận",
+    "ex1": "路上小心慢慢走。"
+  },
+  {
+    "hanzi": "校长",
+    "pinyin": "xiàozhǎng",
+    "meaning": "Hiệu trưởng",
+    "ex1": "向校长问好。"
+  },
+  {
+    "hanzi": "鞋",
+    "pinyin": "xié",
+    "meaning": "Đôi giày",
+    "ex1": "穿舒服的运动鞋。"
+  },
+  {
+    "hanzi": "新闻",
+    "pinyin": "xīnwén",
+    "meaning": "Tin tức, thời sự",
+    "ex1": "收看晚间新闻。"
+  },
+  {
+    "hanzi": "新鲜",
+    "pinyin": "xīnxiān",
+    "meaning": "Tươi ngon, tươi mới",
+    "ex1": "早晨新鲜的空气。"
+  },
+  {
+    "hanzi": "信",
+    "pinyin": "xìn",
+    "meaning": "Bức thư; tin",
+    "ex1": "给朋友写一封信。"
+  },
+  {
+    "hanzi": "信用卡",
+    "pinyin": "xìnyòngkǎ",
+    "meaning": "Thẻ tín dụng",
+    "ex1": "刷信用卡消费。"
+  },
+  {
+    "hanzi": "行李箱",
+    "pinyin": "xínglixiāng",
+    "meaning": "Va ly hành lý",
+    "ex1": "收拾行李箱去旅游。"
+  },
+  {
+    "hanzi": "熊猫",
+    "pinyin": "xióngmāo",
+    "meaning": "Gấu trúc",
+    "ex1": "可爱的大熊猫吃竹子。"
+  },
+  {
+    "hanzi": "需要",
+    "pinyin": "xūyào",
+    "meaning": "Cần thiết, cần",
+    "ex1": "学汉语需要持之以恒。"
+  },
+  {
+    "hanzi": "选择",
+    "pinyin": "xuǎnzé",
+    "meaning": "Lựa chọn",
+    "ex1": "做出明智的选择。"
+  },
+  {
+    "hanzi": "要求",
+    "pinyin": "yāoqiú",
+    "meaning": "Yêu cầu",
+    "ex1": "按要求认真完成。"
+  },
+  {
+    "hanzi": "爷爷",
+    "pinyin": "yéye",
+    "meaning": "Ông nội",
+    "ex1": "我和爷爷一起下象棋。"
+  },
+  {
+    "hanzi": "一般",
+    "pinyin": "yìbān",
+    "meaning": "Bình thường",
+    "ex1": "我一般七点起床。"
+  },
+  {
+    "hanzi": "一边",
+    "pinyin": "yìbiān",
+    "meaning": "Vừa... vừa...",
+    "ex1": "一边听歌一边写字。"
+  },
+  {
+    "hanzi": "一定",
+    "pinyin": "yídìng",
+    "meaning": "Nhất định",
+    "ex1": "明天我一定准时到。"
+  },
+  {
+    "hanzi": "一共",
+    "pinyin": "yígòng",
+    "meaning": "Tổng cộng",
+    "ex1": "一共五十块钱。"
+  },
+  {
+    "hanzi": "一会儿",
+    "pinyin": "yíhuìr",
+    "meaning": "Một lát, một chốc",
+    "ex1": "稍等一会儿就好。"
+  },
+  {
+    "hanzi": "一样",
+    "pinyin": "yíyàng",
+    "meaning": "Giống nhau",
+    "ex1": "像花儿一样美丽绽放。"
+  },
+  {
+    "hanzi": "一直",
+    "pinyin": "yìzhí",
+    "meaning": "Luôn luôn, thẳng",
+    "ex1": "一直往前走就能到达。"
+  },
+  {
+    "hanzi": "以后",
+    "pinyin": "yǐhòu",
+    "meaning": "Sau này, sau khi",
+    "ex1": "吃饭以后散散步。"
+  },
+  {
+    "hanzi": "以前",
+    "pinyin": "yǐqián",
+    "meaning": "Trước đây",
+    "ex1": "睡觉以前要关灯。"
+  },
+  {
+    "hanzi": "以为",
+    "pinyin": "yǐwéi",
+    "meaning": "Tưởng rằng",
+    "ex1": "我以为今天是周六。"
+  },
+  {
+    "hanzi": "艺术",
+    "pinyin": "yìshù",
+    "meaning": "Nghệ thuật",
+    "ex1": "书法是高雅的艺术。"
+  },
+  {
+    "hanzi": "意见",
+    "pinyin": "yìjiàn",
+    "meaning": "Ý kiến",
+    "ex1": "虚心听取大家意见。"
+  },
+  {
+    "hanzi": "银行",
+    "pinyin": "yínháng",
+    "meaning": "Ngân hàng",
+    "ex1": "去中国银行办卡。"
+  },
+  {
+    "hanzi": "饮料",
+    "pinyin": "yǐnliào",
+    "meaning": "Đồ uống",
+    "ex1": "多喝健康果汁饮料。"
+  },
+  {
+    "hanzi": "应该",
+    "pinyin": "yīnggāi",
+    "meaning": "Nên, cần phải",
+    "ex1": "学生应该按时交作业。"
+  },
+  {
+    "hanzi": "影响",
+    "pinyin": "yǐngxiǎng",
+    "meaning": "Ảnh hưởng",
+    "ex1": "不要影响他人自习。"
+  },
+  {
+    "hanzi": "用",
+    "pinyin": "yòng",
+    "meaning": "Dùng, sử dụng",
+    "ex1": "用毛笔写汉字。"
+  },
+  {
+    "hanzi": "游戏",
+    "pinyin": "yóuxì",
+    "meaning": "Trò chơi, game",
+    "ex1": "劳逸结合玩益智游戏。"
+  },
+  {
+    "hanzi": "有名",
+    "pinyin": "yǒumíng",
+    "meaning": "Nổi tiếng",
+    "ex1": "长城举世有名。"
+  },
+  {
+    "hanzi": "又",
+    "pinyin": "yòu",
+    "meaning": "Lại (lặp lại)",
+    "ex1": "今天天气又放晴了。"
+  },
+  {
+    "hanzi": "遇到",
+    "pinyin": "yùdào",
+    "meaning": "Gặp gỡ, bắt gặp",
+    "ex1": "在路上遇到了王老师。"
+  },
+  {
+    "hanzi": "元",
+    "pinyin": "yuán",
+    "meaning": "Đồng (tệ)",
+    "ex1": "这支钢笔十元钱。"
+  },
+  {
+    "hanzi": "愿意",
+    "pinyin": "yuànyì",
+    "meaning": "Sẵn lòng, bằng lòng",
+    "ex1": "我很愿意帮助你。"
+  },
+  {
+    "hanzi": "月亮",
+    "pinyin": "yuèliang",
+    "meaning": "Mặt trăng",
+    "ex1": "中秋节的月亮分外明亮。"
+  },
+  {
+    "hanzi": "越",
+    "pinyin": "yuè",
+    "meaning": "Càng...",
+    "ex1": "汉语越学越有趣。"
+  },
+  {
+    "hanzi": "云",
+    "pinyin": "yún",
+    "meaning": "Mây",
+    "ex1": "蓝天飘着朵朵白云。"
+  },
+  {
+    "hanzi": "站",
+    "pinyin": "zhàn",
+    "meaning": "Đứng; trạm, ga",
+    "ex1": "下一站是北京西站。"
+  },
+  {
+    "hanzi": "照顾",
+    "pinyin": "zhàogu",
+    "meaning": "Chăm sóc",
+    "ex1": "照顾好自己的身体。"
+  },
+  {
+    "hanzi": "照片",
+    "pinyin": "zhàopiàn",
+    "meaning": "Bức ảnh",
+    "ex1": "一张温馨的全家福照片。"
+  },
+  {
+    "hanzi": "照相机",
+    "pinyin": "zhàoxiàngjī",
+    "meaning": "Máy ảnh",
+    "ex1": "用照相机拍下美丽风景。"
+  },
+  {
+    "hanzi": "只",
+    "pinyin": "zhǐ",
+    "meaning": "Chỉ (chỉ có)",
+    "ex1": "只要努力就一定能成功。"
+  },
+  {
+    "hanzi": "中间",
+    "pinyin": "zhōngjiān",
+    "meaning": "Ở giữa",
+    "ex1": "走在队伍中间。"
+  },
+  {
+    "hanzi": "中文",
+    "pinyin": "Zhōngwén",
+    "meaning": "Tiếng Trung, chữ Hán",
+    "ex1": "每天坚持学中文。"
+  },
+  {
+    "hanzi": "重要",
+    "pinyin": "zhòngyào",
+    "meaning": "Quan trọng",
+    "ex1": "健康最重要。"
+  },
+  {
+    "hanzi": "周末",
+    "pinyin": "zhōumò",
+    "meaning": "Cuối tuần",
+    "ex1": "祝你周末玩得开心！"
+  },
+  {
+    "hanzi": "主要",
+    "pinyin": "zhǔyào",
+    "meaning": "Chủ yếu, trọng yếu",
+    "ex1": "这是主要学习目标。"
+  },
+  {
+    "hanzi": "注意",
+    "pinyin": "zhùyì",
+    "meaning": "Chú ý, cẩn thận",
+    "ex1": "上课注意听讲。"
+  },
+  {
+    "hanzi": "自己",
+    "pinyin": "zìjǐ",
+    "meaning": "Bản thân, tự mình",
+    "ex1": "相信你自己能做到！"
+  },
+  {
+    "hanzi": "作业",
+    "pinyin": "zuòyè",
+    "meaning": "Bài tập",
+    "ex1": "按时认真完成作业。"
+  },
+  {
+    "hanzi": "作用",
+    "pinyin": "zuòyòng",
+    "meaning": "Tác dụng, hiệu quả",
+    "ex1": "发挥积极重要的作用。"
+  }
+]
