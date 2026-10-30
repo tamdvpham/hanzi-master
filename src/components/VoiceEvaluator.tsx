@@ -75,7 +75,6 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
   const timeoutTimerRef = useRef<any>(null);
   const speechAlternativesRef = useRef<string[]>([]);
   const latestLiveTranscriptRef = useRef<string>('');
-  const voiceDetectedRef = useRef<boolean>(false);
 
   useEffect(() => {
     recorderRef.current = new VoiceRecorderManager();
@@ -108,8 +107,8 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
     } catch (e) {}
   };
 
-  // Perform scoring evaluation
-  const finalizeEvaluation = (alts: string[], primary: string, hasVoice: boolean = false) => {
+  // Perform scoring evaluation - STRICT: 0 points if not recognized
+  const finalizeEvaluation = (alts: string[], primary: string) => {
     const candidates = Array.from(
       new Set([
         ...alts,
@@ -119,11 +118,10 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
       ])
     ).filter(Boolean);
 
-    const isVoiceDetected = hasVoice || voiceDetectedRef.current;
-    const evaluation = evaluatePronunciation(candidates, targetText, highlightWord, isVoiceDetected);
+    const evaluation = evaluatePronunciation(candidates, targetText, highlightWord);
     setResult(evaluation);
 
-    if (evaluation.score >= 80) {
+    if (evaluation.score >= 85) {
       playSuccessSound();
       confetti({
         particleCount: 40,
@@ -139,14 +137,13 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
 
   // Start recording
   const handleStartRecording = () => {
-    // 1. Stop any currently playing audio so iOS audio session frees the microphone
+    // Stop any currently playing audio so iOS audio session frees the microphone
     stopAllChineseAudio();
 
     setResult(null);
     setMicError(null);
     setLiveTranscript('');
     latestLiveTranscriptRef.current = '';
-    voiceDetectedRef.current = false;
     setRecordingSeconds(0);
     setListenStatus('Đang mở micro...');
     speechAlternativesRef.current = [];
@@ -186,17 +183,14 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
         setListenStatus('Đang lắng nghe... hãy đọc to vào micro');
       },
       onSpeechDetected: () => {
-        voiceDetectedRef.current = true;
         setListenStatus('Đã phát hiện giọng nói! Đang nhận diện...');
       },
       onLiveTranscript: (text) => {
-        voiceDetectedRef.current = true;
         setLiveTranscript(text);
         latestLiveTranscriptRef.current = text;
         setListenStatus(`Đang nghe: 「${text}」`);
       },
       onSpeechResult: (alternatives, primary) => {
-        voiceDetectedRef.current = true;
         speechAlternativesRef.current = alternatives;
         if (primary) {
           latestLiveTranscriptRef.current = primary;
@@ -206,8 +200,7 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
       onError: (errMessage) => {
         setMicError(errMessage);
       },
-      onAutoEnd: (alternatives, transcript, hasVoice) => {
-        // Recognition naturally finished!
+      onAutoEnd: (alternatives, transcript) => {
         setIsRecording(false);
         if (timerIntervalRef.current) {
           clearInterval(timerIntervalRef.current);
@@ -217,7 +210,7 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
           clearTimeout(timeoutTimerRef.current);
           timeoutTimerRef.current = null;
         }
-        finalizeEvaluation(alternatives, transcript, hasVoice);
+        finalizeEvaluation(alternatives, transcript);
       }
     });
   };
@@ -236,9 +229,8 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
       timeoutTimerRef.current = null;
     }
 
-    const { speechAlternatives, transcript, hasDetectedVoice } =
-      await recorderRef.current.stopRecording();
-    finalizeEvaluation(speechAlternatives, transcript, hasDetectedVoice);
+    const { speechAlternatives, transcript } = await recorderRef.current.stopRecording();
+    finalizeEvaluation(speechAlternatives, transcript);
   };
 
   // Play teacher native audio
@@ -264,7 +256,7 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
             </div>
             <div>
               <h3 className="text-sm sm:text-base font-bold text-slate-800">{title}</h3>
-              <p className="text-[11px] text-slate-500">Chấm điểm phát âm tiếng Trung chuẩn</p>
+              <p className="text-[11px] text-slate-500">Chấm điểm phát âm tiếng Trung chuẩn xác</p>
             </div>
           </div>
           <button

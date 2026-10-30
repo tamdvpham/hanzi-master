@@ -133,17 +133,17 @@ function levenshteinDistance(a: string, b: string): number {
 }
 
 /**
- * Score Chinese pronunciation based on recognized speech vs expected text
+ * Score Chinese pronunciation accurately based on recognized speech vs expected text.
+ * Strictly awards 0 points if speech is not recognized or not heard.
+ *
  * @param recognizedList List of candidate transcripts from speech recognition
  * @param expectedText The target Chinese phrase or sentence
  * @param highlightWord Optional key vocabulary word in the sentence
- * @param hasDetectedVoice Whether physical voice was detected by the microphone
  */
 export const evaluatePronunciation = (
   recognizedList: string[],
   expectedText: string,
-  highlightWord?: string,
-  hasDetectedVoice: boolean = false
+  highlightWord?: string
 ): PronunciationScoreResult => {
   const normExpected = normalizeChineseText(expectedText);
   const normHighlight = highlightWord ? normalizeChineseText(highlightWord) : '';
@@ -153,24 +153,13 @@ export const evaluatePronunciation = (
     .map((t) => t.trim())
     .filter((t) => t.length > 0);
 
-  // If no transcripts were returned by cloud speech-to-text
+  // STRICT REQUIREMENT: If nothing was recognized -> 0 points!
   if (candidates.length === 0) {
-    if (hasDetectedVoice) {
-      // Voice was physically detected by mic! Reward user and provide coaching feedback
-      return {
-        score: 82,
-        recognizedText: `${expectedText} (Đã thu âm)`,
-        expectedText,
-        feedback: 'Rất tốt! Hệ thống đã ghi nhận bạn đọc từ này. Hãy nghe phát âm mẫu để chuẩn thanh điệu hơn nhé!',
-        isCorrect: true
-      };
-    }
-
     return {
       score: 0,
       recognizedText: 'Không nhận diện được giọng nói',
       expectedText,
-      feedback: 'Chưa nghe rõ phát âm. Vui lòng để điện thoại gần miệng, nói to và thử lại nhé!',
+      feedback: 'Chưa nhận diện được phát âm. Hãy đọc to, rõ ràng vào mic và thử lại nhé!',
       isCorrect: false
     };
   }
@@ -267,7 +256,7 @@ export const evaluatePronunciation = (
     }
   }
 
-  // Construct friendly pedagogical feedback
+  // Construct precise pedagogical feedback
   let feedback = '';
   let isCorrect = false;
 
@@ -300,19 +289,21 @@ export interface RecorderCallbacks {
   onLiveTranscript?: (transcript: string) => void;
   onSpeechResult?: (alternatives: string[], primaryText: string) => void;
   onError?: (errorMessage: string, code?: string) => void;
-  onAutoEnd?: (alternatives: string[], transcript: string, hasVoice: boolean) => void;
+  onAutoEnd?: (alternatives: string[], transcript: string) => void;
 }
 
 /**
  * Bulletproof Voice Recorder & Mandarin Speech Recognition Manager
  * Optimized for Mobile Safari (iOS) and Mobile Chrome (Android)
+ * Includes auto-restart for Android silence-timeout handling
  */
 export class VoiceRecorderManager {
   private recognition: any = null;
   private isListening: boolean = false;
-  private hasDetectedVoice: boolean = false;
   private latestAlternatives: string[] = [];
   private latestTranscript: string = '';
+  private restartCount: number = 0;
+  private maxRestarts: number = 5;
 
   /**
    * Start speech recognition immediately (synchronous user gesture for iOS Safari)
@@ -320,8 +311,8 @@ export class VoiceRecorderManager {
   startRecording(callbacks?: RecorderCallbacks): void {
     this.latestAlternatives = [];
     this.latestTranscript = '';
-    this.hasDetectedVoice = false;
     this.isListening = true;
+    this.restartCount = 0;
 
     // Reset any active audio playback to prevent WebKit audio session lock
     stopAllChineseAudio();
@@ -337,118 +328,126 @@ export class VoiceRecorderManager {
       return;
     }
 
-    try {
-      // Create a fresh instance for every recording session
-      const recognition = new SpeechRec();
-      this.recognition = recognition;
+    const initAndStart = () => {
+      try {
+        const recognition = new SpeechRec();
+        this.recognition = recognition;
 
-      recognition.lang = 'zh-CN'; // Mandarin Chinese
+        recognition.lang = 'zh-CN'; // Mandarin Chinese
+        recognition.continuous = false; // single-shot mode on mobile for reliable finalization
+        recognition.interimResults = true;
+        recognition.maxAlternatives = 5;
 
-      // continuous = false ensures mobile Android & iOS finalize onresult reliably
-      recognition.continuous = false;
-      recognition.interimResults = true;
-      recognition.maxAlternatives = 5;
+        recognition.onstart = () => {
+          callbacks?.onStartListening?.();
+        };
 
-      recognition.onstart = () => {
-        callbacks?.onStartListening?.();
-      };
+        recognition.onspeechstart = () => {
+          callbacks?.onSpeechDetected?.();
+        };
 
-      recognition.onaudiostart = () => {
-        // Hardware mic began capturing
-      };
+        recognition.onresult = (event: any) => {
+          let fullCombined = '';
+          const alts: string[] = [];
 
-      recognition.onsoundstart = () => {
-        this.hasDetectedVoice = true;
-        callbacks?.onSpeechDetected?.();
-      };
-
-      recognition.onspeechstart = () => {
-        this.hasDetectedVoice = true;
-        callbacks?.onSpeechDetected?.();
-      };
-
-      recognition.onresult = (event: any) => {
-        this.hasDetectedVoice = true;
-        let fullCombined = '';
-        const alts: string[] = [];
-
-        // Loop through all accumulated results
-        for (let i = 0; i < event.results.length; i++) {
-          const segment = event.results[i];
-          if (segment && segment.length > 0) {
-            fullCombined += segment[0].transcript;
-            for (let j = 0; j < segment.length; j++) {
-              const altText = segment[j]?.transcript?.trim();
-              if (altText) {
-                alts.push(altText);
+          // Accumulate across all segments in event.results
+          for (let i = 0; i < event.results.length; i++) {
+            const segment = event.results[i];
+            if (segment && segment.length > 0) {
+              fullCombined += segment[0].transcript;
+              for (let j = 0; j < segment.length; j++) {
+                const altText = segment[j]?.transcript?.trim();
+                if (altText) {
+                  alts.push(altText);
+                }
               }
             }
           }
-        }
 
-        const cleanFull = fullCombined.trim();
-        if (cleanFull) {
-          alts.unshift(cleanFull);
-        }
+          const cleanFull = fullCombined.trim();
+          if (cleanFull) {
+            alts.unshift(cleanFull);
+          }
 
-        const unique = Array.from(new Set([...this.latestAlternatives, ...alts])).filter(Boolean);
-        this.latestTranscript = cleanFull || this.latestTranscript;
-        this.latestAlternatives = unique;
+          const unique = Array.from(new Set([...this.latestAlternatives, ...alts])).filter(Boolean);
+          this.latestTranscript = cleanFull || this.latestTranscript;
+          this.latestAlternatives = unique;
 
-        if (cleanFull && callbacks?.onLiveTranscript) {
-          callbacks.onLiveTranscript(cleanFull);
-        }
-        if (callbacks?.onSpeechResult) {
-          callbacks.onSpeechResult(unique, cleanFull);
-        }
-      };
+          if (cleanFull && callbacks?.onLiveTranscript) {
+            callbacks.onLiveTranscript(cleanFull);
+          }
+          if (callbacks?.onSpeechResult) {
+            callbacks.onSpeechResult(unique, cleanFull);
+          }
+        };
 
-      recognition.onerror = (e: any) => {
-        console.warn('SpeechRecognition error:', e.error);
-        const err = e.error || '';
+        recognition.onerror = (e: any) => {
+          console.warn('SpeechRecognition error:', e.error);
+          const err = e.error || '';
 
-        if (err === 'not-allowed' || err === 'service-not-allowed') {
-          callbacks?.onError?.(
-            'Trình duyệt chưa được cấp quyền micro. Bạn hãy bấm vào biểu tượng 🔒 hoặc aA trên thanh địa chỉ để Bật Micro.',
-            'permission-denied'
-          );
-        } else if (err === 'audio-capture') {
-          callbacks?.onError?.(
-            'Không tìm thấy hoặc không mở được micro. Hãy kiểm tra kết nối micro trên thiết bị.',
-            'audio-capture'
-          );
-        } else if (err === 'network') {
-          callbacks?.onError?.(
-            'Lỗi kết nối máy chủ nhận diện giọng nói. Hãy kiểm tra kết nối WiFi/4G.',
-            'network'
-          );
-        } else if (err === 'language-not-supported') {
-          callbacks?.onError?.(
-            'Thiết bị chưa hỗ trợ gói ngôn ngữ tiếng Trung (zh-CN). Vui lòng thêm bàn phím tiếng Trung trong cài đặt máy.',
-            'language-not-supported'
-          );
-        }
-      };
+          if (err === 'not-allowed' || err === 'service-not-allowed') {
+            this.isListening = false;
+            callbacks?.onError?.(
+              'Trình duyệt chưa được cấp quyền micro. Bạn hãy bấm vào biểu tượng 🔒 hoặc aA trên thanh địa chỉ để Bật Micro.',
+              'permission-denied'
+            );
+          } else if (err === 'audio-capture') {
+            this.isListening = false;
+            callbacks?.onError?.(
+              'Không tìm thấy hoặc không mở được micro. Hãy kiểm tra kết nối micro trên thiết bị.',
+              'audio-capture'
+            );
+          } else if (err === 'network') {
+            callbacks?.onError?.(
+              'Lỗi mạng khi kết nối máy chủ nhận diện giọng nói. Hãy kiểm tra WiFi/4G.',
+              'network'
+            );
+          } else if (err === 'language-not-supported') {
+            callbacks?.onError?.(
+              'Thiết bị chưa hỗ trợ gói ngôn ngữ tiếng Trung (zh-CN). Vui lòng thêm bàn phím tiếng Trung trong cài đặt máy.',
+              'language-not-supported'
+            );
+          }
+          // Note: 'no-speech' is intentionally handled by auto-restart in onend
+        };
 
-      recognition.onend = () => {
-        // When recognition ends naturally:
-        if (this.isListening) {
-          this.isListening = false;
-          // Trigger auto-end with detected voice state
-          callbacks?.onAutoEnd?.(
-            this.latestAlternatives,
-            this.latestTranscript,
-            this.hasDetectedVoice
-          );
-        }
-      };
+        recognition.onend = () => {
+          if (!this.isListening) return;
 
-      // Synchronous start call preserves iOS Safari User Activation token
-      recognition.start();
-    } catch (err: any) {
-      console.warn('SpeechRecognition start failed:', err);
-      callbacks?.onError?.('Không thể khởi động bộ nhận diện giọng nói: ' + (err?.message || ''));
-    }
+          // If we have captured a transcript, we finalize naturally
+          if (this.latestTranscript.trim().length > 0 || this.latestAlternatives.length > 0) {
+            this.isListening = false;
+            callbacks?.onAutoEnd?.(this.latestAlternatives, this.latestTranscript);
+          } else {
+            // Android premature cutoff before speech was transcribed: auto-restart while listening
+            if (this.restartCount < this.maxRestarts) {
+              this.restartCount++;
+              try {
+                recognition.start();
+              } catch (e) {
+                // If restarting existing instance throws, recreate cleanly
+                setTimeout(() => {
+                  if (this.isListening) {
+                    initAndStart();
+                  }
+                }, 100);
+              }
+            } else {
+              this.isListening = false;
+              callbacks?.onAutoEnd?.([], '');
+            }
+          }
+        };
+
+        // Synchronous start call preserves iOS Safari User Activation token
+        recognition.start();
+      } catch (err: any) {
+        console.warn('SpeechRecognition start failed:', err);
+        callbacks?.onError?.('Không thể khởi động bộ nhận diện giọng nói: ' + (err?.message || ''));
+      }
+    };
+
+    initAndStart();
   }
 
   /**
@@ -457,7 +456,6 @@ export class VoiceRecorderManager {
   stopRecording(): Promise<{
     speechAlternatives: string[];
     transcript: string;
-    hasDetectedVoice: boolean;
   }> {
     this.isListening = false;
 
@@ -474,10 +472,9 @@ export class VoiceRecorderManager {
         const transcript = this.latestTranscript;
         resolve({
           speechAlternatives: alternatives,
-          transcript,
-          hasDetectedVoice: this.hasDetectedVoice
+          transcript
         });
-      }, 250);
+      }, 200);
     });
   }
 }
