@@ -7,6 +7,31 @@ let currentSafetyTimer: any = null;
 const audioBlobCache = new Map<string, string>();
 
 /**
+ * Stop any currently playing Chinese audio and reset speech synthesis
+ */
+export const stopAllChineseAudio = (): void => {
+  if (currentAudio) {
+    try {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      currentAudio.src = '';
+    } catch (e) {}
+    currentAudio = null;
+  }
+
+  if (currentSafetyTimer) {
+    clearTimeout(currentSafetyTimer);
+    currentSafetyTimer = null;
+  }
+
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    try {
+      window.speechSynthesis.cancel();
+    } catch (e) {}
+  }
+};
+
+/**
  * Preload Chinese audio in the background so clicks are 100% instant
  */
 export const preloadChineseAudio = async (text: string): Promise<void> => {
