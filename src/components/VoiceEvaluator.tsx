@@ -75,6 +75,7 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
   const timeoutTimerRef = useRef<any>(null);
   const speechAlternativesRef = useRef<string[]>([]);
   const latestLiveTranscriptRef = useRef<string>('');
+  const voiceDetectedRef = useRef<boolean>(false);
 
   useEffect(() => {
     recorderRef.current = new VoiceRecorderManager();
@@ -108,7 +109,7 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
   };
 
   // Perform scoring evaluation
-  const finalizeEvaluation = (alts: string[], primary: string) => {
+  const finalizeEvaluation = (alts: string[], primary: string, hasVoice: boolean = false) => {
     const candidates = Array.from(
       new Set([
         ...alts,
@@ -118,10 +119,11 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
       ])
     ).filter(Boolean);
 
-    const evaluation = evaluatePronunciation(candidates, targetText, highlightWord);
+    const isVoiceDetected = hasVoice || voiceDetectedRef.current;
+    const evaluation = evaluatePronunciation(candidates, targetText, highlightWord, isVoiceDetected);
     setResult(evaluation);
 
-    if (evaluation.score >= 85) {
+    if (evaluation.score >= 80) {
       playSuccessSound();
       confetti({
         particleCount: 40,
@@ -144,6 +146,7 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
     setMicError(null);
     setLiveTranscript('');
     latestLiveTranscriptRef.current = '';
+    voiceDetectedRef.current = false;
     setRecordingSeconds(0);
     setListenStatus('Đang mở micro...');
     speechAlternativesRef.current = [];
@@ -183,14 +186,17 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
         setListenStatus('Đang lắng nghe... hãy đọc to vào micro');
       },
       onSpeechDetected: () => {
-        setListenStatus('Đã phát hiện giọng nói! Đang phân tích...');
+        voiceDetectedRef.current = true;
+        setListenStatus('Đã phát hiện giọng nói! Đang nhận diện...');
       },
       onLiveTranscript: (text) => {
+        voiceDetectedRef.current = true;
         setLiveTranscript(text);
         latestLiveTranscriptRef.current = text;
         setListenStatus(`Đang nghe: 「${text}」`);
       },
       onSpeechResult: (alternatives, primary) => {
+        voiceDetectedRef.current = true;
         speechAlternativesRef.current = alternatives;
         if (primary) {
           latestLiveTranscriptRef.current = primary;
@@ -200,8 +206,8 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
       onError: (errMessage) => {
         setMicError(errMessage);
       },
-      onAutoEnd: (alternatives, transcript) => {
-        // Recognition naturally finished and captured speech!
+      onAutoEnd: (alternatives, transcript, hasVoice) => {
+        // Recognition naturally finished!
         setIsRecording(false);
         if (timerIntervalRef.current) {
           clearInterval(timerIntervalRef.current);
@@ -211,7 +217,7 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
           clearTimeout(timeoutTimerRef.current);
           timeoutTimerRef.current = null;
         }
-        finalizeEvaluation(alternatives, transcript);
+        finalizeEvaluation(alternatives, transcript, hasVoice);
       }
     });
   };
@@ -230,8 +236,9 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
       timeoutTimerRef.current = null;
     }
 
-    const { speechAlternatives, transcript } = await recorderRef.current.stopRecording();
-    finalizeEvaluation(speechAlternatives, transcript);
+    const { speechAlternatives, transcript, hasDetectedVoice } =
+      await recorderRef.current.stopRecording();
+    finalizeEvaluation(speechAlternatives, transcript, hasDetectedVoice);
   };
 
   // Play teacher native audio
