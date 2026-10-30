@@ -7,14 +7,20 @@ import {
   CheckCircle2,
   AlertCircle,
   Play,
-  Pause,
   X,
-  Sparkles,
-  Award
+  Copy,
+  Check,
+  ExternalLink,
+  ShieldAlert
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { PronunciationScoreResult } from '../types';
-import { VoiceRecorderManager, evaluatePronunciation } from '../utils/speechScorer';
+import {
+  VoiceRecorderManager,
+  evaluatePronunciation,
+  isInAppBrowser,
+  isSpeechRecognitionSupported
+} from '../utils/speechScorer';
 import { playChineseAudio, playSuccessSound, preloadChineseAudio } from '../utils/audio';
 import { HighlightText } from './HighlightText';
 
@@ -42,21 +48,34 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
   onScoreSaved
 }) => {
   // Timeout: 5s for 1 word, 10s for 1 sentence
-  const isSentence = mode === 'sentence' || targetText.length > 4 || targetText.includes('。') || targetText.includes('，') || targetText.includes('！') || targetText.includes('？');
+  const isSentence =
+    mode === 'sentence' ||
+    targetText.length > 4 ||
+    targetText.includes('。') ||
+    targetText.includes('，') ||
+    targetText.includes('！') ||
+    targetText.includes('？');
   const effectiveTimeout = timeoutSeconds ?? (isSentence ? 10 : 5);
 
   const [isRecording, setIsRecording] = useState(false);
   const [recordingSeconds, setRecordingSeconds] = useState(0);
+  const [liveTranscript, setLiveTranscript] = useState('');
+  const [micError, setMicError] = useState<string | null>(null);
+  const [isCopied, setIsCopied] = useState(false);
   const [result, setResult] = useState<PronunciationScoreResult | null>(null);
   const [isPlayingUserAudio, setIsPlayingUserAudio] = useState(false);
   const [isPlayingNativeAudio, setIsPlayingNativeAudio] = useState(false);
   const [userAudioUrl, setUserAudioUrl] = useState<string | null>(null);
+
+  const isZaloOrFB = isInAppBrowser();
+  const isSupported = isSpeechRecognitionSupported();
 
   const recorderRef = useRef<VoiceRecorderManager | null>(null);
   const userAudioPlayerRef = useRef<HTMLAudioElement | null>(null);
   const timerIntervalRef = useRef<any>(null);
   const timeoutTimerRef = useRef<any>(null);
   const speechAlternativesRef = useRef<string[]>([]);
+  const latestLiveTranscriptRef = useRef<string>('');
 
   useEffect(() => {
     recorderRef.current = new VoiceRecorderManager();
@@ -86,42 +105,71 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
   // Format seconds to 00:0X
   const formatTime = (sec: number) => `00:${sec < 10 ? '0' : ''}${sec}`;
 
+  // Copy current URL for users stuck in In-App WebView
+  const handleCopyLink = () => {
+    try {
+      navigator.clipboard.writeText(window.location.href);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 3000);
+    } catch (e) {
+      // fallback
+    }
+  };
+
   // Start recording
-  const handleStartRecording = async () => {
+  const handleStartRecording = () => {
     setResult(null);
+    setMicError(null);
+    setLiveTranscript('');
+    latestLiveTranscriptRef.current = '';
     setRecordingSeconds(0);
     speechAlternativesRef.current = [];
 
-    if (recorderRef.current) {
-      setIsRecording(true);
-
-      timerIntervalRef.current = setInterval(() => {
-        setRecordingSeconds((prev) => {
-          const next = prev + 1;
-          if (next >= effectiveTimeout) {
-            if (timerIntervalRef.current) {
-              clearInterval(timerIntervalRef.current);
-              timerIntervalRef.current = null;
-            }
-            // Auto stop when reaching timeout
-            setTimeout(() => {
-              handleStopRecording();
-            }, 0);
-            return effectiveTimeout;
-          }
-          return next;
-        });
-      }, 1000);
-
-      // Fallback timer trigger
-      timeoutTimerRef.current = setTimeout(() => {
-        handleStopRecording();
-      }, effectiveTimeout * 1000);
-
-      await recorderRef.current.startRecording((results) => {
-        speechAlternativesRef.current = results;
-      });
+    if (!recorderRef.current) {
+      recorderRef.current = new VoiceRecorderManager();
     }
+
+    setIsRecording(true);
+
+    timerIntervalRef.current = setInterval(() => {
+      setRecordingSeconds((prev) => {
+        const next = prev + 1;
+        if (next >= effectiveTimeout) {
+          if (timerIntervalRef.current) {
+            clearInterval(timerIntervalRef.current);
+            timerIntervalRef.current = null;
+          }
+          // Auto stop when reaching timeout
+          setTimeout(() => {
+            handleStopRecording();
+          }, 0);
+          return effectiveTimeout;
+        }
+        return next;
+      });
+    }, 1000);
+
+    // Fallback timer trigger
+    timeoutTimerRef.current = setTimeout(() => {
+      handleStopRecording();
+    }, effectiveTimeout * 1000);
+
+    // Start speech recognition synchronously in the tap turn (maintains iOS Safari gesture token)
+    recorderRef.current.startRecording({
+      onLiveTranscript: (text) => {
+        setLiveTranscript(text);
+        latestLiveTranscriptRef.current = text;
+      },
+      onSpeechResult: (alternatives, primary) => {
+        speechAlternativesRef.current = alternatives;
+        if (primary) {
+          latestLiveTranscriptRef.current = primary;
+        }
+      },
+      onError: (errMessage) => {
+        setMicError(errMessage);
+      }
+    });
   };
 
   // Stop recording and evaluate
@@ -138,13 +186,22 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
       timeoutTimerRef.current = null;
     }
 
-    const { audioBlobUrl } = await recorderRef.current.stopRecording();
+    const { audioBlobUrl, speechAlternatives, transcript } =
+      await recorderRef.current.stopRecording();
     setUserAudioUrl(audioBlobUrl);
 
-    // Wait 300ms for speech recognition to finalize
+    // Give 350ms buffer for any final recognition events
     setTimeout(() => {
-      const recognized = speechAlternativesRef.current;
-      const evaluation = evaluatePronunciation(recognized, targetText);
+      const candidates = Array.from(
+        new Set([
+          ...speechAlternatives,
+          ...speechAlternativesRef.current,
+          transcript,
+          latestLiveTranscriptRef.current
+        ])
+      ).filter(Boolean);
+
+      const evaluation = evaluatePronunciation(candidates, targetText, highlightWord);
       evaluation.audioBlobUrl = audioBlobUrl || undefined;
       setResult(evaluation);
 
@@ -160,7 +217,7 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
       if (onScoreSaved) {
         onScoreSaved(evaluation.score);
       }
-    }, 400);
+    }, 350);
   };
 
   // Play user recorded audio
@@ -199,17 +256,17 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+      <div className="relative w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-100 overflow-hidden flex flex-col max-h-[92vh]">
         {/* Header */}
-        <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-purple-50 to-emerald-50">
+        <div className="px-5 py-3.5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-purple-50 to-emerald-50">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center shadow-sm">
               <Mic className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-800">{title}</h3>
-              <p className="text-xs text-slate-500">Ghi âm và chấm điểm phát âm</p>
+              <h3 className="text-sm sm:text-base font-bold text-slate-800">{title}</h3>
+              <p className="text-[11px] text-slate-500">Ghi âm và chấm điểm phát âm AI</p>
             </div>
           </div>
           <button
@@ -220,22 +277,50 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
           </button>
         </div>
 
+        {/* In-App Browser Warning Banner (Zalo / FB / Messenger) */}
+        {isZaloOrFB && (
+          <div className="bg-amber-50 border-b border-amber-200/80 px-4 py-2.5 flex items-start gap-2.5 text-amber-800 text-xs">
+            <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <div className="flex-1 space-y-1.5">
+              <p className="leading-snug">
+                <strong>Bạn đang mở trong Zalo/Facebook:</strong> Trình duyệt Zalo thường chặn micro.
+                Hãy bấm <strong>dấu 3 chấm (⋮ hoặc •••)</strong> ở góc trên và chọn{' '}
+                <strong>"Mở bằng trình duyệt" (Safari / Chrome)</strong> để nhận diện giọng nói.
+              </p>
+              <button
+                onClick={handleCopyLink}
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-amber-200/70 hover:bg-amber-200 text-amber-900 font-medium text-[11px] transition-colors"
+              >
+                {isCopied ? <Check className="w-3 h-3 text-emerald-700" /> : <Copy className="w-3 h-3" />}
+                <span>{isCopied ? 'Đã sao chép liên kết!' : 'Sao chép link để dán vào Chrome/Safari'}</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Unsupported Browser Alert */}
+        {!isSupported && !isZaloOrFB && (
+          <div className="bg-rose-50 border-b border-rose-200 px-4 py-2.5 flex items-start gap-2 text-rose-800 text-xs">
+            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+            <p className="leading-snug">
+              Trình duyệt hiện tại chưa hỗ trợ nhận diện giọng nói tiếng Trung. Vui lòng mở ứng dụng
+              bằng <strong>Google Chrome</strong> (Android) hoặc <strong>Safari</strong> (iPhone).
+            </p>
+          </div>
+        )}
+
         {/* Content Body */}
-        <div className="p-6 flex flex-col items-center">
+        <div className="p-5 sm:p-6 flex flex-col items-center overflow-y-auto">
           {/* Target Text Card */}
-          <div className="w-full bg-slate-50 rounded-2xl p-4 text-center border border-slate-100 mb-6">
+          <div className="w-full bg-slate-50 rounded-2xl p-4 text-center border border-slate-100 mb-4 sm:mb-6">
             {targetPinyin && (
-              <div className="text-sm font-semibold text-purple-600 mb-1">
-                {targetPinyin}
-              </div>
+              <div className="text-sm font-semibold text-purple-600 mb-1">{targetPinyin}</div>
             )}
             <div className="text-2xl sm:text-3xl font-bold font-chinese text-slate-900 tracking-wide">
               <HighlightText text={targetText} highlight={highlightWord} />
             </div>
             {targetMeaning && (
-              <div className="text-xs text-slate-500 mt-2 font-medium">
-                {targetMeaning}
-              </div>
+              <div className="text-xs text-slate-500 mt-2 font-medium">{targetMeaning}</div>
             )}
 
             {/* Quick listen button */}
@@ -245,15 +330,30 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
                 disabled={isPlayingNativeAudio}
                 className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition-colors"
               >
-                <Volume2 className={`w-3.5 h-3.5 ${isPlayingNativeAudio ? 'animate-pulse' : ''}`} />
+                <Volume2
+                  className={`w-3.5 h-3.5 ${isPlayingNativeAudio ? 'animate-pulse' : ''}`}
+                />
                 <span>Nghe phát âm chuẩn</span>
               </button>
             </div>
           </div>
 
+          {/* Error Banner if mic denied */}
+          {micError && (
+            <div className="w-full mb-4 p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2 text-xs text-rose-700 animate-fade-in">
+              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <div className="font-semibold">{micError}</div>
+                <div className="mt-1 text-[11px] text-rose-600">
+                  Mẹo: Kiểm tra quyền Micro trong Cài đặt trình duyệt và tải lại trang.
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Recording Status / Mic Button */}
           {!result ? (
-            <div className="flex flex-col items-center my-2">
+            <div className="flex flex-col items-center my-2 w-full">
               <div className="relative">
                 {/* Pulse wave ring when recording */}
                 {isRecording && (
@@ -281,15 +381,35 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
                   <div>
                     <span className="text-rose-600 font-bold text-sm flex items-center justify-center gap-1.5">
                       <span className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse" />
-                      <span>Đang ghi âm... ({formatTime(recordingSeconds)} / {formatTime(effectiveTimeout)})</span>
+                      <span>
+                        Đang ghi âm... ({formatTime(recordingSeconds)} / {formatTime(effectiveTimeout)})
+                      </span>
                     </span>
 
                     {/* Progress bar towards timeout */}
                     <div className="w-full bg-slate-100 rounded-full h-1.5 mt-2 overflow-hidden border border-slate-200/50">
                       <div
                         className="bg-rose-500 h-1.5 rounded-full transition-all duration-300 ease-linear"
-                        style={{ width: `${Math.min(100, (recordingSeconds / effectiveTimeout) * 100)}%` }}
+                        style={{
+                          width: `${Math.min(100, (recordingSeconds / effectiveTimeout) * 100)}%`
+                        }}
                       />
+                    </div>
+
+                    {/* Live speech feedback in real-time */}
+                    <div className="mt-3 p-2 bg-purple-50/80 rounded-xl border border-purple-100 min-h-[44px] flex items-center justify-center">
+                      {liveTranscript ? (
+                        <div className="text-xs">
+                          <span className="text-purple-600 font-medium">Đang nghe: </span>
+                          <span className="font-chinese font-bold text-slate-800 text-sm">
+                            「{liveTranscript}」
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-purple-500 italic animate-pulse">
+                          Đang lắng nghe... hãy đọc to vào micro
+                        </span>
+                      )}
                     </div>
 
                     <p className="text-xs text-slate-400 mt-2">
@@ -328,7 +448,7 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
               </div>
 
               {/* Feedback text */}
-              <div className="text-center mt-3">
+              <div className="text-center mt-3 w-full">
                 <div
                   className={`text-sm font-bold flex items-center justify-center gap-1.5 ${
                     result.score >= 70 ? 'text-emerald-600' : 'text-amber-600'
@@ -346,7 +466,11 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
                 <div className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-left text-xs space-y-1.5">
                   <div className="flex items-start gap-1">
                     <span className="font-semibold text-slate-500 shrink-0">Bạn đã đọc:</span>
-                    <span className="font-chinese font-bold text-slate-800">
+                    <span
+                      className={`font-chinese font-bold ${
+                        result.score >= 70 ? 'text-emerald-700' : 'text-slate-800'
+                      }`}
+                    >
                       「{result.recognizedText}」
                     </span>
                   </div>
@@ -361,19 +485,32 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
 
               {/* Comparison & Replay Actions */}
               <div className="w-full grid grid-cols-2 gap-2 mt-4">
-                {/* Play user audio */}
-                <button
-                  onClick={handlePlayUserAudio}
-                  disabled={!userAudioUrl}
-                  className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
-                    isPlayingUserAudio
-                      ? 'bg-purple-100 text-purple-700 border-purple-300 ring-2 ring-purple-200'
-                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                  }`}
-                >
-                  <Play className={`w-3.5 h-3.5 ${isPlayingUserAudio ? 'text-purple-600 animate-pulse' : ''}`} />
-                  <span>Nghe lại giọng bạn</span>
-                </button>
+                {/* Play user audio (if captured) */}
+                {userAudioUrl ? (
+                  <button
+                    onClick={handlePlayUserAudio}
+                    className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border transition-all ${
+                      isPlayingUserAudio
+                        ? 'bg-purple-100 text-purple-700 border-purple-300 ring-2 ring-purple-200'
+                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                    }`}
+                  >
+                    <Play
+                      className={`w-3.5 h-3.5 ${
+                        isPlayingUserAudio ? 'text-purple-600 animate-pulse' : ''
+                      }`}
+                    />
+                    <span>Nghe lại giọng bạn</span>
+                  </button>
+                ) : (
+                  <button
+                    disabled
+                    className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed"
+                  >
+                    <Mic className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Đã nhận diện giọng</span>
+                  </button>
+                )}
 
                 {/* Play native teacher audio */}
                 <button
@@ -385,7 +522,11 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
                       : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                   }`}
                 >
-                  <Volume2 className={`w-3.5 h-3.5 ${isPlayingNativeAudio ? 'text-emerald-600 animate-pulse' : ''}`} />
+                  <Volume2
+                    className={`w-3.5 h-3.5 ${
+                      isPlayingNativeAudio ? 'text-emerald-600 animate-pulse' : ''
+                    }`}
+                  />
                   <span>Nghe giọng mẫu</span>
                 </button>
               </div>
