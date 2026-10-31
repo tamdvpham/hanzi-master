@@ -21,7 +21,8 @@ import {
   evaluatePronunciation,
   isInAppBrowser,
   isIOSChrome,
-  isSpeechRecognitionSupported
+  isSpeechRecognitionSupported,
+  AudioStats
 } from '../utils/speechScorer';
 import { playChineseAudio, playSuccessSound, preloadChineseAudio, stopAllChineseAudio } from '../utils/audio';
 import { HighlightText } from './HighlightText';
@@ -121,8 +122,13 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
     } catch (e) {}
   };
 
-  // Perform scoring evaluation - STRICT: 0 points if not recognized
-  const finalizeEvaluation = (alts: string[], primary: string, audioUrl: string | null = null) => {
+  // Perform scoring evaluation
+  const finalizeEvaluation = (
+    alts: string[],
+    primary: string,
+    audioUrl: string | null = null,
+    audioStats?: AudioStats
+  ) => {
     const candidates = Array.from(
       new Set([
         ...alts,
@@ -136,10 +142,16 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
       setUserAudioUrl(audioUrl);
     }
 
-    const evaluation = evaluatePronunciation(candidates, targetText, highlightWord);
+    const evaluation = evaluatePronunciation(
+      candidates,
+      targetText,
+      highlightWord,
+      targetPinyin,
+      audioStats
+    );
     setResult(evaluation);
 
-    if (evaluation.score >= 85) {
+    if (evaluation.score >= 80) {
       playSuccessSound();
       confetti({
         particleCount: 40,
@@ -148,7 +160,7 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
       });
     }
 
-    if (onScoreSaved) {
+    if (onScoreSaved && evaluation.score > 0) {
       onScoreSaved(evaluation.score);
     }
   };
@@ -223,7 +235,7 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
       onError: (errMessage) => {
         setMicError(errMessage);
       },
-      onAutoEnd: (alternatives, transcript, audioUrl) => {
+      onAutoEnd: (alternatives, transcript, audioUrl, audioStats) => {
         setIsRecording(false);
         if (timerIntervalRef.current) {
           clearInterval(timerIntervalRef.current);
@@ -233,7 +245,7 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
           clearTimeout(timeoutTimerRef.current);
           timeoutTimerRef.current = null;
         }
-        finalizeEvaluation(alternatives, transcript, audioUrl);
+        finalizeEvaluation(alternatives, transcript, audioUrl, audioStats);
       }
     });
   };
@@ -252,9 +264,9 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
       timeoutTimerRef.current = null;
     }
 
-    const { speechAlternatives, transcript, audioBlobUrl } =
+    const { speechAlternatives, transcript, audioBlobUrl, audioStats } =
       await recorderRef.current.stopRecording();
-    finalizeEvaluation(speechAlternatives, transcript, audioBlobUrl);
+    finalizeEvaluation(speechAlternatives, transcript, audioBlobUrl, audioStats);
   };
 
   // Play teacher native audio
