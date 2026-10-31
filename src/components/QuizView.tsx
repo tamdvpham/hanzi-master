@@ -486,8 +486,8 @@ export const QuizView: React.FC<QuizViewProps> = ({
                   <Clock className="w-3.5 h-3.5 text-purple-600" />
                   <span>3. Số lượng câu hỏi</span>
                 </label>
-                <span className="text-[10px] text-slate-400">
-                  Tự động xoay vòng từ mới
+                <span className="text-[10px] text-purple-600 font-semibold">
+                  Tự động xáo trộn ngẫu nhiên
                 </span>
               </div>
 

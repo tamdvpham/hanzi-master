@@ -25,14 +25,12 @@ export function generateQuizQuestions(
 ): QuizQuestion[] {
   if (!poolWords || poolWords.length === 0) return [];
 
-  // Partition pool into fresh words (not recently tested) and already tested words
-  const freshWords = poolWords.filter((w) => !recentTestedIds.includes(w.id));
-  const testedWords = poolWords.filter((w) => recentTestedIds.includes(w.id));
+  // Always randomize all words completely using Fisher-Yates shuffle so every session or re-entry is 100% random and fresh
+  const shuffledPool = shuffleArray(poolWords);
 
-  // Prioritize fresh words first to guarantee no duplicate questions across sessions
-  const orderedPool = [...shuffleArray(freshWords), ...shuffleArray(testedWords)];
-  const actualCount = count <= 0 ? orderedPool.length : Math.min(count, orderedPool.length);
-  const selectedPool = orderedPool.slice(0, actualCount);
+  // If questionCount is <= 0 (Tất cả), use all words in random order; otherwise pick requested count
+  const actualCount = count <= 0 ? shuffledPool.length : Math.min(count, shuffledPool.length);
+  const selectedPool = shuffledPool.slice(0, actualCount);
 
   const questions: QuizQuestion[] = [];
 
@@ -127,5 +125,5 @@ export function generateQuizQuestions(
     });
   });
 
-  return questions;
+  return shuffleArray(questions);
 }
