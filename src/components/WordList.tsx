@@ -11,7 +11,8 @@ import {
   Award,
   Layers,
   Flame,
-  Mic
+  Mic,
+  Gamepad2
 } from 'lucide-react';
 import { HSKWord, UserStats } from '../types';
 import { CATEGORIES } from '../data/hskData';
@@ -25,6 +26,7 @@ interface WordListProps {
   onToggleFavorite: (wordId: string) => void;
   onToggleLearned: (wordId: string) => void;
   onBackToLanding?: () => void;
+  onOpenQuiz?: () => void;
 }
 
 export const WordList: React.FC<WordListProps> = ({
@@ -34,7 +36,8 @@ export const WordList: React.FC<WordListProps> = ({
   onSelectWord,
   onToggleFavorite,
   onToggleLearned,
-  onBackToLanding
+  onBackToLanding,
+  onOpenQuiz
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'learned' | 'favorites'>('all');
@@ -108,20 +111,32 @@ export const WordList: React.FC<WordListProps> = ({
       {/* App Header Banner */}
       <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-700 via-indigo-600 to-emerald-600 p-6 text-white shadow-xl mb-6">
         <div className="relative z-10">
-          <div className="flex items-center justify-between gap-2 mb-1">
+          <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
             <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
               Cấp độ HSK {currentLevel} ({totalInLevel} từ vựng)
             </span>
 
-            {onBackToLanding && (
-              <button
-                onClick={onBackToLanding}
-                className="text-xs bg-white/20 hover:bg-white/30 text-white font-semibold px-3 py-1.5 rounded-full transition-colors backdrop-blur flex items-center gap-1 shadow-sm"
-              >
-                <span>← Chọn cấp độ HSK</span>
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {onOpenQuiz && (
+                <button
+                  onClick={onOpenQuiz}
+                  className="text-xs bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-3 py-1.5 rounded-full transition-all shadow-md flex items-center gap-1.5 active:scale-95"
+                >
+                  <Gamepad2 className="w-3.5 h-3.5" />
+                  <span>Trắc nghiệm HSK {currentLevel}</span>
+                </button>
+              )}
+
+              {onBackToLanding && (
+                <button
+                  onClick={onBackToLanding}
+                  className="text-xs bg-white/20 hover:bg-white/30 text-white font-semibold px-3 py-1.5 rounded-full transition-colors backdrop-blur flex items-center gap-1 shadow-sm"
+                >
+                  <span>← Chọn cấp độ</span>
+                </button>
+              )}
+            </div>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">
             Luyện Viết Chữ Hán & Phát Âm HSK {currentLevel}

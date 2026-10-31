@@ -18,6 +18,30 @@ export interface HSKWord {
 
 export type PracticeMode = 'trace' | 'quiz';
 
+export type QuizMode = 'meaning' | 'audio' | 'pinyin' | 'speed';
+
+export interface QuizOption {
+  id: string;
+  text: string;
+  subText?: string;
+  isCorrect: boolean;
+}
+
+export interface QuizQuestion {
+  id: string;
+  word: HSKWord;
+  mode: QuizMode;
+  questionTitle: string;
+  promptDisplay: string;
+  options: QuizOption[];
+}
+
+export interface QuizAnswerRecord {
+  question: QuizQuestion;
+  selectedOptionId: string;
+  isCorrect: boolean;
+}
+
 export interface UserStats {
   learnedWordIds: string[];
   favoriteWordIds: string[];

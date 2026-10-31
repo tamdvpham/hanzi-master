@@ -4,6 +4,7 @@ import { HSKWord, UserStats } from './types';
 import { WordList } from './components/WordList';
 import { HanziPractice } from './components/HanziPractice';
 import { LandingPage } from './components/LandingPage';
+import { QuizView } from './components/QuizView';
 import {
   Smartphone,
   Monitor,
@@ -11,7 +12,8 @@ import {
   LayoutGrid,
   Sparkles,
   Award,
-  Home
+  Home,
+  Gamepad2
 } from 'lucide-react';
 
 const STATS_STORAGE_KEY = 'chinese_hsk_user_stats_v1';
@@ -42,7 +44,7 @@ const getInitialStats = (): UserStats => {
 };
 
 export const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'landing' | 'study'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'study' | 'quiz'>('landing');
   const [currentLevel, setCurrentLevel] = useState<1 | 2 | 3 | 4>(1);
   const [selectedWord, setSelectedWord] = useState<HSKWord | null>(null);
   const [userStats, setUserStats] = useState<UserStats>(getInitialStats);
@@ -202,7 +204,23 @@ export const App: React.FC = () => {
               }`}
             >
               <BookOpen className="w-3.5 h-3.5" />
-              <span>HSK {currentLevel} ({activeLevelWords.length})</span>
+              <span>HSK {currentLevel}</span>
+            </button>
+
+            {/* Quiz Challenge Button */}
+            <button
+              onClick={() => {
+                setSelectedWord(null);
+                setCurrentView('quiz');
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                currentView === 'quiz' && !selectedWord
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md'
+                  : 'bg-white/10 text-white hover:bg-white/20'
+              }`}
+            >
+              <Gamepad2 className="w-3.5 h-3.5 text-amber-300" />
+              <span>Trắc nghiệm</span>
             </button>
 
             {/* View Mode Toggle: Phone Frame vs Full Responsive (when in practice mode) */}
@@ -268,6 +286,19 @@ export const App: React.FC = () => {
               </div>
             )}
           </div>
+        ) : currentView === 'quiz' ? (
+          // Quiz Arena View (Trắc nghiệm 4 chế độ)
+          <div className="bg-slate-100 flex-1">
+            <QuizView
+              allWords={HSK_WORDS}
+              initialLevel={currentLevel}
+              onSelectWordToPractice={(word) => {
+                setSelectedWord(word);
+                setCurrentView('study');
+              }}
+              onBackToStudy={() => setCurrentView('study')}
+            />
+          </div>
         ) : currentView === 'landing' ? (
           // Landing Page with 4 HSK cards (matching user's uploaded screenshot)
           <LandingPage
@@ -289,6 +320,7 @@ export const App: React.FC = () => {
               onToggleFavorite={handleToggleFavorite}
               onToggleLearned={handleToggleLearned}
               onBackToLanding={() => setCurrentView('landing')}
+              onOpenQuiz={() => setCurrentView('quiz')}
             />
           </div>
         )}
