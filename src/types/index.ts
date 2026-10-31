@@ -82,9 +82,8 @@ export type MainView = 'landing' | 'study' | 'quiz' | 'sentence';
 export interface UserProfile {
   id: string;
   username: string;
-  email?: string;
-  authProvider?: 'password' | 'google' | 'gmail';
   displayName: string;
+  password?: string;
   passwordHash?: string;
   avatar: string;
   createdAt: string;

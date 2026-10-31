@@ -1,7 +1,7 @@
 // User Authentication & Progress Management Service
-// Auto-login & persistent device session for HSK learners
+// Persistent device session & cross-device sync for HSK learners
 
-import { UserProfile, UserStats } from '../types';
+import { HSKWord, UserProfile, UserStats } from '../types';
 
 const DB_KEY = 'hsk_master_users_db_v2';
 const SESSION_KEY = 'hsk_master_active_session_v2';
@@ -23,7 +23,7 @@ export const AVATAR_OPTIONS = [
 ];
 
 // Simple hash for local storage
-const simpleHash = (str: string): string => {
+export const simpleHash = (str: string): string => {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
@@ -155,99 +155,13 @@ export const getActiveUser = (): UserProfile | null => {
 };
 
 /**
- * Instant 1-Click Login / Register with Gmail
- * Auto-detects whether the Gmail was used before:
- * - If already exists: logs in immediately, merges any guest progress, restores all data.
- * - If new: automatically creates profile, attaches guest progress, saves, and logs in.
- * Guaranteed zero password lockout!
+ * Find user by username
  */
-export const loginWithGmail = (
-  rawEmail: string,
-  incomingStats?: UserStats
-): { success: boolean; user?: UserProfile; isNew?: boolean; error?: string } => {
-  let email = rawEmail.trim().toLowerCase();
-
-  // If user only typed username, auto-append @gmail.com
-  if (!email.includes('@')) {
-    email = `${email}@gmail.com`;
-  }
-
-  // Basic email pattern validation
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
-    return { success: false, error: 'Địa chỉ Gmail không hợp lệ. Vui lòng kiểm tra lại.' };
-  }
-
+export const getUserByUsername = (usernameRaw: string): UserProfile | null => {
+  const username = usernameRaw.trim().toLowerCase();
   const db = getUsersDB();
-
-  // Search if user exists by email or matching username
-  const existingId = Object.keys(db).find((id) => {
-    const u = db[id];
-    return (
-      u.email?.toLowerCase() === email ||
-      u.username?.toLowerCase() === email ||
-      u.username?.toLowerCase() === email.replace('@gmail.com', '')
-    );
-  });
-
-  if (existingId) {
-    const user = db[existingId];
-    user.email = email;
-    user.lastLoginAt = new Date().toISOString();
-    // Merge stats with incoming progress so no learned words are lost
-    user.stats = mergeStats(user.stats, incomingStats);
-
-    db[existingId] = user;
-    saveUsersDB(db);
-
-    try {
-      localStorage.setItem(SESSION_KEY, existingId);
-      localStorage.setItem(GUEST_STATS_KEY, JSON.stringify(user.stats));
-    } catch (e) {}
-
-    return { success: true, user, isNew: false };
-  }
-
-  // Create new profile for this Gmail
-  const newId = `gmail_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
-  const emailPrefix = email.split('@')[0];
-  // Capitalize display name: e.g. "minh.tam" -> "Minh Tam"
-  const formattedName = emailPrefix
-    .replace(/[._-]/g, ' ')
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-
-  // Assign random fun avatar
-  const avatar = AVATAR_OPTIONS[Math.floor(Math.random() * AVATAR_OPTIONS.length)];
-
-  const emptyStats: UserStats = {
-    learnedWordIds: [],
-    favoriteWordIds: [],
-    practiceCount: {},
-    lastPracticed: {},
-    pronunciationScores: {}
-  };
-
-  const newUser: UserProfile = {
-    id: newId,
-    username: emailPrefix,
-    email,
-    authProvider: 'gmail',
-    displayName: formattedName || 'Học viên HSK',
-    avatar,
-    createdAt: new Date().toISOString(),
-    lastLoginAt: new Date().toISOString(),
-    stats: incomingStats ? mergeStats(emptyStats, incomingStats) : emptyStats
-  };
-
-  db[newId] = newUser;
-  saveUsersDB(db);
-
-  try {
-    localStorage.setItem(SESSION_KEY, newId);
-    localStorage.setItem(GUEST_STATS_KEY, JSON.stringify(newUser.stats));
-  } catch (e) {}
-
-  return { success: true, user: newUser, isNew: true };
+  const userId = Object.keys(db).find((id) => db[id].username.toLowerCase() === username);
+  return userId ? db[userId] : null;
 };
 
 /**
@@ -305,7 +219,7 @@ export const registerUser = (
 
   // Check if username already exists
   const existingId = Object.keys(db).find(
-    (id) => db[id].username.toLowerCase() === username || db[id].email?.toLowerCase() === username
+    (id) => db[id].username.toLowerCase() === username
   );
   if (existingId) {
     return {
@@ -328,8 +242,8 @@ export const registerUser = (
   const newUser: UserProfile = {
     id: newId,
     username,
-    authProvider: 'password',
     displayName,
+    password, // Stored to allow password reveal on answering quiz correctly
     passwordHash: simpleHash(password),
     avatar,
     createdAt: new Date().toISOString(),
@@ -349,7 +263,7 @@ export const registerUser = (
 };
 
 /**
- * Log in with existing username/email & password
+ * Log in with existing username & password
  */
 export const loginUser = (
   identifierRaw: string,
@@ -360,26 +274,23 @@ export const loginUser = (
   const password = passwordRaw.trim();
 
   const db = getUsersDB();
-  const userId = Object.keys(db).find((id) => {
-    const u = db[id];
-    return (
-      u.username.toLowerCase() === identifier ||
-      u.email?.toLowerCase() === identifier
-    );
-  });
+  const userId = Object.keys(db).find((id) => db[id].username.toLowerCase() === identifier);
 
   if (!userId) {
     return {
       success: false,
-      error: 'Tài khoản không tồn tại. Vui lòng kiểm tra lại hoặc Đăng nhập nhanh bằng Gmail.'
+      error: 'Tài khoản không tồn tại trên thiết bị này. Vui lòng kiểm tra lại tên đăng nhập hoặc Đăng ký.'
     };
   }
 
   const user = db[userId];
   const expectedHash = simpleHash(password);
 
-  if (user.passwordHash && user.passwordHash !== expectedHash) {
-    return { success: false, error: 'Mật khẩu không chính xác. Vui lòng thử lại.' };
+  // Accept either plain password match or hash match
+  const isMatch = (user.password && user.password === password) || (user.passwordHash && user.passwordHash === expectedHash);
+
+  if (!isMatch) {
+    return { success: false, error: 'Mật khẩu không chính xác. Bạn có thể bấm "Quên mật khẩu?" để lấy lại.' };
   }
 
   // Update last login & merge incoming stats
@@ -397,6 +308,162 @@ export const loginUser = (
   } catch (e) {}
 
   return { success: true, user };
+};
+
+/**
+ * Reset password for a username after completing quiz challenge
+ */
+export const resetUserPassword = (
+  usernameRaw: string,
+  newPasswordRaw: string
+): { success: boolean; user?: UserProfile; error?: string } => {
+  const username = usernameRaw.trim().toLowerCase();
+  const newPassword = newPasswordRaw.trim();
+
+  if (newPassword.length < 4) {
+    return { success: false, error: 'Mật khẩu mới cần ít nhất 4 ký tự' };
+  }
+
+  const db = getUsersDB();
+  const userId = Object.keys(db).find((id) => db[id].username.toLowerCase() === username);
+
+  if (!userId) {
+    return { success: false, error: 'Không tìm thấy tài khoản để đặt lại mật khẩu.' };
+  }
+
+  db[userId].password = newPassword;
+  db[userId].passwordHash = simpleHash(newPassword);
+  db[userId].lastLoginAt = new Date().toISOString();
+  saveUsersDB(db);
+
+  try {
+    localStorage.setItem(SESSION_KEY, userId);
+    localStorage.setItem(GUEST_STATS_KEY, JSON.stringify(db[userId].stats));
+  } catch (e) {}
+
+  return { success: true, user: db[userId] };
+};
+
+/**
+ * Generate a random Hanzi multiple-choice quiz question for password recovery
+ */
+export interface RecoveryQuizQuestion {
+  word: HSKWord;
+  promptText: string;
+  options: { id: string; text: string; isCorrect: boolean }[];
+  correctOptionId: string;
+}
+
+export const generateRecoveryQuizQuestion = (allWords: HSKWord[]): RecoveryQuizQuestion => {
+  // Prefer HSK 1 or 2 words so recovery questions are accessible and clear
+  const pool = allWords.filter((w) => w.level === 1 || w.level === 2);
+  const activePool = pool.length >= 10 ? pool : allWords;
+
+  const targetWord = activePool[Math.floor(Math.random() * activePool.length)];
+
+  // Get 3 distractors
+  const otherWords = activePool.filter((w) => w.id !== targetWord.id && w.meaning !== targetWord.meaning);
+  const shuffledOthers = [...otherWords].sort(() => Math.random() - 0.5);
+  const distractors = shuffledOthers.slice(0, 3);
+
+  const correctOption = {
+    id: `opt_correct_${Date.now()}`,
+    text: targetWord.meaning,
+    isCorrect: true
+  };
+
+  const distractorOptions = distractors.map((w, i) => ({
+    id: `opt_distractor_${i}_${Date.now()}`,
+    text: w.meaning,
+    isCorrect: false
+  }));
+
+  const allOptions = [correctOption, ...distractorOptions].sort(() => Math.random() - 0.5);
+
+  return {
+    word: targetWord,
+    promptText: `Từ "${targetWord.hanzi}" (${targetWord.pinyin}) có nghĩa là gì trong tiếng Việt?`,
+    options: allOptions,
+    correctOptionId: correctOption.id
+  };
+};
+
+/**
+ * Export account to a portable Sync Key string for transferring to another device
+ */
+export const exportAccountSyncKey = (userId: string): string | null => {
+  const db = getUsersDB();
+  const user = db[userId];
+  if (!user) return null;
+
+  try {
+    const payload = JSON.stringify({
+      version: 1,
+      user: {
+        id: user.id,
+        username: user.username,
+        displayName: user.displayName,
+        password: user.password,
+        passwordHash: user.passwordHash,
+        avatar: user.avatar,
+        stats: user.stats
+      }
+    });
+    // UTF-8 safe base64
+    const encoded = btoa(encodeURIComponent(payload));
+    return `HSK_SYNC_${encoded}`;
+  } catch (e) {
+    console.error('Failed to export sync key:', e);
+    return null;
+  }
+};
+
+/**
+ * Import account from a Sync Key string created on another device
+ */
+export const importAccountSyncKey = (
+  rawKey: string,
+  incomingStats?: UserStats
+): { success: boolean; user?: UserProfile; error?: string } => {
+  try {
+    const cleanKey = rawKey.trim();
+    if (!cleanKey.startsWith('HSK_SYNC_')) {
+      return { success: false, error: 'Mã đồng bộ không hợp lệ. Mã bắt đầu bằng "HSK_SYNC_..."' };
+    }
+
+    const base64Data = cleanKey.replace('HSK_SYNC_', '');
+    const jsonStr = decodeURIComponent(atob(base64Data));
+    const data = JSON.parse(jsonStr);
+
+    if (!data?.user?.username || !data?.user?.stats) {
+      return { success: false, error: 'Dữ liệu tài khoản trong mã không hợp lệ hoặc bị hỏng.' };
+    }
+
+    const importedUser: UserProfile = {
+      id: data.user.id || `user_${Date.now()}`,
+      username: data.user.username,
+      displayName: data.user.displayName || data.user.username,
+      password: data.user.password,
+      passwordHash: data.user.passwordHash,
+      avatar: data.user.avatar || '👩🏻‍🎓',
+      createdAt: data.user.createdAt || new Date().toISOString(),
+      lastLoginAt: new Date().toISOString(),
+      stats: incomingStats ? mergeStats(data.user.stats, incomingStats) : data.user.stats
+    };
+
+    const db = getUsersDB();
+    db[importedUser.id] = importedUser;
+    saveUsersDB(db);
+
+    try {
+      localStorage.setItem(SESSION_KEY, importedUser.id);
+      localStorage.setItem(GUEST_STATS_KEY, JSON.stringify(importedUser.stats));
+    } catch (e) {}
+
+    return { success: true, user: importedUser };
+  } catch (e: any) {
+    return { success: false, error: 'Không thể giải mã mã đồng bộ. Vui lòng kiểm tra lại mã đã sao chép.' };
+  }
 };
 
 /**
