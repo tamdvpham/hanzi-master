@@ -566,6 +566,81 @@ export const generateRecoveryQuizQuestion = (allWords: HSKWord[]): RecoveryQuizQ
 };
 
 /**
+ * Generate a complete QR login URL for 1-tap scanning with phone camera or web scanner
+ */
+export const generateQRLoginUrl = (user: UserProfile): string => {
+  try {
+    const payload = JSON.stringify({
+      v: 2,
+      u: user.username,
+      p: user.password,
+      d: user.displayName,
+      a: user.avatar,
+      t: Date.now()
+    });
+    const token = btoa(encodeURIComponent(payload));
+    const baseUrl = typeof window !== 'undefined' && window.location.origin
+      ? window.location.origin
+      : 'https://hanzi-master-web-a121.vercel.app';
+    return `${baseUrl}/?qr_auth=${token}`;
+  } catch (e) {
+    console.error('Failed to generate QR login URL:', e);
+    return '';
+  }
+};
+
+/**
+ * Parse QR auth token from either URL (?qr_auth=...), raw token, or legacy HSK_SYNC_ key
+ */
+export const parseQRAuthToken = (
+  rawInput: string
+): { username: string; password?: string; displayName?: string; avatar?: string } | null => {
+  if (!rawInput) return null;
+  const str = rawInput.trim();
+
+  try {
+    let token = str;
+
+    // 1. If scanned input is a URL with ?qr_auth=...
+    if (str.includes('qr_auth=')) {
+      const url = new URL(str.startsWith('http') ? str : `https://dummy.com${str.startsWith('/') ? '' : '/'}${str}`);
+      const param = url.searchParams.get('qr_auth');
+      if (param) token = param;
+    }
+
+    // 2. If it's legacy HSK_SYNC_...
+    if (token.startsWith('HSK_SYNC_')) {
+      const base64Data = token.replace('HSK_SYNC_', '');
+      const jsonStr = decodeURIComponent(atob(base64Data));
+      const data = JSON.parse(jsonStr);
+      if (data?.user?.username) {
+        return {
+          username: normalizeUsername(data.user.username),
+          password: data.user.password,
+          displayName: data.user.displayName,
+          avatar: data.user.avatar
+        };
+      }
+    }
+
+    // 3. Standard base64 token
+    const jsonStr = decodeURIComponent(atob(token));
+    const data = JSON.parse(jsonStr);
+    if (data?.u) {
+      return {
+        username: normalizeUsername(data.u),
+        password: data.p,
+        displayName: data.d,
+        avatar: data.a
+      };
+    }
+  } catch (e) {
+    console.error('Failed to parse QR auth:', e);
+  }
+  return null;
+};
+
+/**
  * Export account to a portable Sync Key string for transferring to another device
  */
 export const exportAccountSyncKey = (userId: string): string | null => {

@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
+import { Html5Qrcode } from 'html5-qrcode';
 import { UserProfile, UserStats } from '../types';
 import { HSK_WORDS } from '../data/hskData';
 import {
@@ -12,6 +13,7 @@ import {
   resetUserPassword,
   generateRecoveryQuizQuestion,
   importAccountSyncKey,
+  parseQRAuthToken,
   RecoveryQuizQuestion,
   AVATAR_OPTIONS
 } from '../utils/authManager';
@@ -32,7 +34,11 @@ import {
   RotateCcw,
   Smartphone,
   Check,
-  Copy
+  Copy,
+  QrCode,
+  ScanQrCode,
+  Camera,
+  Upload
 } from 'lucide-react';
 
 interface AuthModalProps {
@@ -42,7 +48,7 @@ interface AuthModalProps {
   currentGuestStats?: UserStats;
 }
 
-type ModalView = 'login' | 'register' | 'forgot-username' | 'forgot-quiz' | 'forgot-success' | 'import-sync';
+type ModalView = 'login' | 'register' | 'forgot-username' | 'forgot-quiz' | 'forgot-success' | 'scan-qr' | 'import-sync';
 
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
@@ -72,6 +78,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   // Saved accounts on device
   const [savedAccounts, setSavedAccounts] = useState<UserProfile[]>([]);
+
+  // QR Scan states
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -255,13 +267,142 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   };
 
-  // Import Account from Sync Key (cross-device)
-  const handleImportSyncKey = (e: React.FormEvent) => {
+  // QR code scan success processor
+  const handleQRSuccess = async (decodedText: string) => {
+    setErrorMessage(null);
+    setIsLoading(true);
+
+    try {
+      const parsed = parseQRAuthToken(decodedText);
+      if (!parsed?.username) {
+        setErrorMessage('Mã QR không hợp lệ hoặc không chứa dữ liệu tài khoản Hán Tự Master.');
+        setIsLoading(false);
+        return;
+      }
+
+      const res = await loginUser(parsed.username, parsed.password || '', currentGuestStats);
+      if (res.success && res.user) {
+        try {
+          confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+        } catch (e) {}
+        setSuccessMessage(`Đăng nhập thành công từ mã QR tài khoản "${res.user.displayName}"!`);
+        setTimeout(() => {
+          onAuthSuccess(res.user!);
+          onClose();
+        }, 500);
+      } else {
+        setErrorMessage(res.error || 'Đăng nhập từ mã QR không thành công.');
+      }
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Có lỗi khi quét mã QR.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Upload QR image file
+  const handleFileQRChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setErrorMessage(null);
+    setIsLoading(true);
+
+    const tempScanner = html5QrCodeRef.current || new Html5Qrcode('qr-camera-viewport');
+    tempScanner.scanFile(file, true)
+      .then((decodedText) => {
+        handleQRSuccess(decodedText);
+      })
+      .catch((err) => {
+        console.warn('Scan file error:', err);
+        setErrorMessage('Không nhận diện được mã QR trong ảnh này. Vui lòng thử ảnh rõ nét hơn hoặc dùng camera.');
+        setIsLoading(false);
+      });
+  };
+
+  // Camera QR scanner lifecycle
+  useEffect(() => {
+    let scanner: Html5Qrcode | null = null;
+    let isMounted = true;
+
+    if (isOpen && view === 'scan-qr') {
+      setCameraError(null);
+      setIsCameraActive(false);
+
+      const timer = setTimeout(() => {
+        if (!isMounted) return;
+        const elem = document.getElementById('qr-camera-viewport');
+        if (!elem) return;
+
+        try {
+          scanner = new Html5Qrcode('qr-camera-viewport');
+          html5QrCodeRef.current = scanner;
+
+          scanner.start(
+            { facingMode: 'environment' },
+            { fps: 10, qrbox: { width: 220, height: 220 } },
+            (decodedText) => {
+              if (scanner && scanner.isScanning) {
+                scanner.stop().then(() => {
+                  handleQRSuccess(decodedText);
+                }).catch(() => {
+                  handleQRSuccess(decodedText);
+                });
+              } else {
+                handleQRSuccess(decodedText);
+              }
+            },
+            () => {}
+          ).then(() => {
+            if (isMounted) setIsCameraActive(true);
+          }).catch((err) => {
+            console.warn('Camera start error:', err);
+            if (isMounted) {
+              setCameraError('Không thể mở camera. Bạn có thể cho phép quyền máy ảnh, hoặc bấm "Tải ảnh mã QR" bên dưới.');
+            }
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      }, 350);
+
+      return () => {
+        isMounted = false;
+        clearTimeout(timer);
+        if (scanner) {
+          try {
+            if (scanner.isScanning) {
+              scanner.stop().catch(() => {});
+            }
+          } catch (e) {}
+        }
+      };
+    }
+  }, [isOpen, view]);
+
+  // Import Account from Sync Key or QR URL (cross-device)
+  const handleImportSyncKey = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setIsLoading(true);
 
     try {
+      const parsed = parseQRAuthToken(syncKeyInput);
+      if (parsed?.username) {
+        const res = await loginUser(parsed.username, parsed.password || '', currentGuestStats);
+        if (res.success && res.user) {
+          try {
+            confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+          } catch (e) {}
+          setSuccessMessage(`Đã đăng nhập thành công tài khoản "${res.user.displayName}"!`);
+          setTimeout(() => {
+            onAuthSuccess(res.user!);
+            onClose();
+          }, 500);
+          return;
+        }
+      }
+
       const res = importAccountSyncKey(syncKeyInput, currentGuestStats);
       if (res.success && res.user) {
         setSuccessMessage(`Đã khôi phục thành công tài khoản "${res.user.displayName}" sang thiết bị này!`);
@@ -301,12 +442,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           <div className="flex items-center gap-2.5">
             <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur border border-white/30 flex items-center justify-center text-xl shadow-md select-none shrink-0">
-              {view.startsWith('forgot') ? '🔐' : view === 'import-sync' ? '📲' : view === 'register' ? selectedAvatar : '👤'}
+              {view.startsWith('forgot') ? '🔐' : view === 'scan-qr' ? '📷' : view === 'import-sync' ? '📲' : view === 'register' ? selectedAvatar : '👤'}
             </div>
             <div>
               <h2 className="text-base sm:text-lg font-black tracking-tight">
                 {view.startsWith('forgot')
                   ? 'Lấy Lại Mật Khẩu (Trắc Nghiệm)'
+                  : view === 'scan-qr'
+                  ? 'Quét Mã QR Đăng Nhập'
                   : view === 'import-sync'
                   ? 'Đồng Bộ Từ Thiết Bị Khác'
                   : view === 'register'
@@ -316,8 +459,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               <p className="text-[11px] sm:text-xs text-purple-200">
                 {view.startsWith('forgot')
                   ? 'Vượt qua câu hỏi đố chữ Hán để lấy lại mật khẩu'
+                  : view === 'scan-qr'
+                  ? 'Hướng camera vào mã QR trên thiết bị cũ để đăng nhập ngay'
                   : view === 'import-sync'
-                  ? 'Nhập mã đồng bộ từ máy cũ để tải dữ liệu về máy mới'
+                  ? 'Dán mã đồng bộ hoặc link QR từ thiết bị cũ'
                   : 'Lưu vĩnh viễn tiến trình học tập và từ vựng đã thuộc'}
               </p>
             </div>
@@ -556,18 +701,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 )}
               </button>
 
-              {/* Secondary Option: Sync from other device */}
-              <div className="pt-2 border-t border-slate-100 text-center">
+              {/* Secondary Option: QR Code Login Button & Alternative Sync */}
+              <div className="pt-2.5 border-t border-slate-100 space-y-2">
                 <button
                   type="button"
                   onClick={() => {
-                    setView('import-sync');
+                    setView('scan-qr');
                     setErrorMessage(null);
                   }}
-                  className="text-xs text-slate-500 hover:text-purple-700 inline-flex items-center gap-1 font-medium cursor-pointer"
+                  className="w-full py-2.5 rounded-xl border border-purple-200 bg-gradient-to-r from-purple-50 via-indigo-50 to-emerald-50/60 hover:from-purple-100 hover:to-indigo-100 text-purple-900 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition-all active:scale-95 cursor-pointer shadow-xs"
                 >
-                  <Smartphone className="w-3.5 h-3.5" />
-                  <span>Đăng nhập từ thiết bị khác? (Nhập Mã Đồng Bộ)</span>
+                  <ScanQrCode className="w-4 h-4 text-purple-600" />
+                  <span>Quét Mã QR Đăng Nhập Từ Thiết Bị Khác</span>
                 </button>
               </div>
             </form>
@@ -787,6 +932,91 @@ export const AuthModal: React.FC<AuthModalProps> = ({
                 <LogIn className="w-4 h-4" />
                 <span>Đăng Nhập Vào Tài Khoản Ngay</span>
               </button>
+            </div>
+          )}
+
+          {/* VIEW: SCAN QR CODE TO LOG IN */}
+          {view === 'scan-qr' && (
+            <div className="space-y-3">
+              <div className="bg-purple-50 border border-purple-200 rounded-2xl p-3 text-xs text-purple-900 leading-relaxed">
+                <div className="font-bold flex items-center gap-1.5 mb-1 text-purple-950">
+                  <ScanQrCode className="w-4 h-4 text-purple-600" />
+                  <span>Quét Mã QR Để Đăng Nhập</span>
+                </div>
+                <span>
+                  Trên máy đang đăng nhập, bạn mở <strong>Hồ sơ → bấm "Hiện Mã QR"</strong>, sau đó hướng camera vào mã QR để đăng nhập ngay mà không cần gõ mật khẩu!
+                </span>
+              </div>
+
+              {/* Viewport element for Html5Qrcode camera */}
+              <div className="relative rounded-2xl overflow-hidden bg-slate-900 border-2 border-purple-300 aspect-square max-w-[260px] mx-auto shadow-inner flex items-center justify-center">
+                <div id="qr-camera-viewport" className="w-full h-full overflow-hidden" />
+
+                {/* Overlaid Animated Scanner Line & Corner Brackets */}
+                <div className="absolute inset-4 pointer-events-none border-2 border-dashed border-purple-400/70 rounded-xl flex items-center justify-center">
+                  <div className="w-full h-0.5 bg-gradient-to-r from-transparent via-emerald-400 to-transparent animate-pulse" />
+                </div>
+
+                {!isCameraActive && !cameraError && (
+                  <div className="absolute inset-0 bg-slate-900/80 flex flex-col items-center justify-center text-white text-xs gap-2 p-3 text-center">
+                    <Camera className="w-8 h-8 text-purple-400 animate-bounce" />
+                    <span>Đang khởi động máy ảnh...</span>
+                  </div>
+                )}
+
+                {cameraError && (
+                  <div className="absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center text-white text-xs gap-2 p-3 text-center">
+                    <AlertCircle className="w-8 h-8 text-rose-400" />
+                    <span className="text-rose-200 leading-tight">{cameraError}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Hidden file input for uploading QR code screenshot */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleFileQRChange}
+              />
+
+              {/* Camera Actions & Alternative */}
+              <div className="flex flex-col gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isLoading}
+                  className="w-full py-2 px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <Upload className="w-3.5 h-3.5 text-purple-600" />
+                  <span>Tải ảnh mã QR lên (từ thư viện ảnh / ảnh chụp)</span>
+                </button>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setView('login');
+                      setErrorMessage(null);
+                    }}
+                    className="flex-1 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 rounded-xl hover:bg-slate-100 transition-colors"
+                  >
+                    Quay lại
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setView('import-sync');
+                      setErrorMessage(null);
+                    }}
+                    className="flex-1 py-2 text-xs font-semibold text-purple-700 hover:text-purple-900 bg-purple-50 hover:bg-purple-100 rounded-xl transition-colors border border-purple-200"
+                  >
+                    Dán link / Mã thủ công
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 

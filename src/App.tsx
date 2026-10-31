@@ -8,7 +8,8 @@ import { QuizView } from './components/QuizView';
 import { SentenceScrambleView } from './components/SentenceScrambleView';
 import { AuthModal } from './components/AuthModal';
 import { UserProfileModal } from './components/UserProfileModal';
-import { getActiveUser, updateActiveUserStats } from './utils/authManager';
+import confetti from 'canvas-confetti';
+import { getActiveUser, updateActiveUserStats, parseQRAuthToken, loginUser } from './utils/authManager';
 import {
   Smartphone,
   Monitor,
@@ -76,6 +77,30 @@ export const App: React.FC = () => {
       console.error('Failed to save stats:', e);
     }
   }, [userStats, currentUser]);
+
+  // Auto-login from QR Code link (when scanned with phone's native camera)
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const qrAuth = params.get('qr_auth');
+      if (qrAuth) {
+        const parsed = parseQRAuthToken(qrAuth);
+        if (parsed?.username) {
+          window.history.replaceState({}, document.title, window.location.pathname);
+          loginUser(parsed.username, parsed.password || '', userStats).then((res) => {
+            if (res.success && res.user) {
+              handleAuthSuccess(res.user);
+              try {
+                confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+              } catch (e) {}
+            }
+          });
+        }
+      }
+    } catch (e) {
+      console.error('QR auto login error:', e);
+    }
+  }, []);
 
   const handleAuthSuccess = (user: UserProfile) => {
     setCurrentUser(user);

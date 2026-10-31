@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 import { UserProfile } from '../types';
 import {
   logoutUser,
   updateActiveUserProfile,
+  generateQRLoginUrl,
   exportAccountSyncKey,
   AVATAR_OPTIONS
 } from '../utils/authManager';
@@ -16,7 +18,9 @@ import {
   Check,
   Award,
   Smartphone,
-  Copy
+  Copy,
+  QrCode,
+  ScanQrCode
 } from 'lucide-react';
 
 interface UserProfileModalProps {
@@ -37,6 +41,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [newDisplayName, setNewDisplayName] = useState(user.displayName);
   const [newAvatar, setNewAvatar] = useState(user.avatar);
+  const [showQRView, setShowQRView] = useState(false);
+  const [isCopiedLink, setIsCopiedLink] = useState(false);
   const [isCopiedSync, setIsCopiedSync] = useState(false);
 
   if (!isOpen) return null;
@@ -59,6 +65,16 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
     logoutUser();
     onLogout();
     onClose();
+  };
+
+  const qrLoginUrl = generateQRLoginUrl(user);
+
+  const handleCopyQRLink = () => {
+    if (qrLoginUrl) {
+      navigator.clipboard.writeText(qrLoginUrl);
+      setIsCopiedLink(true);
+      setTimeout(() => setIsCopiedLink(false), 2500);
+    }
   };
 
   const handleCopySyncKey = () => {
@@ -222,34 +238,70 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             </div>
           </div>
 
-          {/* Cross-Device Sync Key Section */}
-          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200/80 rounded-2xl p-3 space-y-1.5">
+          {/* Cross-Device QR Code Login Section */}
+          <div className="bg-gradient-to-r from-purple-50 via-indigo-50 to-emerald-50/50 border border-purple-200 rounded-2xl p-3.5 space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-purple-950 flex items-center gap-1.5">
-                <Smartphone className="w-3.5 h-3.5 text-purple-600" />
-                <span>Đồng bộ sang thiết bị khác</span>
+                <QrCode className="w-4 h-4 text-purple-600" />
+                <span>Mã QR Đăng Nhập Trên Máy Khác</span>
               </span>
               <button
                 type="button"
-                onClick={handleCopySyncKey}
-                className="px-2.5 py-1 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center gap-1 shadow-xs active:scale-95 transition-all cursor-pointer"
+                onClick={() => setShowQRView(!showQRView)}
+                className="px-3 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all cursor-pointer"
               >
-                {isCopiedSync ? (
-                  <>
-                    <Check className="w-3.5 h-3.5 text-emerald-300" />
-                    <span>Đã sao chép!</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="w-3.5 h-3.5" />
-                    <span>Sao chép Mã</span>
-                  </>
-                )}
+                <ScanQrCode className="w-3.5 h-3.5 text-amber-300" />
+                <span>{showQRView ? 'Ẩn mã QR' : 'Hiện Mã QR'}</span>
               </button>
             </div>
-            <p className="text-[11px] text-purple-800 leading-relaxed">
-              Mở web trên máy khác, bấm <strong>"Đăng nhập → Nhập từ thiết bị khác"</strong> và dán mã này vào là chuyển toàn bộ tài khoản & tiến trình học sang ngay!
-            </p>
+
+            {showQRView ? (
+              <div className="flex flex-col items-center bg-white rounded-2xl p-4 border border-purple-100 shadow-xs animate-in zoom-in-95 duration-200 space-y-3">
+                <div className="p-3 bg-white rounded-2xl border-2 border-purple-300 shadow-md">
+                  <QRCodeSVG
+                    value={qrLoginUrl}
+                    size={190}
+                    level="M"
+                    includeMargin={true}
+                  />
+                </div>
+                <div className="text-center space-y-1">
+                  <div className="text-xs font-bold text-slate-800 flex items-center justify-center gap-1.5">
+                    <span>{user.avatar}</span>
+                    <span>Tài khoản: @{user.username}</span>
+                  </div>
+                  <p className="text-[11px] text-slate-500 max-w-xs leading-normal">
+                    👉 <strong>Cách 1:</strong> Mở camera trên điện thoại hướng vào mã QR này để tự động mở web và đăng nhập ngay.
+                  </p>
+                  <p className="text-[11px] text-slate-500 max-w-xs leading-normal">
+                    👉 <strong>Cách 2:</strong> Trên máy khác, vào <strong>Đăng nhập → Quét mã QR</strong> để quét.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 pt-1 w-full">
+                  <button
+                    type="button"
+                    onClick={handleCopyQRLink}
+                    className="flex-1 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer border border-purple-200"
+                  >
+                    {isCopiedLink ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Đã chép link đăng nhập!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Sao chép Link QR</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <p className="text-[11px] text-purple-800 leading-relaxed">
+                Bấm <strong>"Hiện Mã QR"</strong>, sau đó mở camera trên điện thoại hoặc thiết bị khác quét mã là tự động đăng nhập tài khoản sang máy đó ngay lập tức!
+              </p>
+            )}
           </div>
 
           {/* Action buttons */}
