@@ -37,6 +37,8 @@ interface HanziPracticeProps {
   bestScore?: number;
   onSaveScore?: (wordId: string, score: number) => void;
   isPhoneMode?: boolean;
+  wordIndex?: number;
+  totalWords?: number;
 }
 
 interface EvaluatingTarget {
@@ -60,7 +62,9 @@ export const HanziPractice: React.FC<HanziPracticeProps> = ({
   onRecordPractice,
   bestScore,
   onSaveScore,
-  isPhoneMode = false
+  isPhoneMode = false,
+  wordIndex,
+  totalWords
 }) => {
   // Characters in current word (e.g. "你好" -> ['你', '好'])
   const characters = Array.from(word.hanzi);
@@ -336,16 +340,28 @@ export const HanziPractice: React.FC<HanziPracticeProps> = ({
           <span>Quay lại</span>
         </button>
 
-        <div className="text-center min-w-0 px-1">
-          <span className="text-[11px] sm:text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 truncate inline-block max-w-[150px]">
+        <div className="flex items-center gap-1.5 truncate mx-1">
+          <span className="text-[11px] sm:text-xs font-semibold px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 truncate inline-block max-w-[130px]">
             HSK {word.level} • {word.category}
           </span>
+          {typeof wordIndex === 'number' && typeof totalWords === 'number' && (
+            <span
+              className={`text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full border transition-all ${
+                isLearned
+                  ? 'bg-emerald-50 text-emerald-700 border-emerald-300 shadow-xs'
+                  : 'bg-slate-100 text-slate-600 border-slate-200'
+              }`}
+              title={isLearned ? 'Từ đã học (nằm ở cuối danh sách)' : 'Từ chưa học'}
+            >
+              #{wordIndex + 1}/{totalWords} {isLearned ? '✓' : ''}
+            </span>
+          )}
         </div>
 
-        <div className="flex items-center gap-1 shrink-0">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={() => onToggleFavorite(word.id)}
-            className={`p-1.5 rounded-full transition-colors ${
+            className={`p-1.5 rounded-full transition-colors cursor-pointer ${
               isFavorite
                 ? 'text-amber-500 bg-amber-50'
                 : 'text-slate-400 hover:text-amber-500 hover:bg-slate-50'
@@ -356,14 +372,15 @@ export const HanziPractice: React.FC<HanziPracticeProps> = ({
           </button>
           <button
             onClick={() => onToggleLearned(word.id)}
-            className={`p-1.5 rounded-full transition-colors ${
+            className={`px-2 py-1 rounded-full text-xs font-bold transition-all flex items-center gap-1 cursor-pointer active:scale-95 ${
               isLearned
-                ? 'text-emerald-600 bg-emerald-50'
-                : 'text-slate-400 hover:text-emerald-600 hover:bg-slate-50'
+                ? 'text-emerald-700 bg-emerald-100 border border-emerald-300 shadow-xs'
+                : 'text-slate-600 bg-slate-100 hover:text-emerald-600 hover:bg-emerald-50 border border-slate-200'
             }`}
-            title="Đã thuộc"
+            title={isLearned ? 'Bấm để đánh dấu chưa thuộc (đưa về đầu danh sách)' : 'Bấm để đánh dấu đã thuộc (chuyển xuống cuối danh sách)'}
           >
-            <CheckCircle2 className={`w-4 h-4 sm:w-5 sm:h-5 ${isLearned ? 'fill-emerald-600 text-white' : ''}`} />
+            <CheckCircle2 className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isLearned ? 'fill-emerald-600 text-white' : ''}`} />
+            <span className="text-[11px] font-semibold">{isLearned ? 'Đã thuộc' : 'Thuộc'}</span>
           </button>
         </div>
       </div>

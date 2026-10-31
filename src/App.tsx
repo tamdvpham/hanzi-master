@@ -166,8 +166,14 @@ export const App: React.FC = () => {
     setCurrentView('study');
   };
 
-  // Active level words & totals for landing page
-  const activeLevelWords = HSK_WORDS.filter((w) => w.level === currentLevel);
+  // Active level words: Unlearned words first, learned words moved to the bottom
+  const activeLevelWords = useMemo(() => {
+    const wordsInLevel = HSK_WORDS.filter((w) => w.level === currentLevel);
+    const unlearned = wordsInLevel.filter((w) => !userStats.learnedWordIds.includes(w.id));
+    const learned = wordsInLevel.filter((w) => userStats.learnedWordIds.includes(w.id));
+    return [...unlearned, ...learned];
+  }, [currentLevel, userStats.learnedWordIds]);
+
   const hsk1Total = HSK_WORDS.filter((w) => w.level === 1).length;
   const hsk2Total = HSK_WORDS.filter((w) => w.level === 2).length;
   const hsk3Total = HSK_WORDS.filter((w) => w.level === 3).length;
@@ -189,6 +195,18 @@ export const App: React.FC = () => {
     : -1;
 
   const handleNextWord = () => {
+    if (activeLevelWords.length === 0) return;
+
+    // If current word is marked as learned and there are unlearned words remaining,
+    // jump directly to the next unlearned word at the top
+    const isLearned = selectedWord ? userStats.learnedWordIds.includes(selectedWord.id) : false;
+    const unlearned = activeLevelWords.filter((w) => !userStats.learnedWordIds.includes(w.id));
+
+    if (isLearned && unlearned.length > 0 && (currentIndex === activeLevelWords.length - 1 || currentIndex >= unlearned.length)) {
+      setSelectedWord(unlearned[0]);
+      return;
+    }
+
     if (currentIndex >= 0 && currentIndex < activeLevelWords.length - 1) {
       setSelectedWord(activeLevelWords[currentIndex + 1]);
     } else {
@@ -197,6 +215,7 @@ export const App: React.FC = () => {
   };
 
   const handlePrevWord = () => {
+    if (activeLevelWords.length === 0) return;
     if (currentIndex > 0) {
       setSelectedWord(activeLevelWords[currentIndex - 1]);
     } else {
@@ -302,6 +321,8 @@ export const App: React.FC = () => {
                     bestScore={userStats.pronunciationScores?.[selectedWord.id]}
                     onSaveScore={handleSaveScore}
                     isPhoneMode={true}
+                    wordIndex={currentIndex}
+                    totalWords={activeLevelWords.length}
                   />
                 </div>
               </div>
@@ -321,6 +342,8 @@ export const App: React.FC = () => {
                   bestScore={userStats.pronunciationScores?.[selectedWord.id]}
                   onSaveScore={handleSaveScore}
                   isPhoneMode={false}
+                  wordIndex={currentIndex}
+                  totalWords={activeLevelWords.length}
                 />
               </div>
             )}

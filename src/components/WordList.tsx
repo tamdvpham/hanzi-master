@@ -48,8 +48,11 @@ export const WordList: React.FC<WordListProps> = ({
 
   // Filter words strictly to currentLevel
   const levelWords = useMemo(() => {
-    return words.filter((w) => w.level === currentLevel);
-  }, [words, currentLevel]);
+    const all = words.filter((w) => w.level === currentLevel);
+    const unlearned = all.filter((w) => !userStats.learnedWordIds.includes(w.id));
+    const learned = all.filter((w) => userStats.learnedWordIds.includes(w.id));
+    return [...unlearned, ...learned];
+  }, [words, currentLevel, userStats.learnedWordIds]);
 
   // Dynamic categories available in this HSK level
   const availableCategories = useMemo(() => {
@@ -66,9 +69,9 @@ export const WordList: React.FC<WordListProps> = ({
     setStatusFilter('all');
   }, [currentLevel]);
 
-  // Filtered words
+  // Filtered words: unlearned words first, learned words moved to the bottom
   const filteredWords = useMemo(() => {
-    return levelWords.filter((w) => {
+    const list = levelWords.filter((w) => {
       // Sub-filter: learned or favorites
       if (statusFilter === 'learned' && !userStats.learnedWordIds.includes(w.id)) return false;
       if (statusFilter === 'favorites' && !userStats.favoriteWordIds.includes(w.id)) return false;
@@ -88,7 +91,15 @@ export const WordList: React.FC<WordListProps> = ({
 
       return true;
     });
-  }, [levelWords, statusFilter, selectedCategory, searchQuery, userStats]);
+
+    // When statusFilter is 'learned', all items are already learned
+    if (statusFilter === 'learned') return list;
+
+    // Move learned words to the end: unlearned first, learned at the end
+    const unlearned = list.filter((w) => !userStats.learnedWordIds.includes(w.id));
+    const learned = list.filter((w) => userStats.learnedWordIds.includes(w.id));
+    return [...unlearned, ...learned];
+  }, [levelWords, statusFilter, selectedCategory, searchQuery, userStats.learnedWordIds, userStats.favoriteWordIds]);
 
   // Statistics for currentLevel only
   const totalInLevel = levelWords.length;
@@ -291,7 +302,7 @@ export const WordList: React.FC<WordListProps> = ({
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5">
-          {filteredWords.map((word) => {
+          {filteredWords.map((word, index) => {
             const isFav = userStats.favoriteWordIds.includes(word.id);
             const isDone = userStats.learnedWordIds.includes(word.id);
             const practiceCount = userStats.practiceCount[word.id] || 0;
@@ -300,17 +311,34 @@ export const WordList: React.FC<WordListProps> = ({
               <div
                 key={word.id}
                 onClick={() => onSelectWord(word)}
-                className="group relative bg-white rounded-2xl p-4 border border-slate-200/90 hover:border-purple-300 hover:shadow-lg transition-all duration-200 cursor-pointer flex flex-col justify-between"
+                className={`group relative bg-white rounded-2xl p-4 border transition-all duration-200 cursor-pointer flex flex-col justify-between ${
+                  isDone
+                    ? 'border-emerald-200/90 bg-emerald-50/20 hover:border-emerald-400 hover:shadow-md'
+                    : 'border-slate-200/90 hover:border-purple-300 hover:shadow-lg'
+                }`}
               >
                 {/* Top card row: Hanzi & Controls */}
                 <div>
                   <div className="flex items-start justify-between">
                     {/* Chinese Character & Pinyin */}
                     <div className="min-w-0 flex-1 pr-2">
-                      <div className="flex items-center">
-                        <span className={`${word.hanzi.length > 2 ? 'text-2xl sm:text-3xl' : 'text-3xl'} font-bold font-chinese text-slate-900 group-hover:text-purple-600 transition-colors whitespace-nowrap tracking-wide`}>
+                      <div className="flex items-center gap-2">
+                        <span className={`${word.hanzi.length > 2 ? 'text-2xl sm:text-3xl' : 'text-3xl'} font-bold font-chinese ${isDone ? 'text-slate-700' : 'text-slate-900 group-hover:text-purple-600'} transition-colors whitespace-nowrap tracking-wide`}>
                           {word.hanzi}
                         </span>
+                        <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+                          isDone
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                            : 'bg-slate-100 text-slate-500 border border-slate-200'
+                        }`}>
+                          #{index + 1}
+                        </span>
+                        {isDone && (
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100/80 px-1.5 py-0.5 rounded-md border border-emerald-300 flex items-center gap-0.5">
+                            <CheckCircle2 className="w-2.5 h-2.5" />
+                            Đã học
+                          </span>
+                        )}
                       </div>
                       <div className="flex flex-wrap items-center gap-1.5 mt-1">
                         <span className="text-sm font-semibold text-purple-600 whitespace-nowrap">
@@ -338,10 +366,12 @@ export const WordList: React.FC<WordListProps> = ({
                       {/* Learned Button */}
                       <button
                         onClick={() => onToggleLearned(word.id)}
-                        className={`p-2 rounded-xl hover:bg-emerald-50 transition-colors ${
-                          isDone ? 'text-emerald-600' : 'text-slate-400 hover:text-emerald-600'
+                        className={`p-2 rounded-xl transition-all cursor-pointer ${
+                          isDone
+                            ? 'text-emerald-700 bg-emerald-100/90 hover:bg-emerald-200'
+                            : 'text-slate-400 hover:text-emerald-600 hover:bg-emerald-50'
                         }`}
-                        title="Đánh dấu đã thuộc"
+                        title={isDone ? 'Đã thuộc (nằm ở cuối danh sách) - Bấm để chuyển về đầu' : 'Đánh dấu đã thuộc (chuyển xuống cuối)'}
                       >
                         <CheckCircle2 className={`w-4 h-4 ${isDone ? 'fill-emerald-600 text-white' : ''}`} />
                       </button>
