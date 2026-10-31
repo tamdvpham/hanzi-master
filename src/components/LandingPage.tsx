@@ -231,12 +231,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </h2>
 
                 {/* Subtitle */}
-                <span className="text-[11px] sm:text-xs font-bold text-slate-200 mt-0.5">
+                <span className="text-xs sm:text-sm font-bold text-slate-200 mt-0.5">
                   {card.subtitle}
                 </span>
 
-                {/* Description (visible on tablet/desktop) */}
-                <p className="text-[10px] sm:text-xs text-slate-400 mt-0.5 max-w-[280px] line-clamp-1 sm:line-clamp-2 leading-relaxed">
+                {/* Description (Hiển thị đầy đủ trên màn hình lớn, ẩn trên mobile để tránh bị cắt chữ '...') */}
+                <p className="hidden sm:block text-xs text-slate-400 mt-1 max-w-[280px] leading-relaxed">
                   {card.desc}
                 </p>
 
