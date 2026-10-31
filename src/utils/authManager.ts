@@ -1,11 +1,12 @@
-// User Authentication & Progress Management Service
-// Persistent device session & cross-device sync for HSK learners
+// User Authentication & Cloud Synchronization Service
+// Enables multi-device login (phone, laptop, tablet) with automatic case-insensitive usernames
 
 import { HSKWord, UserProfile, UserStats } from '../types';
 
 const DB_KEY = 'hsk_master_users_db_v2';
 const SESSION_KEY = 'hsk_master_active_session_v2';
 const GUEST_STATS_KEY = 'chinese_hsk_user_stats_v1';
+const CLOUD_FALLBACK_URL = 'https://api.restful-api.dev/objects/ff808181a09d98f701a1933b62dd78f6';
 
 export const AVATAR_OPTIONS = [
   '👩🏻‍🎓',
@@ -22,7 +23,15 @@ export const AVATAR_OPTIONS = [
   '🎯'
 ];
 
-// Simple hash for local storage
+/**
+ * Normalize username: ALWAYS case-insensitive and trimmed
+ * E.g. "Tampham", "tampham", "TAMPHAM " -> "tampham"
+ */
+export const normalizeUsername = (raw: string): string => {
+  return (raw || '').trim().toLowerCase();
+};
+
+// Simple hash for local cache
 export const simpleHash = (str: string): string => {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
@@ -35,7 +44,6 @@ export const simpleHash = (str: string): string => {
 
 /**
  * Safely merge guest progress with existing user progress
- * Ensures no learned words or high scores are ever lost
  */
 export const mergeStats = (baseStats: UserStats, incomingStats?: UserStats): UserStats => {
   if (!incomingStats) return { ...baseStats };
@@ -75,7 +83,7 @@ export const mergeStats = (baseStats: UserStats, incomingStats?: UserStats): Use
 };
 
 /**
- * Get all registered users from localStorage
+ * Get all registered users from local browser cache
  */
 export const getUsersDB = (): Record<string, UserProfile> => {
   try {
@@ -90,7 +98,7 @@ export const getUsersDB = (): Record<string, UserProfile> => {
 };
 
 /**
- * Save users database
+ * Save users database to local browser cache
  */
 export const saveUsersDB = (db: Record<string, UserProfile>): void => {
   try {
@@ -99,6 +107,134 @@ export const saveUsersDB = (db: Record<string, UserProfile>): void => {
     console.error('Failed to save users DB:', e);
   }
 };
+
+/**
+ * Cloud API Helper: Call Vercel serverless function with direct cloud DB fallback
+ */
+async function callCloudAuth(action: string, payload: any = {}): Promise<any> {
+  try {
+    // 1. Try local Vercel serverless API route first
+    const apiRes = await fetch(`/api/auth?action=${action}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action, ...payload })
+    });
+    if (apiRes.ok) {
+      return await apiRes.json();
+    }
+  } catch (e) {
+    // API route not reachable (e.g. running on Vite dev server without Vercel CLI)
+  }
+
+  // 2. Direct Cloud DB fallback
+  try {
+    const cloudRes = await fetch(CLOUD_FALLBACK_URL);
+    const cloudData = await cloudRes.json();
+    const users: Record<string, any> = cloudData?.data?.users || {};
+
+    if (action === 'get-user') {
+      const u = normalizeUsername(payload.username);
+      if (users[u]) {
+        return { success: true, user: users[u] };
+      }
+      return { success: false, error: 'Tài khoản không tồn tại.' };
+    }
+
+    if (action === 'login') {
+      const u = normalizeUsername(payload.username);
+      const user = users[u];
+      if (!user) {
+        return { success: false, error: 'Tài khoản không tồn tại. Vui lòng kiểm tra lại tên đăng nhập hoặc Đăng ký.' };
+      }
+      if (user.password !== payload.password) {
+        return { success: false, error: 'Mật khẩu không chính xác. Bạn có thể bấm "Quên mật khẩu?" để lấy lại.' };
+      }
+      user.lastLoginAt = new Date().toISOString();
+      if (payload.incomingStats) {
+        user.stats = mergeStats(user.stats, payload.incomingStats);
+      }
+      users[u] = user;
+
+      // Update cloud DB
+      fetch(CLOUD_FALLBACK_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'hsk_master_users_db', data: { users } })
+      }).catch(() => {});
+
+      return { success: true, user };
+    }
+
+    if (action === 'register') {
+      const u = normalizeUsername(payload.username);
+      if (users[u]) {
+        return { success: false, error: 'Tên đăng nhập này đã được sử dụng. Vui lòng chọn tên khác.' };
+      }
+      const newUser: UserProfile = {
+        id: `u_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+        username: u,
+        displayName: payload.displayName || u,
+        password: payload.password,
+        passwordHash: simpleHash(payload.password),
+        avatar: payload.avatar || '👩🏻‍🎓',
+        createdAt: new Date().toISOString(),
+        lastLoginAt: new Date().toISOString(),
+        stats: payload.stats || {
+          learnedWordIds: [],
+          favoriteWordIds: [],
+          practiceCount: {},
+          lastPracticed: {},
+          pronunciationScores: {}
+        }
+      };
+      users[u] = newUser;
+
+      await fetch(CLOUD_FALLBACK_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'hsk_master_users_db', data: { users } })
+      });
+
+      return { success: true, user: newUser };
+    }
+
+    if (action === 'sync-stats') {
+      const u = normalizeUsername(payload.username);
+      if (users[u]) {
+        users[u].stats = payload.stats;
+        users[u].lastLoginAt = new Date().toISOString();
+        fetch(CLOUD_FALLBACK_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: 'hsk_master_users_db', data: { users } })
+        }).catch(() => {});
+      }
+      return { success: true };
+    }
+
+    if (action === 'reset-password') {
+      const u = normalizeUsername(payload.username);
+      if (!users[u]) {
+        return { success: false, error: 'Không tìm thấy tài khoản.' };
+      }
+      users[u].password = payload.newPassword;
+      users[u].passwordHash = simpleHash(payload.newPassword);
+      users[u].lastLoginAt = new Date().toISOString();
+
+      await fetch(CLOUD_FALLBACK_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'hsk_master_users_db', data: { users } })
+      });
+
+      return { success: true, user: users[u] };
+    }
+  } catch (e: any) {
+    console.error('Direct cloud fallback error:', e);
+  }
+
+  return { success: false, error: 'Không thể kết nối đến máy chủ.' };
+}
 
 /**
  * Get all saved accounts on this device sorted by most recently used
@@ -113,7 +249,7 @@ export const getSavedAccountsOnDevice = (): UserProfile[] => {
 };
 
 /**
- * Delete an account from the device storage
+ * Delete an account from the local device storage
  */
 export const deleteAccountFromDevice = (userId: string): boolean => {
   try {
@@ -122,7 +258,6 @@ export const deleteAccountFromDevice = (userId: string): boolean => {
       delete db[userId];
       saveUsersDB(db);
 
-      // If active session was deleted, clear active session
       const activeId = localStorage.getItem(SESSION_KEY);
       if (activeId === userId) {
         localStorage.removeItem(SESSION_KEY);
@@ -155,13 +290,28 @@ export const getActiveUser = (): UserProfile | null => {
 };
 
 /**
- * Find user by username
+ * Find user by username (case-insensitive, checks local cache then cloud DB)
  */
-export const getUserByUsername = (usernameRaw: string): UserProfile | null => {
-  const username = usernameRaw.trim().toLowerCase();
+export const getUserByUsername = async (usernameRaw: string): Promise<UserProfile | null> => {
+  const username = normalizeUsername(usernameRaw);
+  if (!username) return null;
+
+  // 1. Check local cache
   const db = getUsersDB();
-  const userId = Object.keys(db).find((id) => db[id].username.toLowerCase() === username);
-  return userId ? db[userId] : null;
+  const localId = Object.keys(db).find((id) => normalizeUsername(db[id].username) === username);
+  if (localId && db[localId]) {
+    return db[localId];
+  }
+
+  // 2. Query cloud database
+  try {
+    const res = await callCloudAuth('get-user', { username });
+    if (res?.success && res?.user) {
+      return res.user;
+    }
+  } catch (e) {}
+
+  return null;
 };
 
 /**
@@ -191,20 +341,24 @@ export const loginSavedAccount = (
     localStorage.setItem(GUEST_STATS_KEY, JSON.stringify(user.stats));
   } catch (e) {}
 
+  // Sync to cloud in background
+  callCloudAuth('sync-stats', { username: user.username, stats: user.stats }).catch(() => {});
+
   return { success: true, user };
 };
 
 /**
  * Register a new user account with custom username & password
+ * Syncs to cloud so computer / other phones can log in immediately
  */
-export const registerUser = (
+export const registerUser = async (
   usernameRaw: string,
   passwordRaw: string,
   displayNameRaw: string,
   avatarChoice?: string,
   initialStats?: UserStats
-): { success: boolean; user?: UserProfile; error?: string } => {
-  const username = usernameRaw.trim().toLowerCase();
+): Promise<{ success: boolean; user?: UserProfile; error?: string }> => {
+  const username = normalizeUsername(usernameRaw);
   const displayName = displayNameRaw.trim() || username;
   const password = passwordRaw.trim();
 
@@ -215,20 +369,6 @@ export const registerUser = (
     return { success: false, error: 'Mật khẩu cần ít nhất 4 ký tự' };
   }
 
-  const db = getUsersDB();
-
-  // Check if username already exists
-  const existingId = Object.keys(db).find(
-    (id) => db[id].username.toLowerCase() === username
-  );
-  if (existingId) {
-    return {
-      success: false,
-      error: 'Tên đăng nhập này đã được sử dụng. Vui lòng chuyển sang tab Đăng Nhập hoặc chọn tên khác.'
-    };
-  }
-
-  const newId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   const avatar = avatarChoice || AVATAR_OPTIONS[0];
 
   const emptyStats: UserStats = {
@@ -238,72 +378,30 @@ export const registerUser = (
     lastPracticed: {},
     pronunciationScores: {}
   };
+  const stats = initialStats ? mergeStats(emptyStats, initialStats) : emptyStats;
 
-  const newUser: UserProfile = {
-    id: newId,
+  // Call Cloud Register
+  const cloudRes = await callCloudAuth('register', {
     username,
+    password,
     displayName,
-    password, // Stored to allow password reveal on answering quiz correctly
-    passwordHash: simpleHash(password),
     avatar,
-    createdAt: new Date().toISOString(),
-    lastLoginAt: new Date().toISOString(),
-    stats: initialStats ? mergeStats(emptyStats, initialStats) : emptyStats
-  };
+    stats
+  });
 
-  db[newId] = newUser;
-  saveUsersDB(db);
+  if (!cloudRes.success) {
+    return { success: false, error: cloudRes.error || 'Đăng ký không thành công.' };
+  }
 
-  try {
-    localStorage.setItem(SESSION_KEY, newId);
-    localStorage.setItem(GUEST_STATS_KEY, JSON.stringify(newUser.stats));
-  } catch (e) {}
+  const user: UserProfile = cloudRes.user;
 
-  return { success: true, user: newUser };
-};
-
-/**
- * Log in with existing username & password
- */
-export const loginUser = (
-  identifierRaw: string,
-  passwordRaw: string,
-  incomingStats?: UserStats
-): { success: boolean; user?: UserProfile; error?: string } => {
-  const identifier = identifierRaw.trim().toLowerCase();
-  const password = passwordRaw.trim();
-
+  // Save to local cache
   const db = getUsersDB();
-  const userId = Object.keys(db).find((id) => db[id].username.toLowerCase() === identifier);
-
-  if (!userId) {
-    return {
-      success: false,
-      error: 'Tài khoản không tồn tại trên thiết bị này. Vui lòng kiểm tra lại tên đăng nhập hoặc Đăng ký.'
-    };
-  }
-
-  const user = db[userId];
-  const expectedHash = simpleHash(password);
-
-  // Accept either plain password match or hash match
-  const isMatch = (user.password && user.password === password) || (user.passwordHash && user.passwordHash === expectedHash);
-
-  if (!isMatch) {
-    return { success: false, error: 'Mật khẩu không chính xác. Bạn có thể bấm "Quên mật khẩu?" để lấy lại.' };
-  }
-
-  // Update last login & merge incoming stats
-  user.lastLoginAt = new Date().toISOString();
-  if (incomingStats) {
-    user.stats = mergeStats(user.stats, incomingStats);
-  }
-
-  db[userId] = user;
+  db[user.id] = user;
   saveUsersDB(db);
 
   try {
-    localStorage.setItem(SESSION_KEY, userId);
+    localStorage.setItem(SESSION_KEY, user.id);
     localStorage.setItem(GUEST_STATS_KEY, JSON.stringify(user.stats));
   } catch (e) {}
 
@@ -311,37 +409,118 @@ export const loginUser = (
 };
 
 /**
+ * Log in with existing username & password
+ * Case-insensitive username, checks local cache then cloud DB
+ */
+export const loginUser = async (
+  identifierRaw: string,
+  passwordRaw: string,
+  incomingStats?: UserStats
+): Promise<{ success: boolean; user?: UserProfile; error?: string }> => {
+  const username = normalizeUsername(identifierRaw);
+  const password = passwordRaw.trim();
+
+  if (!username) {
+    return { success: false, error: 'Vui lòng nhập tên đăng nhập.' };
+  }
+  if (!password) {
+    return { success: false, error: 'Vui lòng nhập mật khẩu.' };
+  }
+
+  // 1. Try local cache first for instant response
+  const db = getUsersDB();
+  const localId = Object.keys(db).find((id) => normalizeUsername(db[id].username) === username);
+
+  if (localId) {
+    const localUser = db[localId];
+    const isMatch = (localUser.password && localUser.password === password) ||
+      (localUser.passwordHash && localUser.passwordHash === simpleHash(password));
+
+    if (isMatch) {
+      localUser.lastLoginAt = new Date().toISOString();
+      if (incomingStats) {
+        localUser.stats = mergeStats(localUser.stats, incomingStats);
+      }
+      db[localId] = localUser;
+      saveUsersDB(db);
+
+      try {
+        localStorage.setItem(SESSION_KEY, localId);
+        localStorage.setItem(GUEST_STATS_KEY, JSON.stringify(localUser.stats));
+      } catch (e) {}
+
+      // Background cloud sync
+      callCloudAuth('sync-stats', { username: localUser.username, stats: localUser.stats }).catch(() => {});
+
+      return { success: true, user: localUser };
+    }
+  }
+
+  // 2. Query Cloud Database (Enables logging in from a new computer or another device!)
+  const cloudRes = await callCloudAuth('login', {
+    username,
+    password,
+    incomingStats
+  });
+
+  if (cloudRes.success && cloudRes.user) {
+    const user: UserProfile = cloudRes.user;
+
+    // Cache to local device DB
+    db[user.id] = user;
+    saveUsersDB(db);
+
+    try {
+      localStorage.setItem(SESSION_KEY, user.id);
+      localStorage.setItem(GUEST_STATS_KEY, JSON.stringify(user.stats));
+    } catch (e) {}
+
+    return { success: true, user };
+  }
+
+  return {
+    success: false,
+    error: cloudRes.error || 'Tài khoản không tồn tại hoặc mật khẩu không chính xác.'
+  };
+};
+
+/**
  * Reset password for a username after completing quiz challenge
  */
-export const resetUserPassword = (
+export const resetUserPassword = async (
   usernameRaw: string,
   newPasswordRaw: string
-): { success: boolean; user?: UserProfile; error?: string } => {
-  const username = usernameRaw.trim().toLowerCase();
+): Promise<{ success: boolean; user?: UserProfile; error?: string }> => {
+  const username = normalizeUsername(usernameRaw);
   const newPassword = newPasswordRaw.trim();
 
   if (newPassword.length < 4) {
     return { success: false, error: 'Mật khẩu mới cần ít nhất 4 ký tự' };
   }
 
-  const db = getUsersDB();
-  const userId = Object.keys(db).find((id) => db[id].username.toLowerCase() === username);
+  // Update cloud
+  const cloudRes = await callCloudAuth('reset-password', {
+    username,
+    newPassword
+  });
 
-  if (!userId) {
-    return { success: false, error: 'Không tìm thấy tài khoản để đặt lại mật khẩu.' };
+  if (!cloudRes.success) {
+    return { success: false, error: cloudRes.error || 'Không thể đổi mật khẩu.' };
   }
 
-  db[userId].password = newPassword;
-  db[userId].passwordHash = simpleHash(newPassword);
-  db[userId].lastLoginAt = new Date().toISOString();
+  const updatedUser: UserProfile = cloudRes.user;
+
+  // Update local cache
+  const db = getUsersDB();
+  db[updatedUser.id] = updatedUser;
   saveUsersDB(db);
 
   try {
-    localStorage.setItem(SESSION_KEY, userId);
-    localStorage.setItem(GUEST_STATS_KEY, JSON.stringify(db[userId].stats));
+    localStorage.setItem(SESSION_KEY, updatedUser.id);
+    localStorage.setItem(GUEST_STATS_KEY, JSON.stringify(updatedUser.stats));
   } catch (e) {}
 
-  return { success: true, user: db[userId] };
+  return { success: true, user: updatedUser };
 };
 
 /**
@@ -355,13 +534,11 @@ export interface RecoveryQuizQuestion {
 }
 
 export const generateRecoveryQuizQuestion = (allWords: HSKWord[]): RecoveryQuizQuestion => {
-  // Prefer HSK 1 or 2 words so recovery questions are accessible and clear
   const pool = allWords.filter((w) => w.level === 1 || w.level === 2);
   const activePool = pool.length >= 10 ? pool : allWords;
 
   const targetWord = activePool[Math.floor(Math.random() * activePool.length)];
 
-  // Get 3 distractors
   const otherWords = activePool.filter((w) => w.id !== targetWord.id && w.meaning !== targetWord.meaning);
   const shuffledOthers = [...otherWords].sort(() => Math.random() - 0.5);
   const distractors = shuffledOthers.slice(0, 3);
@@ -404,12 +581,10 @@ export const exportAccountSyncKey = (userId: string): string | null => {
         username: user.username,
         displayName: user.displayName,
         password: user.password,
-        passwordHash: user.passwordHash,
         avatar: user.avatar,
         stats: user.stats
       }
     });
-    // UTF-8 safe base64
     const encoded = btoa(encodeURIComponent(payload));
     return `HSK_SYNC_${encoded}`;
   } catch (e) {
@@ -441,10 +616,9 @@ export const importAccountSyncKey = (
 
     const importedUser: UserProfile = {
       id: data.user.id || `user_${Date.now()}`,
-      username: data.user.username,
+      username: normalizeUsername(data.user.username),
       displayName: data.user.displayName || data.user.username,
       password: data.user.password,
-      passwordHash: data.user.passwordHash,
       avatar: data.user.avatar || '👩🏻‍🎓',
       createdAt: data.user.createdAt || new Date().toISOString(),
       lastLoginAt: new Date().toISOString(),
@@ -459,6 +633,15 @@ export const importAccountSyncKey = (
       localStorage.setItem(SESSION_KEY, importedUser.id);
       localStorage.setItem(GUEST_STATS_KEY, JSON.stringify(importedUser.stats));
     } catch (e) {}
+
+    // Background sync to cloud
+    callCloudAuth('register', {
+      username: importedUser.username,
+      password: importedUser.password,
+      displayName: importedUser.displayName,
+      avatar: importedUser.avatar,
+      stats: importedUser.stats
+    }).catch(() => {});
 
     return { success: true, user: importedUser };
   } catch (e: any) {
@@ -478,7 +661,7 @@ export const logoutUser = (): void => {
 };
 
 /**
- * Update stats for active logged in user
+ * Update stats for active logged in user (local + background cloud sync)
  */
 export const updateActiveUserStats = (stats: UserStats): void => {
   try {
@@ -489,6 +672,12 @@ export const updateActiveUserStats = (stats: UserStats): void => {
     if (db[activeId]) {
       db[activeId].stats = stats;
       saveUsersDB(db);
+
+      // Async cloud sync
+      callCloudAuth('sync-stats', {
+        username: db[activeId].username,
+        stats
+      }).catch(() => {});
     }
   } catch (e) {
     console.error('Failed to update user stats:', e);

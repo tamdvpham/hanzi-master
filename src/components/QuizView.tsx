@@ -551,7 +551,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
     const isLastQuestion = currentIndex === questions.length - 1;
 
     return (
-      <div className="max-w-xl mx-auto px-2.5 sm:px-4 py-2 sm:py-3 animate-fade-in flex flex-col h-[calc(100dvh-56px)] max-h-[calc(100dvh-56px)] justify-between overflow-hidden">
+      <div className="max-w-xl mx-auto px-2.5 sm:px-4 pt-1.5 sm:pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] animate-fade-in flex flex-col h-[calc(100dvh-56px)] max-h-[calc(100dvh-56px)] justify-between overflow-hidden">
         {/* Header HUD: Progress, Timer & Streak */}
         <div className="flex items-center justify-between gap-3 shrink-0 mb-1">
           <button

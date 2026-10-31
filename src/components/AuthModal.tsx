@@ -122,14 +122,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   // Standard Login / Register submit
-  const handleAuthSubmit = (e: React.FormEvent) => {
+  const handleAuthSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
     setIsLoading(true);
 
     try {
       if (view === 'register') {
-        const res = registerUser(
+        const res = await registerUser(
           username,
           password,
           displayName || username,
@@ -143,7 +143,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           setErrorMessage(res.error || 'Đăng ký không thành công.');
         }
       } else {
-        const res = loginUser(username, password, currentGuestStats);
+        const res = await loginUser(username, password, currentGuestStats);
         if (res.success && res.user) {
           onAuthSuccess(res.user);
           onClose();
@@ -159,23 +159,30 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   // STEP 1 of Forgot Password: check if username exists and start quiz
-  const handleStartRecovery = (e: React.FormEvent) => {
+  const handleStartRecovery = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+    setIsLoading(true);
 
-    const user = getUserByUsername(recoveryUsername);
-    if (!user) {
-      setErrorMessage(
-        'Không tìm thấy tài khoản này trên thiết bị. Bạn có thể kiểm tra lại tên đăng nhập hoặc dùng "Nhập từ thiết bị khác" nếu tài khoản được tạo ở máy khác.'
-      );
-      return;
+    try {
+      const user = await getUserByUsername(recoveryUsername);
+      if (!user) {
+        setErrorMessage(
+          'Không tìm thấy tài khoản này. Vui lòng kiểm tra lại tên đăng nhập.'
+        );
+        return;
+      }
+
+      setTargetUser(user);
+      setQuizQuestion(generateRecoveryQuizQuestion(HSK_WORDS));
+      setSelectedQuizOptionId(null);
+      setQuizFeedback(null);
+      setView('forgot-quiz');
+    } catch (err: any) {
+      setErrorMessage(err?.message || 'Có lỗi xảy ra.');
+    } finally {
+      setIsLoading(false);
     }
-
-    setTargetUser(user);
-    setQuizQuestion(generateRecoveryQuizQuestion(HSK_WORDS));
-    setSelectedQuizOptionId(null);
-    setQuizFeedback(null);
-    setView('forgot-quiz');
   };
 
   // STEP 2 of Forgot Password: user answers Hanzi multiple-choice quiz
@@ -217,7 +224,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   // STEP 3 of Forgot Password: Save new password and auto login
-  const handleCompleteRecovery = (e?: React.FormEvent) => {
+  const handleCompleteRecovery = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!targetUser) return;
 
@@ -226,7 +233,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
     try {
       if (newPassword && newPassword !== targetUser.password) {
-        const res = resetUserPassword(targetUser.username, newPassword);
+        const res = await resetUserPassword(targetUser.username, newPassword);
         if (res.success && res.user) {
           onAuthSuccess(res.user);
           onClose();
@@ -235,7 +242,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         }
       } else {
         // Log in with existing password
-        const res = loginUser(targetUser.username, targetUser.password || password, currentGuestStats);
+        const res = await loginUser(targetUser.username, targetUser.password || password, currentGuestStats);
         if (res.success && res.user) {
           onAuthSuccess(res.user);
           onClose();
