@@ -89,12 +89,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   <Edit3 className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <p className="text-xs text-purple-200 font-mono">
-                @{user.username}
+              <p className="text-xs text-purple-200 font-mono truncate">
+                {user.email || `@${user.username}`}
               </p>
               <div className="mt-1 flex items-center gap-1 text-[11px] text-emerald-300 font-semibold">
                 <Sparkles className="w-3 h-3" />
-                <span>Đã lưu trên thiết bị này</span>
+                <span>{user.authProvider === 'gmail' ? 'Tài khoản Gmail • Đã lưu' : 'Đã lưu trên thiết bị này'}</span>
               </div>
             </div>
           </div>

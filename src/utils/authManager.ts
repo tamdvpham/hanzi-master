@@ -34,6 +34,47 @@ const simpleHash = (str: string): string => {
 };
 
 /**
+ * Safely merge guest progress with existing user progress
+ * Ensures no learned words or high scores are ever lost
+ */
+export const mergeStats = (baseStats: UserStats, incomingStats?: UserStats): UserStats => {
+  if (!incomingStats) return { ...baseStats };
+
+  const learnedWordIds = Array.from(
+    new Set([...(baseStats.learnedWordIds || []), ...(incomingStats.learnedWordIds || [])])
+  );
+
+  const favoriteWordIds = Array.from(
+    new Set([...(baseStats.favoriteWordIds || []), ...(incomingStats.favoriteWordIds || [])])
+  );
+
+  const practiceCount: Record<string, number> = { ...(baseStats.practiceCount || {}) };
+  Object.entries(incomingStats.practiceCount || {}).forEach(([k, v]) => {
+    practiceCount[k] = (practiceCount[k] || 0) + v;
+  });
+
+  const lastPracticed: Record<string, string> = { ...(baseStats.lastPracticed || {}) };
+  Object.entries(incomingStats.lastPracticed || {}).forEach(([k, v]) => {
+    if (!lastPracticed[k] || new Date(v) > new Date(lastPracticed[k])) {
+      lastPracticed[k] = v;
+    }
+  });
+
+  const pronunciationScores: Record<string, number> = { ...(baseStats.pronunciationScores || {}) };
+  Object.entries(incomingStats.pronunciationScores || {}).forEach(([k, v]) => {
+    pronunciationScores[k] = Math.max(pronunciationScores[k] || 0, v);
+  });
+
+  return {
+    learnedWordIds,
+    favoriteWordIds,
+    practiceCount,
+    lastPracticed,
+    pronunciationScores
+  };
+};
+
+/**
  * Get all registered users from localStorage
  */
 export const getUsersDB = (): Record<string, UserProfile> => {
@@ -60,6 +101,41 @@ export const saveUsersDB = (db: Record<string, UserProfile>): void => {
 };
 
 /**
+ * Get all saved accounts on this device sorted by most recently used
+ */
+export const getSavedAccountsOnDevice = (): UserProfile[] => {
+  const db = getUsersDB();
+  return Object.values(db).sort((a, b) => {
+    const timeA = new Date(a.lastLoginAt || 0).getTime();
+    const timeB = new Date(b.lastLoginAt || 0).getTime();
+    return timeB - timeA;
+  });
+};
+
+/**
+ * Delete an account from the device storage
+ */
+export const deleteAccountFromDevice = (userId: string): boolean => {
+  try {
+    const db = getUsersDB();
+    if (db[userId]) {
+      delete db[userId];
+      saveUsersDB(db);
+
+      // If active session was deleted, clear active session
+      const activeId = localStorage.getItem(SESSION_KEY);
+      if (activeId === userId) {
+        localStorage.removeItem(SESSION_KEY);
+      }
+      return true;
+    }
+  } catch (e) {
+    console.error('Failed to delete account:', e);
+  }
+  return false;
+};
+
+/**
  * Get currently active logged-in user on this device/phone
  */
 export const getActiveUser = (): UserProfile | null => {
@@ -79,7 +155,133 @@ export const getActiveUser = (): UserProfile | null => {
 };
 
 /**
- * Register a new user account
+ * Instant 1-Click Login / Register with Gmail
+ * Auto-detects whether the Gmail was used before:
+ * - If already exists: logs in immediately, merges any guest progress, restores all data.
+ * - If new: automatically creates profile, attaches guest progress, saves, and logs in.
+ * Guaranteed zero password lockout!
+ */
+export const loginWithGmail = (
+  rawEmail: string,
+  incomingStats?: UserStats
+): { success: boolean; user?: UserProfile; isNew?: boolean; error?: string } => {
+  let email = rawEmail.trim().toLowerCase();
+
+  // If user only typed username, auto-append @gmail.com
+  if (!email.includes('@')) {
+    email = `${email}@gmail.com`;
+  }
+
+  // Basic email pattern validation
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return { success: false, error: 'Địa chỉ Gmail không hợp lệ. Vui lòng kiểm tra lại.' };
+  }
+
+  const db = getUsersDB();
+
+  // Search if user exists by email or matching username
+  const existingId = Object.keys(db).find((id) => {
+    const u = db[id];
+    return (
+      u.email?.toLowerCase() === email ||
+      u.username?.toLowerCase() === email ||
+      u.username?.toLowerCase() === email.replace('@gmail.com', '')
+    );
+  });
+
+  if (existingId) {
+    const user = db[existingId];
+    user.email = email;
+    user.lastLoginAt = new Date().toISOString();
+    // Merge stats with incoming progress so no learned words are lost
+    user.stats = mergeStats(user.stats, incomingStats);
+
+    db[existingId] = user;
+    saveUsersDB(db);
+
+    try {
+      localStorage.setItem(SESSION_KEY, existingId);
+      localStorage.setItem(GUEST_STATS_KEY, JSON.stringify(user.stats));
+    } catch (e) {}
+
+    return { success: true, user, isNew: false };
+  }
+
+  // Create new profile for this Gmail
+  const newId = `gmail_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+  const emailPrefix = email.split('@')[0];
+  // Capitalize display name: e.g. "minh.tam" -> "Minh Tam"
+  const formattedName = emailPrefix
+    .replace(/[._-]/g, ' ')
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+
+  // Assign random fun avatar
+  const avatar = AVATAR_OPTIONS[Math.floor(Math.random() * AVATAR_OPTIONS.length)];
+
+  const emptyStats: UserStats = {
+    learnedWordIds: [],
+    favoriteWordIds: [],
+    practiceCount: {},
+    lastPracticed: {},
+    pronunciationScores: {}
+  };
+
+  const newUser: UserProfile = {
+    id: newId,
+    username: emailPrefix,
+    email,
+    authProvider: 'gmail',
+    displayName: formattedName || 'Học viên HSK',
+    avatar,
+    createdAt: new Date().toISOString(),
+    lastLoginAt: new Date().toISOString(),
+    stats: incomingStats ? mergeStats(emptyStats, incomingStats) : emptyStats
+  };
+
+  db[newId] = newUser;
+  saveUsersDB(db);
+
+  try {
+    localStorage.setItem(SESSION_KEY, newId);
+    localStorage.setItem(GUEST_STATS_KEY, JSON.stringify(newUser.stats));
+  } catch (e) {}
+
+  return { success: true, user: newUser, isNew: true };
+};
+
+/**
+ * 1-Tap Login with an existing saved account on device
+ */
+export const loginSavedAccount = (
+  userId: string,
+  incomingStats?: UserStats
+): { success: boolean; user?: UserProfile; error?: string } => {
+  const db = getUsersDB();
+  const user = db[userId];
+
+  if (!user) {
+    return { success: false, error: 'Tài khoản không tìm thấy trên thiết bị.' };
+  }
+
+  user.lastLoginAt = new Date().toISOString();
+  if (incomingStats) {
+    user.stats = mergeStats(user.stats, incomingStats);
+  }
+
+  db[userId] = user;
+  saveUsersDB(db);
+
+  try {
+    localStorage.setItem(SESSION_KEY, userId);
+    localStorage.setItem(GUEST_STATS_KEY, JSON.stringify(user.stats));
+  } catch (e) {}
+
+  return { success: true, user };
+};
+
+/**
+ * Register a new user account with custom username & password
  */
 export const registerUser = (
   usernameRaw: string,
@@ -103,10 +305,13 @@ export const registerUser = (
 
   // Check if username already exists
   const existingId = Object.keys(db).find(
-    (id) => db[id].username.toLowerCase() === username
+    (id) => db[id].username.toLowerCase() === username || db[id].email?.toLowerCase() === username
   );
   if (existingId) {
-    return { success: false, error: 'Tên đăng nhập này đã được sử dụng. Vui lòng chọn tên khác hoặc Đăng nhập.' };
+    return {
+      success: false,
+      error: 'Tên đăng nhập này đã được sử dụng. Vui lòng chuyển sang tab Đăng Nhập hoặc chọn tên khác.'
+    };
   }
 
   const newId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
@@ -123,42 +328,51 @@ export const registerUser = (
   const newUser: UserProfile = {
     id: newId,
     username,
+    authProvider: 'password',
     displayName,
     passwordHash: simpleHash(password),
     avatar,
     createdAt: new Date().toISOString(),
     lastLoginAt: new Date().toISOString(),
-    stats: initialStats ? { ...initialStats } : emptyStats
+    stats: initialStats ? mergeStats(emptyStats, initialStats) : emptyStats
   };
 
   db[newId] = newUser;
   saveUsersDB(db);
 
-  // Set as active session (auto login on this phone/computer)
   try {
     localStorage.setItem(SESSION_KEY, newId);
+    localStorage.setItem(GUEST_STATS_KEY, JSON.stringify(newUser.stats));
   } catch (e) {}
 
   return { success: true, user: newUser };
 };
 
 /**
- * Log in with existing username & password
+ * Log in with existing username/email & password
  */
 export const loginUser = (
-  usernameRaw: string,
-  passwordRaw: string
+  identifierRaw: string,
+  passwordRaw: string,
+  incomingStats?: UserStats
 ): { success: boolean; user?: UserProfile; error?: string } => {
-  const username = usernameRaw.trim().toLowerCase();
+  const identifier = identifierRaw.trim().toLowerCase();
   const password = passwordRaw.trim();
 
   const db = getUsersDB();
-  const userId = Object.keys(db).find(
-    (id) => db[id].username.toLowerCase() === username
-  );
+  const userId = Object.keys(db).find((id) => {
+    const u = db[id];
+    return (
+      u.username.toLowerCase() === identifier ||
+      u.email?.toLowerCase() === identifier
+    );
+  });
 
   if (!userId) {
-    return { success: false, error: 'Tài khoản không tồn tại. Vui lòng kiểm tra lại hoặc Đăng ký.' };
+    return {
+      success: false,
+      error: 'Tài khoản không tồn tại. Vui lòng kiểm tra lại hoặc Đăng nhập nhanh bằng Gmail.'
+    };
   }
 
   const user = db[userId];
@@ -168,14 +382,18 @@ export const loginUser = (
     return { success: false, error: 'Mật khẩu không chính xác. Vui lòng thử lại.' };
   }
 
-  // Update last login
+  // Update last login & merge incoming stats
   user.lastLoginAt = new Date().toISOString();
+  if (incomingStats) {
+    user.stats = mergeStats(user.stats, incomingStats);
+  }
+
   db[userId] = user;
   saveUsersDB(db);
 
-  // Set active session
   try {
     localStorage.setItem(SESSION_KEY, userId);
+    localStorage.setItem(GUEST_STATS_KEY, JSON.stringify(user.stats));
   } catch (e) {}
 
   return { success: true, user };

@@ -86,7 +86,17 @@ export const App: React.FC = () => {
 
   const handleLogout = () => {
     setCurrentUser(null);
-    setUserStats(getInitialStats());
+    const emptyStats: UserStats = {
+      learnedWordIds: [],
+      favoriteWordIds: [],
+      practiceCount: {},
+      lastPracticed: {},
+      pronunciationScores: {}
+    };
+    setUserStats(emptyStats);
+    try {
+      localStorage.removeItem(STATS_STORAGE_KEY);
+    } catch (e) {}
   };
 
   const handleUserUpdated = (updated: UserProfile) => {
