@@ -263,9 +263,9 @@ export const QuizView: React.FC<QuizViewProps> = ({
   // ----------------------------------------------------------------------
   if (gameState === 'lobby') {
     return (
-      <div className="max-w-2xl mx-auto px-3 sm:px-4 py-2 sm:py-4 animate-fade-in w-full">
+      <div className="max-w-xl mx-auto px-2.5 sm:px-4 py-2 sm:py-3 animate-fade-in w-full h-[calc(100dvh-56px)] max-h-[calc(100dvh-56px)] flex flex-col justify-between overflow-hidden">
         {/* Sleek Top Navigation & Header */}
-        <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
+        <div className="flex items-center justify-between gap-2 shrink-0 mb-1 sm:mb-2">
           <button
             onClick={onBackToStudy}
             className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white text-slate-700 hover:bg-slate-100 text-xs font-semibold border border-slate-200 transition-colors shadow-xs active:scale-95 shrink-0"
@@ -303,10 +303,10 @@ export const QuizView: React.FC<QuizViewProps> = ({
         </div>
 
         {/* Main Settings Card: Compact, 1-screen fit */}
-        <div className="bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-lg border border-slate-200 space-y-3 sm:space-y-4">
+        <div className="flex-1 min-h-0 flex flex-col justify-between bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-md border border-slate-200 overflow-y-auto">
           {/* 1. Chọn cấp độ HSK (Siêu gọn trên 1 hàng 5 tab) */}
           <div>
-            <div className="flex items-center justify-between mb-1.5 px-0.5">
+            <div className="flex items-center justify-between mb-1 px-0.5">
               <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                 <Layers className="w-3.5 h-3.5 text-purple-600" />
                 <span>1. Chọn cấp độ HSK</span>
@@ -346,24 +346,24 @@ export const QuizView: React.FC<QuizViewProps> = ({
 
           {/* 2. Chọn 1 trong 4 chế độ thử thách (2x2 Grid compact) */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1.5 px-0.5 flex items-center gap-1.5">
+            <label className="block text-xs font-bold text-slate-700 mb-1 px-0.5 flex items-center gap-1.5">
               <Gamepad2 className="w-3.5 h-3.5 text-purple-600" />
               <span>2. Chọn chế độ trắc nghiệm</span>
             </label>
 
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-2 gap-1.5 sm:gap-2">
               {/* Mode 1: Đoán Nghĩa */}
               <button
                 type="button"
                 onClick={() => setSelectedMode('meaning')}
-                className={`p-2.5 rounded-xl border transition-all flex items-center gap-2.5 text-left active:scale-95 ${
+                className={`p-2 sm:p-2.5 rounded-xl border transition-all flex items-center gap-2 text-left active:scale-95 ${
                   selectedMode === 'meaning'
                     ? 'border-purple-600 bg-purple-50/70 shadow-xs ring-1 ring-purple-300'
                     : 'border-slate-200 hover:border-slate-300 bg-slate-50/50 hover:bg-white'
                 }`}
               >
-                <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
-                  <BookOpen className="w-4 h-4" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
+                  <BookOpen className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
                 <div className="min-w-0">
                   <h4 className="text-xs font-bold text-slate-800 leading-tight">Đoán Nghĩa</h4>
@@ -377,14 +377,14 @@ export const QuizView: React.FC<QuizViewProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedMode('audio')}
-                className={`p-2.5 rounded-xl border transition-all flex items-center gap-2.5 text-left active:scale-95 ${
+                className={`p-2 sm:p-2.5 rounded-xl border transition-all flex items-center gap-2 text-left active:scale-95 ${
                   selectedMode === 'audio'
                     ? 'border-emerald-600 bg-emerald-50/70 shadow-xs ring-1 ring-emerald-300'
                     : 'border-slate-200 hover:border-slate-300 bg-slate-50/50 hover:bg-white'
                 }`}
               >
-                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                  <Headphones className="w-4 h-4" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                  <Headphones className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
                 <div className="min-w-0">
                   <h4 className="text-xs font-bold text-slate-800 leading-tight">Luyện Nghe</h4>
@@ -398,14 +398,14 @@ export const QuizView: React.FC<QuizViewProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedMode('pinyin')}
-                className={`p-2.5 rounded-xl border transition-all flex items-center gap-2.5 text-left active:scale-95 ${
+                className={`p-2 sm:p-2.5 rounded-xl border transition-all flex items-center gap-2 text-left active:scale-95 ${
                   selectedMode === 'pinyin'
                     ? 'border-blue-600 bg-blue-50/70 shadow-xs ring-1 ring-blue-300'
                     : 'border-slate-200 hover:border-slate-300 bg-slate-50/50 hover:bg-white'
                 }`}
               >
-                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
-                  <SpellCheck className="w-4 h-4" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+                  <SpellCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
                 <div className="min-w-0">
                   <h4 className="text-xs font-bold text-slate-800 leading-tight">Đoán Pinyin</h4>
@@ -419,14 +419,14 @@ export const QuizView: React.FC<QuizViewProps> = ({
               <button
                 type="button"
                 onClick={() => setSelectedMode('speed')}
-                className={`p-2.5 rounded-xl border transition-all flex items-center gap-2.5 text-left active:scale-95 ${
+                className={`p-2 sm:p-2.5 rounded-xl border transition-all flex items-center gap-2 text-left active:scale-95 ${
                   selectedMode === 'speed'
                     ? 'border-amber-500 bg-amber-50/70 shadow-xs ring-1 ring-amber-300'
                     : 'border-slate-200 hover:border-slate-300 bg-slate-50/50 hover:bg-white'
                 }`}
               >
-                <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-                  <Zap className="w-4 h-4" />
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                  <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </div>
                 <div className="min-w-0">
                   <h4 className="text-xs font-bold text-slate-800 leading-tight">Tốc Độ 60s</h4>
@@ -441,7 +441,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
           {/* 3. Số lượng câu hỏi (Single Row 5 Pills) */}
           {selectedMode !== 'speed' && (
             <div>
-              <div className="flex items-center justify-between mb-1.5 px-0.5">
+              <div className="flex items-center justify-between mb-1 px-0.5">
                 <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5 text-purple-600" />
                   <span>3. Số lượng câu hỏi</span>
@@ -451,7 +451,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
                 </span>
               </div>
 
-              <div className="grid grid-cols-5 gap-1.5">
+              <div className="grid grid-cols-5 gap-1 sm:gap-1.5">
                 {[
                   { label: '10 câu', val: 10 },
                   { label: '20 câu', val: 20 },
@@ -463,7 +463,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
                     key={item.val}
                     type="button"
                     onClick={() => setQuestionCount(item.val)}
-                    className={`py-1.5 px-1 rounded-xl text-xs font-bold border transition-all text-center truncate ${
+                    className={`py-1.5 px-0.5 sm:px-1 rounded-xl text-xs font-bold border transition-all text-center truncate ${
                       questionCount === item.val
                         ? 'bg-slate-900 text-white border-slate-900 shadow-xs ring-1 ring-slate-400'
                         : 'bg-slate-50 hover:bg-white text-slate-700 border-slate-200'
@@ -496,28 +496,28 @@ export const QuizView: React.FC<QuizViewProps> = ({
   }
 
   // ----------------------------------------------------------------------
-  // VIEW 2: ACTIVE PLAYING SCREEN
+  // VIEW 2: ACTIVE PLAYING SCREEN (Zero bottom clipping, 100% viewport fit)
   // ----------------------------------------------------------------------
   if (gameState === 'playing' && currentQ) {
     const isLastQuestion = currentIndex === questions.length - 1;
 
     return (
-      <div className="max-w-2xl mx-auto px-4 py-6 sm:py-8 animate-fade-in flex flex-col min-h-[80vh]">
+      <div className="max-w-xl mx-auto px-2.5 sm:px-4 py-2 sm:py-3 animate-fade-in flex flex-col h-[calc(100dvh-56px)] max-h-[calc(100dvh-56px)] justify-between overflow-hidden">
         {/* Header HUD: Progress, Timer & Streak */}
-        <div className="flex items-center justify-between gap-4 mb-4">
+        <div className="flex items-center justify-between gap-3 shrink-0 mb-1">
           <button
             onClick={() => setGameState('lobby')}
-            className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-white border border-transparent hover:border-slate-200 transition-colors"
+            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-white border border-transparent hover:border-slate-200 transition-colors"
             title="Thoát trò chơi"
           >
             <ChevronLeft className="w-5 h-5" />
           </button>
 
           {/* Question Counter / Timer */}
-          <div className="flex-1 flex items-center justify-center gap-3">
+          <div className="flex-1 flex items-center justify-center gap-2.5">
             {selectedMode === 'speed' ? (
               <div
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
+                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border ${
                   timeLeft <= 10
                     ? 'bg-rose-100 text-rose-700 border-rose-300 animate-pulse'
                     : 'bg-amber-100 text-amber-800 border-amber-200'
@@ -534,7 +534,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
 
             {/* Streak Counter */}
             {streak >= 2 && (
-              <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-rose-500 text-white font-black text-xs shadow-sm animate-bounce">
+              <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-rose-500 text-white font-black text-xs shadow-sm animate-bounce">
                 <Flame className="w-3.5 h-3.5 fill-white" />
                 <span>Streak {streak}!</span>
               </div>
@@ -543,15 +543,15 @@ export const QuizView: React.FC<QuizViewProps> = ({
 
           {/* Current Score */}
           <div className="text-right">
-            <span className="text-xs text-slate-400 font-semibold block">Điểm</span>
-            <span className="text-base font-black text-purple-700">{score}</span>
+            <span className="text-[10px] text-slate-400 font-semibold block leading-none">Điểm</span>
+            <span className="text-sm sm:text-base font-black text-purple-700 leading-tight">{score}</span>
           </div>
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-slate-200 rounded-full h-1.5 mb-6 overflow-hidden">
+        <div className="w-full bg-slate-200 rounded-full h-1 sm:h-1.5 mb-2 overflow-hidden shrink-0">
           <div
-            className="bg-purple-600 h-1.5 rounded-full transition-all duration-300 ease-out"
+            className="bg-purple-600 h-full rounded-full transition-all duration-300 ease-out"
             style={{
               width: `${((currentIndex + 1) / questions.length) * 100}%`
             }}
@@ -559,8 +559,8 @@ export const QuizView: React.FC<QuizViewProps> = ({
         </div>
 
         {/* Question Card */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-100 text-center flex flex-col items-center mb-6">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold text-purple-700 bg-purple-50 border border-purple-200 mb-4">
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-5 shadow-sm border border-slate-100 text-center flex flex-col items-center justify-center shrink mb-2 min-h-0">
+          <div className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] sm:text-xs font-bold text-purple-700 bg-purple-50 border border-purple-200 mb-1.5">
             {currentQ.mode === 'meaning' && <BookOpen className="w-3.5 h-3.5" />}
             {currentQ.mode === 'audio' && <Headphones className="w-3.5 h-3.5" />}
             {currentQ.mode === 'pinyin' && <SpellCheck className="w-3.5 h-3.5" />}
@@ -570,30 +570,30 @@ export const QuizView: React.FC<QuizViewProps> = ({
           {/* Prompt Display Area */}
           {currentQ.mode === 'audio' ? (
             /* Audio Mode: Sound Button */
-            <div className="my-4 flex flex-col items-center">
+            <div className="my-2 flex flex-col items-center">
               <button
                 onClick={() => playChineseAudio(currentQ.word.hanzi)}
-                className="w-24 h-24 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center shadow-xl shadow-emerald-200 hover:scale-105 active:scale-95 transition-transform"
+                className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center shadow-md shadow-emerald-200 hover:scale-105 active:scale-95 transition-transform"
               >
-                <Volume2 className="w-10 h-10 animate-pulse" />
+                <Volume2 className="w-8 h-8 animate-pulse" />
               </button>
-              <span className="text-xs text-slate-400 font-medium mt-3">
+              <span className="text-[11px] text-slate-400 font-medium mt-1.5">
                 Bấm vào loa để nghe lại âm thanh
               </span>
             </div>
           ) : (
             /* Meaning or Pinyin Mode: Big Hanzi */
-            <div className="my-2 flex flex-col items-center">
-              <div className="text-5xl sm:text-6xl font-chinese font-bold text-slate-900 tracking-wider">
+            <div className="my-1 flex flex-col items-center">
+              <div className="text-3xl sm:text-5xl font-chinese font-bold text-slate-900 tracking-wider">
                 {currentQ.promptDisplay}
               </div>
 
-              {/* Optional Speaker Icon for Quick Listen */}
+              {/* Speaker Icon for Quick Listen */}
               <button
                 onClick={() => playChineseAudio(currentQ.word.hanzi)}
-                className="mt-3 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold transition-colors"
+                className="mt-1.5 inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] font-semibold transition-colors"
               >
-                <Volume2 className="w-3.5 h-3.5 text-purple-600" />
+                <Volume2 className="w-3 h-3 text-purple-600" />
                 <span>Nghe phát âm</span>
               </button>
             </div>
@@ -601,7 +601,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
         </div>
 
         {/* 4 Answer Options */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2.5 mb-2 shrink-0">
           {currentQ.options.map((option, idx) => {
             const letter = ['A', 'B', 'C', 'D'][idx];
             const isSelected = selectedOptionId === option.id;
@@ -610,9 +610,9 @@ export const QuizView: React.FC<QuizViewProps> = ({
 
             if (isAnswerRevealed) {
               if (option.isCorrect) {
-                btnStyle = 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-200 ring-2 ring-emerald-300';
+                btnStyle = 'bg-emerald-500 border-emerald-500 text-white shadow-md shadow-emerald-200 ring-2 ring-emerald-300';
               } else if (isSelected && !option.isCorrect) {
-                btnStyle = 'bg-rose-500 border-rose-500 text-white shadow-lg shadow-rose-200';
+                btnStyle = 'bg-rose-500 border-rose-500 text-white shadow-md shadow-rose-200';
               } else {
                 btnStyle = 'bg-slate-50 border-slate-200 text-slate-400 opacity-60';
               }
@@ -623,10 +623,10 @@ export const QuizView: React.FC<QuizViewProps> = ({
                 key={option.id}
                 onClick={() => handleSelectOption(option.id)}
                 disabled={isAnswerRevealed}
-                className={`p-4 rounded-2xl border-2 text-left font-semibold transition-all flex items-center gap-3.5 active:scale-[0.99] ${btnStyle}`}
+                className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border-2 text-left font-semibold transition-all flex items-center gap-2.5 active:scale-[0.99] ${btnStyle}`}
               >
                 <div
-                  className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs shrink-0 ${
+                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
                     isAnswerRevealed && option.isCorrect
                       ? 'bg-white text-emerald-700'
                       : isAnswerRevealed && isSelected && !option.isCorrect
@@ -644,9 +644,9 @@ export const QuizView: React.FC<QuizViewProps> = ({
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="text-sm sm:text-base font-bold truncate">{option.text}</div>
+                  <div className="text-xs sm:text-sm font-bold truncate">{option.text}</div>
                   {option.subText && isAnswerRevealed && (
-                    <div className="text-xs opacity-90 mt-0.5 truncate">{option.subText}</div>
+                    <div className="text-[10px] sm:text-xs opacity-90 mt-0.5 truncate">{option.subText}</div>
                   )}
                 </div>
               </button>
@@ -654,27 +654,31 @@ export const QuizView: React.FC<QuizViewProps> = ({
           })}
         </div>
 
-        {/* Bottom Action Footer */}
-        {isAnswerRevealed && (
-          <div className="mt-auto animate-fade-in flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-200 shadow-md">
-            <div>
-              <span className="text-xs font-semibold text-slate-500 block">
+        {/* Bottom Action Footer - Always completely visible and never clipped */}
+        {isAnswerRevealed ? (
+          <div className="shrink-0 animate-fade-in flex items-center justify-between p-2.5 sm:p-3 bg-white rounded-xl sm:rounded-2xl border border-slate-200 shadow-md">
+            <div className="min-w-0 pr-2">
+              <span className="text-[11px] font-semibold text-slate-500 block leading-tight truncate">
                 {questions[currentIndex].options.find((o) => o.id === selectedOptionId)?.isCorrect
                   ? '🎉 Bạn đã trả lời chính xác!'
-                  : '❌ Chưa chính xác! Đáp án đúng màu xanh lá.'}
+                  : '❌ Chưa chính xác!'}
               </span>
-              <span className="text-xs text-purple-700 font-bold">
+              <span className="text-xs text-purple-700 font-bold block truncate">
                 {currentQ.word.hanzi} ({currentQ.word.pinyin}) — {currentQ.word.meaning}
               </span>
             </div>
 
             <button
               onClick={handleNextQuestion}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-sm shadow-md shadow-purple-200 transition-all active:scale-95"
+              className="inline-flex items-center gap-1.5 px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs sm:text-sm shadow-md shadow-purple-200 transition-all active:scale-95 shrink-0"
             >
               <span>{isLastQuestion ? 'Xem Tổng Kết' : 'Câu Tiếp Theo'}</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
+          </div>
+        ) : (
+          <div className="h-10 sm:h-12 shrink-0 flex items-center justify-center text-xs text-slate-400 font-medium">
+            💡 Chọn 1 trong 4 đáp án trên để kiểm tra kết quả
           </div>
         )}
       </div>
@@ -685,9 +689,9 @@ export const QuizView: React.FC<QuizViewProps> = ({
   // VIEW 3: RESULT & REVIEW SUMMARY SCREEN
   // ----------------------------------------------------------------------
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6 sm:py-8 animate-fade-in">
+    <div className="max-w-xl mx-auto px-2.5 sm:px-4 py-2 sm:py-4 animate-fade-in w-full h-[calc(100dvh-56px)] max-h-[calc(100dvh-56px)] flex flex-col justify-between overflow-y-auto">
       {/* Result Card */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-100 text-center flex flex-col items-center mb-8">
+      <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-6 shadow-md border border-slate-100 text-center flex flex-col items-center my-auto">
         <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-amber-400 to-rose-500 text-white flex items-center justify-center shadow-xl shadow-amber-300/40 mb-4 animate-bounce">
           <Trophy className="w-10 h-10" />
         </div>
