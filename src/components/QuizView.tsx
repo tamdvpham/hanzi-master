@@ -259,115 +259,84 @@ export const QuizView: React.FC<QuizViewProps> = ({
   const accuracy = totalAnswered > 0 ? Math.round((correctCount / totalAnswered) * 100) : 0;
 
   // ----------------------------------------------------------------------
-  // VIEW 1: LOBBY & CONFIGURATION SCREEN
+  // VIEW 1: LOBBY & CONFIGURATION SCREEN (Compact, Single-Screen Fit)
   // ----------------------------------------------------------------------
   if (gameState === 'lobby') {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-6 sm:py-8 animate-fade-in">
-        {/* Navigation & Title */}
-        <div className="flex items-center justify-between mb-6">
+      <div className="max-w-2xl mx-auto px-3 sm:px-4 py-2 sm:py-4 animate-fade-in w-full">
+        {/* Sleek Top Navigation & Header */}
+        <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
           <button
             onClick={onBackToStudy}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white text-slate-700 hover:bg-slate-100 text-xs sm:text-sm font-semibold border border-slate-200 transition-colors shadow-sm"
+            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white text-slate-700 hover:bg-slate-100 text-xs font-semibold border border-slate-200 transition-colors shadow-xs active:scale-95 shrink-0"
           >
             <ChevronLeft className="w-4 h-4" />
-            <span>Quay lại học từ</span>
+            <span>Quay lại</span>
           </button>
 
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-100 text-purple-700 text-xs font-bold border border-purple-200">
-            <Trophy className="w-3.5 h-3.5 text-purple-600" />
-            <span>Đấu Trường Trắc Nghiệm</span>
-          </div>
-        </div>
-
-        {/* Hero Banner */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-700 via-indigo-600 to-emerald-600 text-white p-6 sm:p-8 shadow-xl mb-6">
-          <div className="relative z-10 max-w-xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-md text-xs font-semibold mb-3">
-              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span>Hệ thống tạo câu hỏi không trùng lặp & xoay vòng thông minh</span>
-            </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mb-2">
-              Thử Thách Trắc Nghiệm HSK
+          <div className="text-center">
+            <h1 className="text-sm sm:text-base font-black text-slate-900 tracking-tight flex items-center gap-1.5 justify-center">
+              <Gamepad2 className="w-4 h-4 text-purple-600" />
+              <span>Trắc Nghiệm HSK</span>
             </h1>
-            <p className="text-sm text-purple-100 leading-relaxed">
-              Mỗi lượt chơi hệ thống sẽ chọn các từ vựng mới hoàn toàn. Bạn có thể chọn từ 10 câu, 20 câu, 50 câu hoặc làm trọn vẹn cả cấp độ!
-            </p>
           </div>
 
-          <div className="absolute -right-8 -bottom-8 opacity-20 pointer-events-none">
-            <Gamepad2 className="w-64 h-64 text-white" />
-          </div>
-        </div>
-
-        {/* Level Learning Progress Bar (Xoay vòng tiến độ) */}
-        <div className="bg-white rounded-2xl p-4 shadow-sm border border-slate-200/80 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center shrink-0">
-              <Target className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="text-xs font-bold text-slate-800 flex items-center gap-2">
-                <span>Tiến độ xoay vòng câu hỏi:</span>
-                <span className="text-purple-600">
-                  {testedInPoolCount} / {levelPool.length} từ đã học
-                </span>
-              </div>
-              <div className="text-[11px] text-slate-400 mt-0.5">
-                {remainingInPoolCount > 0
-                  ? `Còn ${remainingInPoolCount} từ mới chưa qua bài test ở vòng này`
-                  : '🎉 Bạn đã hoàn thành trọn bộ từ vựng của cấp độ này!'}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="w-24 sm:w-32 bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200">
-              <div
-                className="bg-gradient-to-r from-purple-500 to-emerald-500 h-2 rounded-full transition-all duration-500"
-                style={{
-                  width: `${Math.min(100, (testedInPoolCount / Math.max(1, levelPool.length)) * 100)}%`
-                }}
-              />
+          {/* Compact Cycle Progress Badge */}
+          <div className="flex items-center gap-1 shrink-0">
+            <div
+              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-50 text-purple-700 text-[11px] font-bold border border-purple-200"
+              title="Tiến độ xoay vòng câu hỏi trong cấp độ này"
+            >
+              <Target className="w-3 h-3 text-purple-600" />
+              <span>{testedInPoolCount}/{levelPool.length} từ</span>
             </div>
             {testedInPoolCount > 0 && (
               <button
                 onClick={handleResetCycle}
-                className="text-[11px] font-semibold text-slate-500 hover:text-purple-600 flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-slate-100 transition-colors"
+                className="p-1 rounded-lg text-slate-400 hover:text-purple-600 hover:bg-slate-100 transition-colors"
                 title="Bắt đầu vòng học mới từ đầu"
               >
                 <RefreshCw className="w-3 h-3" />
-                <span>Đặt lại vòng</span>
               </button>
             )}
           </div>
         </div>
 
-        {/* Setting Card */}
-        <div className="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-100 space-y-8">
-          {/* 1. Chọn cấp độ HSK */}
+        {/* Main Settings Card: Compact, 1-screen fit */}
+        <div className="bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-5 shadow-lg border border-slate-200 space-y-3 sm:space-y-4">
+          {/* 1. Chọn cấp độ HSK (Siêu gọn trên 1 hàng 5 tab) */}
           <div>
-            <label className="block text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-              <Layers className="w-4 h-4 text-purple-600" />
-              <span>1. Chọn cấp độ HSK</span>
-            </label>
-            <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+            <div className="flex items-center justify-between mb-1.5 px-0.5">
+              <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                <Layers className="w-3.5 h-3.5 text-purple-600" />
+                <span>1. Chọn cấp độ HSK</span>
+              </label>
+              <span className="text-[10px] text-purple-600 font-semibold">
+                {selectedLevel === 'all' ? 'Tất cả 4 cấp độ' : `Đang chọn HSK ${selectedLevel}`}
+              </span>
+            </div>
+
+            {/* 5 Tabs on a Single Compact Row */}
+            <div className="grid grid-cols-5 gap-1 p-1 bg-slate-100 rounded-xl border border-slate-200/80">
               {[1, 2, 3, 4, 'all'].map((lvl) => {
                 const isSelected = selectedLevel === lvl;
                 const count = lvl === 'all' ? allWords.length : allWords.filter((w) => w.level === lvl).length;
                 return (
                   <button
                     key={lvl}
+                    type="button"
                     onClick={() => setSelectedLevel(lvl as any)}
-                    className={`py-3 px-3 rounded-2xl text-center border font-semibold transition-all ${
+                    className={`py-1.5 px-0.5 rounded-lg text-center font-bold transition-all active:scale-95 ${
                       isSelected
-                        ? 'bg-purple-600 text-white border-purple-600 shadow-lg shadow-purple-200 ring-2 ring-purple-300'
-                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        ? 'bg-purple-600 text-white shadow-sm ring-1 ring-purple-400'
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-white/70'
                     }`}
                   >
-                    <div className="text-sm font-bold">{lvl === 'all' ? 'Tất cả cấp độ' : `HSK ${lvl}`}</div>
-                    <div className={`text-xs mt-0.5 ${isSelected ? 'text-purple-200' : 'text-slate-400'}`}>
-                      {count} từ vựng
+                    <div className="text-xs sm:text-sm leading-tight">
+                      {lvl === 'all' ? 'Tất cả' : `HSK ${lvl}`}
+                    </div>
+                    <div className={`text-[9px] sm:text-[10px] mt-0.5 font-normal ${isSelected ? 'text-purple-200' : 'text-slate-400'}`}>
+                      {count} từ
                     </div>
                   </button>
                 );
@@ -375,110 +344,114 @@ export const QuizView: React.FC<QuizViewProps> = ({
             </div>
           </div>
 
-          {/* 2. Chọn Chế độ Chơi */}
+          {/* 2. Chọn 1 trong 4 chế độ thử thách (2x2 Grid compact) */}
           <div>
-            <label className="block text-sm font-bold text-slate-800 mb-3 flex items-center gap-2">
-              <Gamepad2 className="w-4 h-4 text-purple-600" />
-              <span>2. Chọn 1 trong 4 chế độ thử thách</span>
+            <label className="block text-xs font-bold text-slate-700 mb-1.5 px-0.5 flex items-center gap-1.5">
+              <Gamepad2 className="w-3.5 h-3.5 text-purple-600" />
+              <span>2. Chọn chế độ trắc nghiệm</span>
             </label>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-2 gap-2">
               {/* Mode 1: Đoán Nghĩa */}
-              <div
+              <button
+                type="button"
                 onClick={() => setSelectedMode('meaning')}
-                className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-start gap-3.5 ${
+                className={`p-2.5 rounded-xl border transition-all flex items-center gap-2.5 text-left active:scale-95 ${
                   selectedMode === 'meaning'
-                    ? 'border-purple-600 bg-purple-50/50 shadow-md ring-2 ring-purple-200'
-                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                    ? 'border-purple-600 bg-purple-50/70 shadow-xs ring-1 ring-purple-300'
+                    : 'border-slate-200 hover:border-slate-300 bg-slate-50/50 hover:bg-white'
                 }`}
               >
-                <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
-                  <BookOpen className="w-5 h-5" />
+                <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
+                  <BookOpen className="w-4 h-4" />
                 </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-800">1. Đoán Nghĩa Tiếng Việt</h4>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Nhìn chữ Hán ➔ Chọn nghĩa tiếng Việt chính xác.
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-slate-800 leading-tight">Đoán Nghĩa</h4>
+                  <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                    Chữ Hán ➔ Nghĩa Việt
                   </p>
                 </div>
-              </div>
+              </button>
 
               {/* Mode 2: Luyện Nghe Phản Xạ */}
-              <div
+              <button
+                type="button"
                 onClick={() => setSelectedMode('audio')}
-                className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-start gap-3.5 ${
+                className={`p-2.5 rounded-xl border transition-all flex items-center gap-2.5 text-left active:scale-95 ${
                   selectedMode === 'audio'
-                    ? 'border-emerald-600 bg-emerald-50/50 shadow-md ring-2 ring-emerald-200'
-                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                    ? 'border-emerald-600 bg-emerald-50/70 shadow-xs ring-1 ring-emerald-300'
+                    : 'border-slate-200 hover:border-slate-300 bg-slate-50/50 hover:bg-white'
                 }`}
               >
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                  <Headphones className="w-5 h-5" />
+                <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                  <Headphones className="w-4 h-4" />
                 </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-800">2. Luyện Nghe Phản Xạ</h4>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Nghe phát âm chuẩn Bắc Kinh ➔ Đoán chữ Hán đúng.
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-slate-800 leading-tight">Luyện Nghe</h4>
+                  <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                    Nghe âm ➔ Chọn chữ
                   </p>
                 </div>
-              </div>
+              </button>
 
               {/* Mode 3: Đoán Pinyin */}
-              <div
+              <button
+                type="button"
                 onClick={() => setSelectedMode('pinyin')}
-                className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-start gap-3.5 ${
+                className={`p-2.5 rounded-xl border transition-all flex items-center gap-2.5 text-left active:scale-95 ${
                   selectedMode === 'pinyin'
-                    ? 'border-blue-600 bg-blue-50/50 shadow-md ring-2 ring-blue-200'
-                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                    ? 'border-blue-600 bg-blue-50/70 shadow-xs ring-1 ring-blue-300'
+                    : 'border-slate-200 hover:border-slate-300 bg-slate-50/50 hover:bg-white'
                 }`}
               >
-                <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
-                  <SpellCheck className="w-5 h-5" />
+                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+                  <SpellCheck className="w-4 h-4" />
                 </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-800">3. Đoán Pinyin & Thanh Điệu</h4>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Nhìn chữ Hán ➔ Chọn đúng phiên âm và dấu thanh (1, 2, 3, 4).
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-slate-800 leading-tight">Đoán Pinyin</h4>
+                  <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                    Chữ Hán ➔ Phiên âm
                   </p>
                 </div>
-              </div>
+              </button>
 
               {/* Mode 4: Thử Thách Tốc Độ 60s */}
-              <div
+              <button
+                type="button"
                 onClick={() => setSelectedMode('speed')}
-                className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-start gap-3.5 ${
+                className={`p-2.5 rounded-xl border transition-all flex items-center gap-2.5 text-left active:scale-95 ${
                   selectedMode === 'speed'
-                    ? 'border-amber-500 bg-amber-50/50 shadow-md ring-2 ring-amber-200'
-                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                    ? 'border-amber-500 bg-amber-50/70 shadow-xs ring-1 ring-amber-300'
+                    : 'border-slate-200 hover:border-slate-300 bg-slate-50/50 hover:bg-white'
                 }`}
               >
-                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
-                  <Zap className="w-5 h-5" />
+                <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center shrink-0">
+                  <Zap className="w-4 h-4" />
                 </div>
-                <div>
-                  <h4 className="text-sm font-bold text-slate-800">4. Thử Thách Tốc Độ 60 Giây</h4>
-                  <p className="text-xs text-slate-500 mt-1">
-                    Đếm ngược 60s, kết hợp câu hỏi hỗn hợp. Trả lời đúng liên tục để nhân điểm Combo!
+                <div className="min-w-0">
+                  <h4 className="text-xs font-bold text-slate-800 leading-tight">Tốc Độ 60s</h4>
+                  <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                    Đếm ngược & Combo
                   </p>
                 </div>
-              </div>
+              </button>
             </div>
           </div>
 
-          {/* 3. Số lượng câu hỏi (Đầy đủ mốc: 10, 20, 30, 50 hoặc Tất cả) */}
+          {/* 3. Số lượng câu hỏi (Single Row 5 Pills) */}
           {selectedMode !== 'speed' && (
             <div>
-              <div className="flex items-center justify-between mb-3">
-                <label className="text-sm font-bold text-slate-800 flex items-center gap-2">
-                  <Clock className="w-4 h-4 text-purple-600" />
-                  <span>3. Số lượng câu hỏi trong mỗi bài test</span>
+              <div className="flex items-center justify-between mb-1.5 px-0.5">
+                <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-purple-600" />
+                  <span>3. Số lượng câu hỏi</span>
                 </label>
-                <span className="text-xs text-slate-400">
-                  (Hệ thống tự động xoay vòng từ mới ở các lần học tiếp)
+                <span className="text-[10px] text-slate-400">
+                  Tự động xoay vòng từ mới
                 </span>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
+              <div className="grid grid-cols-5 gap-1.5">
                 {[
                   { label: '10 câu', val: 10 },
                   { label: '20 câu', val: 20 },
@@ -488,11 +461,12 @@ export const QuizView: React.FC<QuizViewProps> = ({
                 ].map((item) => (
                   <button
                     key={item.val}
+                    type="button"
                     onClick={() => setQuestionCount(item.val)}
-                    className={`py-2.5 px-3 rounded-xl text-xs sm:text-sm font-semibold border transition-all ${
+                    className={`py-1.5 px-1 rounded-xl text-xs font-bold border transition-all text-center truncate ${
                       questionCount === item.val
-                        ? 'bg-slate-900 text-white border-slate-900 shadow-md ring-2 ring-slate-300'
-                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                        ? 'bg-slate-900 text-white border-slate-900 shadow-xs ring-1 ring-slate-400'
+                        : 'bg-slate-50 hover:bg-white text-slate-700 border-slate-200'
                     }`}
                   >
                     {item.label}
@@ -502,13 +476,13 @@ export const QuizView: React.FC<QuizViewProps> = ({
             </div>
           )}
 
-          {/* Start Action Button */}
-          <div className="pt-2">
+          {/* 4. Start Action Button */}
+          <div className="pt-1">
             <button
               onClick={() => handleStartGame()}
-              className="w-full py-4 rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-emerald-600 hover:opacity-95 text-white font-bold text-base shadow-xl shadow-purple-200 transition-all active:scale-[0.99] flex items-center justify-center gap-2"
+              className="w-full py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-emerald-600 hover:brightness-105 text-white font-bold text-sm sm:text-base shadow-md shadow-purple-200 transition-all active:scale-[0.99] flex items-center justify-center gap-2"
             >
-              <Play className="w-5 h-5 fill-white" />
+              <Play className="w-4 h-4 fill-white" />
               <span>
                 {remainingInPoolCount > 0
                   ? `Bắt Đầu Bài Test (${questionCount === -1 ? levelPool.length : Math.min(questionCount, levelPool.length)} câu mới)`
