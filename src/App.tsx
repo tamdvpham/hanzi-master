@@ -317,7 +317,7 @@ export const App: React.FC = () => {
           </div>
         ) : currentView === 'sentence' ? (
           // Sentence Scramble View (400 câu sắp xếp HSK 1 - 4)
-          <div className="bg-slate-100 flex-1">
+          <div className="bg-slate-100 flex-1 flex flex-col">
             <SentenceScrambleView
               initialLevel={currentLevel}
               onBack={() => setCurrentView('study')}
@@ -333,7 +333,7 @@ export const App: React.FC = () => {
           </div>
         ) : currentView === 'quiz' ? (
           // Quiz Arena View (Trắc nghiệm 4 chế độ)
-          <div className="bg-slate-100 flex-1">
+          <div className="bg-slate-100 flex-1 flex flex-col">
             <QuizView
               allWords={HSK_WORDS}
               initialLevel={currentLevel}
