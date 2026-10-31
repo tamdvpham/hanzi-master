@@ -278,10 +278,10 @@ export const App: React.FC = () => {
       </header>
 
       {/* Main Content View */}
-      <main className="flex-1 flex flex-col">
+      <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {selectedWord ? (
           // Practice Mode
-          <div className="flex-1 flex items-center justify-center py-4 px-2 sm:px-6 bg-slate-100">
+          <div className="flex-1 flex flex-col items-center justify-center h-[calc(100dvh-56px)] max-h-[calc(100dvh-56px)] overflow-hidden bg-slate-100 p-0 sm:py-3 sm:px-4">
             {phoneFrame ? (
               // Mobile Mockup Frame
               <div className="relative border-[10px] border-slate-900 rounded-[44px] shadow-2xl overflow-hidden bg-slate-900 w-full max-w-[390px] ring-1 ring-slate-800">
@@ -306,8 +306,8 @@ export const App: React.FC = () => {
                 </div>
               </div>
             ) : (
-              // Standard Clean Responsive Studio View for Desktop Web
-              <div className="w-full max-w-4xl py-2 sm:py-6">
+              // Standard Clean Responsive Studio View for Mobile & Desktop
+              <div className="w-full max-w-4xl h-full flex flex-col justify-center min-h-0">
                 <HanziPractice
                   word={selectedWord}
                   onBack={() => setSelectedWord(null)}

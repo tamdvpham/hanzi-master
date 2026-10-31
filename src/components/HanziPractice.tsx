@@ -83,8 +83,8 @@ export const HanziPractice: React.FC<HanziPracticeProps> = ({
   }, []);
 
   const isWideMode = !isPhoneMode && isDesktop;
-  // Canvas size for Mizige grid: 270px on desktop web, 240px on mobile
-  const canvasSize = isWideMode ? 270 : 240;
+  // Canvas size for Mizige grid: 270px on desktop web, 215px on mobile to guarantee 1-screen fit without bottom cutoff
+  const canvasSize = isWideMode ? 270 : 215;
 
   const [showOutline, setShowOutline] = useState(true);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
@@ -136,14 +136,14 @@ export const HanziPractice: React.FC<HanziPracticeProps> = ({
       const writer = HanziWriter.create(writerContainerRef.current, currentChar, {
         width: canvasSize,
         height: canvasSize,
-        padding: 24,
+        padding: isWideMode ? 24 : 18,
         showOutline: showOutline,
         strokeAnimationSpeed: 1.2,
         delayBetweenStrokes: 150,
         strokeColor: '#1e293b',
         outlineColor: '#cbd5e1',
         drawingColor: '#059669', // Emerald ink when user writes
-        drawingWidth: 26,
+        drawingWidth: isWideMode ? 26 : 22,
         showCharacter: false,
         showHintAfterMisses: 2,
         highlightOnComplete: true,
@@ -325,7 +325,7 @@ export const HanziPractice: React.FC<HanziPracticeProps> = ({
   };
 
   return (
-    <div className={`flex flex-col h-full w-full ${isWideMode ? 'max-w-4xl' : 'max-w-md'} mx-auto bg-gradient-to-b from-purple-50/70 via-white to-emerald-50/40 shadow-xl rounded-3xl overflow-hidden border border-purple-100 min-w-0`}>
+    <div className={`flex flex-col h-full w-full ${isWideMode ? 'max-w-4xl' : 'max-w-md'} mx-auto bg-gradient-to-b from-purple-50/70 via-white to-emerald-50/40 shadow-xl rounded-none sm:rounded-3xl overflow-hidden border-0 sm:border border-purple-100 min-w-0 min-h-0`}>
       {/* Top App Bar */}
       <div className="w-full px-3 sm:px-4 py-2.5 sm:py-3 bg-white/80 backdrop-blur border-b border-purple-100 flex items-center justify-between shrink-0 min-w-0">
         <button
@@ -591,16 +591,16 @@ export const HanziPractice: React.FC<HanziPracticeProps> = ({
         </div>
       ) : (
         // ================= MOBILE / PHONE FRAME LAYOUT =================
-        <div className="w-full flex-1 px-3 py-2 flex flex-col justify-between items-center overflow-hidden min-w-0">
+        <div className="w-full flex-1 px-2.5 sm:px-3 py-1.5 sm:py-2 flex flex-col justify-between items-center overflow-y-auto no-scrollbar min-h-0 min-w-0 gap-1.5">
           {/* Compact Character & Word Header */}
-          <div className="w-full flex items-center justify-between px-3.5 py-2 bg-white rounded-2xl shadow-xs border border-slate-100 shrink-0 min-w-0">
+          <div className="w-full flex items-center justify-between px-3 py-1.5 bg-white rounded-2xl shadow-xs border border-slate-100 shrink-0 min-w-0">
             <div
               onClick={() => handleSpeak(word.hanzi)}
               className="cursor-pointer group select-none flex-1 min-w-0 pr-1.5"
               title="Bấm để nghe phát âm"
             >
               {/* Row 1: Hanzi only */}
-              <div className="text-2xl font-bold font-chinese text-slate-900 group-hover:text-purple-600 transition-colors leading-tight">
+              <div className="text-xl sm:text-2xl font-bold font-chinese text-slate-900 group-hover:text-purple-600 transition-colors leading-tight">
                 {word.hanzi}
               </div>
 
@@ -690,17 +690,17 @@ export const HanziPractice: React.FC<HanziPracticeProps> = ({
             </div>
 
             {/* 3 Action Buttons directly under Canvas: Eraser, Eye, Play */}
-            <div className="flex items-center justify-center gap-4 mt-2.5">
+            <div className="flex items-center justify-center gap-3.5 mt-2">
               <button
                 onClick={handleReset}
-                className="w-10 h-10 rounded-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white flex items-center justify-center shadow-md shadow-emerald-200 transition-all group"
+                className="w-9 h-9 rounded-full bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white flex items-center justify-center shadow-md shadow-emerald-200 transition-all group"
                 title="Xóa và viết lại từ đầu"
               >
                 <Eraser className="w-4 h-4 group-hover:rotate-12 transition-transform" />
               </button>
               <button
                 onClick={handleToggleOutline}
-                className={`w-10 h-10 rounded-full active:scale-95 text-white flex items-center justify-center shadow-md transition-all ${
+                className={`w-9 h-9 rounded-full active:scale-95 text-white flex items-center justify-center shadow-md transition-all ${
                   showOutline
                     ? 'bg-emerald-500 hover:bg-emerald-600 shadow-emerald-200'
                     : 'bg-slate-400 hover:bg-slate-500 shadow-slate-200'
@@ -712,7 +712,7 @@ export const HanziPractice: React.FC<HanziPracticeProps> = ({
               <button
                 onClick={handleAnimate}
                 disabled={isAnimating}
-                className={`w-10 h-10 rounded-full active:scale-95 text-white flex items-center justify-center shadow-md transition-all ${
+                className={`w-9 h-9 rounded-full active:scale-95 text-white flex items-center justify-center shadow-md transition-all ${
                   isAnimating
                     ? 'bg-purple-300 shadow-purple-100 cursor-not-allowed'
                     : 'bg-purple-600 hover:bg-purple-700 shadow-purple-200'
@@ -726,8 +726,8 @@ export const HanziPractice: React.FC<HanziPracticeProps> = ({
 
           {/* 3 Example Sentences Section - Balanced & Complete */}
           {word.examples && word.examples.length > 0 && (
-            <div className="w-full bg-white rounded-2xl p-3 border border-slate-100 shadow-xs shrink-0 min-w-0">
-              <div className="flex items-center justify-between mb-1.5 min-w-0">
+            <div className="w-full bg-white rounded-2xl p-2.5 border border-slate-100 shadow-xs shrink-0 min-w-0">
+              <div className="flex items-center justify-between mb-1 min-w-0">
                 <span className="text-xs font-bold text-slate-700 truncate">3 Câu ví dụ thực tế</span>
                 <div className="flex items-center gap-1 shrink-0">
                   {word.examples.map((_, idx) => (
@@ -749,7 +749,7 @@ export const HanziPractice: React.FC<HanziPracticeProps> = ({
               {(() => {
                 const ex = word.examples[activeExampleTab] || word.examples[0];
                 return (
-                  <div className="bg-slate-50/90 rounded-xl p-2.5 border border-slate-100 min-w-0">
+                  <div className="bg-slate-50/90 rounded-xl p-2 border border-slate-100 min-w-0">
                     <div className="flex items-center justify-between gap-2 min-w-0">
                       <div className="min-w-0 flex-1 overflow-hidden">
                         {/* Chinese Sentence */}
@@ -765,7 +765,7 @@ export const HanziPractice: React.FC<HanziPracticeProps> = ({
                           {ex.py}
                         </div>
                         {/* Full Vietnamese Translation (NEVER TRUNCATED) */}
-                        <div className="text-[11px] text-slate-600 mt-1 italic leading-normal break-words">
+                        <div className="text-[11px] text-slate-600 mt-0.5 italic leading-normal break-words">
                           {ex.vi}
                         </div>
                       </div>
@@ -773,42 +773,42 @@ export const HanziPractice: React.FC<HanziPracticeProps> = ({
                       <div className="flex items-center gap-1.5 shrink-0 self-center">
                         <button
                           onClick={() => handleOpenSentenceEvaluator(ex, activeExampleTab)}
-                          className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-md shadow-purple-200 flex items-center justify-center hover:scale-110 active:scale-95 transition-all shrink-0"
+                          className="w-7 h-7 rounded-full bg-gradient-to-tr from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white shadow-md shadow-purple-200 flex items-center justify-center hover:scale-110 active:scale-95 transition-all shrink-0"
                           title="Ghi âm và chấm điểm câu ví dụ này"
                         >
-                          <Mic className="w-4 h-4" />
+                          <Mic className="w-3.5 h-3.5" />
                         </button>
                         <button
                           onClick={() => handleSpeakSentence(ex.hz, activeExampleTab)}
-                          className={`w-8 h-8 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-md shadow-emerald-200 flex items-center justify-center hover:scale-110 active:scale-95 transition-all shrink-0 ${
+                          className={`w-7 h-7 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white shadow-md shadow-emerald-200 flex items-center justify-center hover:scale-110 active:scale-95 transition-all shrink-0 ${
                             playingSentenceIdx === activeExampleTab ? 'ring-2 ring-emerald-300 ring-offset-1 scale-110 animate-pulse' : ''
                           }`}
                           title="Nghe câu ví dụ này"
                         >
-                          <Volume2 className="w-4 h-4" />
+                          <Volume2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
                     </div>
 
                     {/* Navigation bar for example sentences: Câu trước / Câu tiếp theo */}
-                    <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
-                      <span className="text-slate-400 font-medium text-[11px]">Câu {activeExampleTab + 1} / {word.examples.length}</span>
+                    <div className="mt-2 pt-1.5 border-t border-slate-200/60 flex items-center justify-between text-xs">
+                      <span className="text-slate-400 font-medium text-[10px]">Câu {activeExampleTab + 1} / {word.examples.length}</span>
                       <div className="flex items-center gap-1.5">
                         <button
                           onClick={handlePrevExample}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-slate-600 hover:text-purple-700 hover:bg-purple-50 border border-slate-200 font-medium transition-colors text-[11px] active:scale-95"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-slate-600 hover:text-purple-700 hover:bg-purple-50 border border-slate-200 font-medium transition-colors text-[10px] active:scale-95"
                           title="Câu ví dụ trước"
                         >
-                          <ChevronLeft className="w-3.5 h-3.5" />
+                          <ChevronLeft className="w-3 h-3" />
                           <span>Câu trước</span>
                         </button>
                         <button
                           onClick={handleNextExample}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-semibold transition-colors text-[11px] active:scale-95"
+                          className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 font-semibold transition-colors text-[10px] active:scale-95"
                           title="Câu ví dụ tiếp theo"
                         >
                           <span>Câu tiếp theo</span>
-                          <ChevronRight className="w-3.5 h-3.5" />
+                          <ChevronRight className="w-3 h-3" />
                         </button>
                       </div>
                     </div>
@@ -821,10 +821,10 @@ export const HanziPractice: React.FC<HanziPracticeProps> = ({
       )}
 
       {/* Bottom Navigation Toolbar */}
-      <div className="w-full px-2.5 sm:px-3 py-2 bg-white border-t border-slate-100 flex items-center justify-between shrink-0 min-w-0">
+      <div className="w-full px-3 py-2 pb-[max(0.7rem,env(safe-area-inset-bottom))] bg-white border-t border-slate-100 flex items-center justify-between shrink-0 min-w-0 z-10 shadow-sm">
         <button
           onClick={onPrevWord}
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-slate-700 font-medium hover:bg-slate-100 active:scale-95 transition-all text-xs shrink-0"
+          className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-slate-700 font-medium hover:bg-slate-100 active:scale-95 transition-all text-xs shrink-0 cursor-pointer"
         >
           <ChevronLeft className="w-4 h-4" />
           <span>Từ trước</span>
@@ -832,7 +832,7 @@ export const HanziPractice: React.FC<HanziPracticeProps> = ({
 
         <button
           onClick={handleReset}
-          className="p-1.5 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors shrink-0"
+          className="p-1.5 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition-colors shrink-0 cursor-pointer"
           title="Luyện lại"
         >
           <RotateCcw className="w-4 h-4" />
@@ -840,7 +840,7 @@ export const HanziPractice: React.FC<HanziPracticeProps> = ({
 
         <button
           onClick={onNextWord}
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-medium shadow-xs shadow-purple-200 active:scale-95 transition-all text-xs shrink-0"
+          className="flex items-center gap-1 px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-medium shadow-sm shadow-purple-200 active:scale-95 transition-all text-xs shrink-0 cursor-pointer"
         >
           <span>Từ tiếp theo</span>
           <ChevronRight className="w-4 h-4" />
