@@ -188,41 +188,42 @@ export const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
       {/* Top Global Navigation Bar */}
-      <header className="sticky top-0 z-50 bg-[#1c1b1f] text-white border-b border-white/10">
-        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center justify-between">
+      <header className="sticky top-0 z-50 bg-[#1c1b1f] text-white border-b border-white/10 h-14 min-h-[56px] max-h-[56px] overflow-hidden">
+        <div className="max-w-5xl mx-auto px-2 sm:px-4 h-full flex items-center justify-between gap-1 overflow-hidden">
           <div
             onClick={() => {
               setSelectedWord(null);
               setCurrentView('landing');
             }}
-            className="flex items-center gap-2.5 cursor-pointer select-none group"
+            className="flex items-center gap-1.5 cursor-pointer select-none group shrink-0"
           >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-400 to-rose-500 text-white flex items-center justify-center font-bold text-lg font-chinese shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-400 to-rose-500 text-white flex items-center justify-center font-bold text-base font-chinese shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform shrink-0">
               文
             </div>
-            <div>
-              <span className="font-bold text-white text-base">Hán Tự Master</span>
-              <span className="hidden sm:inline text-xs text-amber-400 font-semibold ml-2 bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">
-                HSK {currentLevel}
+            <div className="shrink-0">
+              <span className="font-bold text-white text-sm sm:text-base whitespace-nowrap">
+                <span className="hidden sm:inline">Hán Tự Master</span>
+                <span className="sm:hidden">Hán Tự</span>
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar py-1 shrink min-w-0">
             {/* Home / Landing Page Toggle Button */}
             <button
               onClick={() => {
                 setSelectedWord(null);
                 setCurrentView('landing');
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+              className={`shrink-0 whitespace-nowrap flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                 currentView === 'landing' && !selectedWord
-                  ? 'bg-amber-400 text-slate-950 shadow-md'
+                  ? 'bg-amber-400 text-slate-950 shadow-md font-bold'
                   : 'bg-white/10 text-white hover:bg-white/20'
               }`}
             >
-              <LayoutGrid className="w-3.5 h-3.5" />
-              <span>4 Cấp độ HSK</span>
+              <LayoutGrid className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden sm:inline">4 Cấp độ HSK</span>
+              <span className="sm:hidden">4 Cấp độ</span>
             </button>
 
             {/* Current Level Vocabulary Button */}
@@ -231,13 +232,13 @@ export const App: React.FC = () => {
                 setSelectedWord(null);
                 setCurrentView('study');
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+              className={`shrink-0 whitespace-nowrap flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                 currentView === 'study' && !selectedWord
-                  ? 'bg-purple-600 text-white shadow-md'
+                  ? 'bg-purple-600 text-white shadow-md font-bold'
                   : 'bg-white/10 text-white hover:bg-white/20'
               }`}
             >
-              <BookOpen className="w-3.5 h-3.5" />
+              <BookOpen className="w-3.5 h-3.5 shrink-0" />
               <span>HSK {currentLevel}</span>
             </button>
 
@@ -247,14 +248,15 @@ export const App: React.FC = () => {
                 setSelectedWord(null);
                 setCurrentView('quiz');
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+              className={`shrink-0 whitespace-nowrap flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                 currentView === 'quiz' && !selectedWord
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md font-bold'
                   : 'bg-white/10 text-white hover:bg-white/20'
               }`}
             >
-              <Gamepad2 className="w-3.5 h-3.5 text-amber-300" />
-              <span>Trắc nghiệm</span>
+              <Gamepad2 className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+              <span className="hidden sm:inline">Trắc nghiệm</span>
+              <span className="sm:hidden">Quiz</span>
             </button>
 
             {/* Sentence Scramble Button */}
@@ -263,35 +265,35 @@ export const App: React.FC = () => {
                 setSelectedWord(null);
                 setCurrentView('sentence');
               }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+              className={`shrink-0 whitespace-nowrap flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
                 currentView === 'sentence' && !selectedWord
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md'
+                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md font-bold'
                   : 'bg-white/10 text-white hover:bg-white/20'
               }`}
             >
-              <Layers className="w-3.5 h-3.5 text-amber-300" />
-              <span>Sắp xếp câu</span>
+              <Layers className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+              <span className="hidden sm:inline">Sắp xếp câu</span>
+              <span className="sm:hidden">Xếp câu</span>
             </button>
 
             {/* User Account / Profile Button */}
             {currentUser ? (
               <button
                 onClick={() => setShowProfileModal(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-400/30 text-white text-xs font-semibold transition-all active:scale-95"
-                title="Hồ sơ & Tiến trình đã lưu trên điện thoại"
+                className="shrink-0 whitespace-nowrap flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-400/30 text-white text-xs font-semibold transition-all active:scale-95"
+                title="Hồ sơ & Tiến trình"
               >
-                <span className="text-base select-none">{currentUser.avatar}</span>
-                <span className="max-w-[70px] sm:max-w-[110px] truncate font-bold">{currentUser.displayName}</span>
+                <span className="text-sm select-none shrink-0">{currentUser.avatar}</span>
+                <span className="max-w-[65px] sm:max-w-[110px] truncate font-bold">{currentUser.displayName}</span>
               </button>
             ) : (
               <button
                 onClick={() => setShowAuthModal(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white text-xs font-bold shadow-sm transition-all active:scale-95"
-                title="Đăng ký hoặc Đăng nhập để tự động ghi nhớ tiến trình trên thiết bị này"
+                className="shrink-0 whitespace-nowrap flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white text-xs font-bold shadow-sm transition-all active:scale-95"
+                title="Đăng ký hoặc Đăng nhập"
               >
-                <User className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Đăng nhập</span>
-                <span className="sm:hidden">Login</span>
+                <User className="w-3.5 h-3.5 shrink-0" />
+                <span>Đăng nhập</span>
               </button>
             )}
 
@@ -299,11 +301,11 @@ export const App: React.FC = () => {
             {selectedWord && (
               <button
                 onClick={() => setPhoneFrame(!phoneFrame)}
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white transition-colors"
+                className="shrink-0 whitespace-nowrap hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white transition-colors"
                 title="Chuyển đổi kiểu khung điện thoại"
               >
-                {phoneFrame ? <Monitor className="w-3.5 h-3.5 text-amber-400" /> : <Smartphone className="w-3.5 h-3.5 text-emerald-400" />}
-                <span>{phoneFrame ? 'Giao diện Web rộng' : 'Khung điện thoại'}</span>
+                {phoneFrame ? <Monitor className="w-3.5 h-3.5 text-amber-400 shrink-0" /> : <Smartphone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+                <span>{phoneFrame ? 'Web rộng' : 'Điện thoại'}</span>
               </button>
             )}
           </div>
@@ -420,10 +422,12 @@ export const App: React.FC = () => {
         )}
       </main>
 
-      {/* Footer */}
-      <footer className="py-4 border-t border-white/10 bg-[#161518] text-center text-xs text-slate-400">
-        Ứng dụng Học Tiếng Trung HSK 1, HSK 2, HSK 3 & HSK 4 • Luyện viết nét chuẩn, Phát âm & Chấm điểm AI
-      </footer>
+      {/* Footer (Hidden on sentence scramble & quiz for full single-screen experience) */}
+      {currentView !== 'sentence' && (
+        <footer className="py-2.5 sm:py-3 border-t border-white/10 bg-[#161518] text-center text-[11px] sm:text-xs text-slate-400">
+          Ứng dụng Học Tiếng Trung HSK 1, HSK 2, HSK 3 & HSK 4 • Luyện viết nét chuẩn, Phát âm & Chấm điểm AI
+        </footer>
+      )}
 
       {/* Authentication Modal (Đăng ký / Đăng nhập) */}
       <AuthModal

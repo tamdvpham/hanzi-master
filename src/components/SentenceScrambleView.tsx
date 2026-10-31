@@ -230,21 +230,22 @@ export const SentenceScrambleView: React.FC<SentenceScrambleViewProps> = ({
   );
 
   return (
-    <div className="max-w-3xl mx-auto px-3 sm:px-4 py-2 sm:py-3 w-full">
-      {/* Sleek, Single-line Compact Header Toolbar */}
-      <div className="flex items-center justify-between gap-2 mb-2 flex-wrap">
-        <div className="flex items-center gap-1.5">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold shadow-xs transition-all active:scale-95"
-            title="Quay lại"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Quay lại</span>
-          </button>
+    <div className="max-w-3xl mx-auto px-2.5 sm:px-4 py-1.5 sm:py-3 w-full">
+      {/* Sleek, Compact Header Toolbar */}
+      <div className="space-y-1.5 mb-1.5">
+        {/* Row 1: Back + HSK Tabs + Streak */}
+        <div className="flex items-center justify-between gap-1.5">
+          <div className="flex items-center gap-1 overflow-x-auto no-scrollbar shrink min-w-0">
+            <button
+              onClick={onBack}
+              className="shrink-0 flex items-center gap-1 px-2 sm:px-2.5 py-1 rounded-xl bg-white hover:bg-slate-50 border border-slate-200 text-slate-700 text-xs font-semibold shadow-xs transition-all active:scale-95"
+              title="Quay lại"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Quay lại</span>
+            </button>
 
-          {/* HSK Level Switcher Tabs */}
-          <div className="flex items-center gap-1">
+            {/* HSK Level Switcher Tabs */}
             {([1, 2, 3, 4] as const).map((lvl) => {
               const countCompleted = SENTENCE_SCRAMBLE_DATA.filter(
                 (q) => q.level === lvl && savedProgress.completedIds.includes(q.id)
@@ -258,7 +259,7 @@ export const SentenceScrambleView: React.FC<SentenceScrambleViewProps> = ({
                     setCurrentIndex(0);
                     setFilterMode('all');
                   }}
-                  className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+                  className={`shrink-0 px-2 sm:px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
                     isSelected
                       ? 'bg-purple-600 text-white shadow-xs'
                       : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
@@ -278,19 +279,19 @@ export const SentenceScrambleView: React.FC<SentenceScrambleViewProps> = ({
               );
             })}
           </div>
-        </div>
 
-        {/* Right Toolbar: Streak, Filters, Question Jump */}
-        <div className="flex items-center gap-1.5">
           {streak > 1 && (
-            <span className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-100 text-orange-800 text-xs font-bold border border-orange-200">
+            <span className="shrink-0 flex items-center gap-1 px-2 py-0.5 rounded-lg bg-orange-100 text-orange-800 text-xs font-bold border border-orange-200">
               <Flame className="w-3.5 h-3.5 text-orange-500 fill-orange-500" />
               <span>{streak}</span>
             </span>
           )}
+        </div>
 
+        {/* Row 2: Filter Pills + 100 câu modal trigger */}
+        <div className="flex items-center justify-between gap-1 text-xs">
           {/* Compact Filter Pills */}
-          <div className="flex items-center gap-0.5 bg-white border border-slate-200 rounded-lg p-0.5 text-xs">
+          <div className="flex items-center gap-0.5 bg-white border border-slate-200 rounded-lg p-0.5 text-xs shrink-0">
             <button
               onClick={() => {
                 setFilterMode('all');
@@ -336,7 +337,7 @@ export const SentenceScrambleView: React.FC<SentenceScrambleViewProps> = ({
 
           <button
             onClick={() => setShowGridModal(true)}
-            className="text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold px-2.5 py-1 rounded-lg transition-all border border-purple-200 flex items-center gap-1 active:scale-95"
+            className="shrink-0 text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg transition-all border border-purple-200 flex items-center gap-1 active:scale-95"
             title="Xem danh sách 100 câu"
           >
             <BookOpen className="w-3.5 h-3.5 text-purple-600" />
@@ -347,7 +348,7 @@ export const SentenceScrambleView: React.FC<SentenceScrambleViewProps> = ({
       </div>
 
       {/* Slim 2px Progress Bar */}
-      <div className="w-full bg-slate-200 h-1.5 rounded-full mb-2.5 overflow-hidden">
+      <div className="w-full bg-slate-200 h-1 sm:h-1.5 rounded-full mb-1.5 sm:mb-2.5 overflow-hidden">
         <div
           className="h-full bg-gradient-to-r from-purple-500 to-indigo-600 transition-all duration-300 rounded-full"
           style={{ width: `${Math.max(progressPercent, 2)}%` }}
@@ -356,7 +357,7 @@ export const SentenceScrambleView: React.FC<SentenceScrambleViewProps> = ({
 
       {/* Main Single-Screen Question Card */}
       {currentQuestion ? (
-        <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm p-3.5 sm:p-5 space-y-2.5 sm:space-y-3">
+        <div className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-sm p-3 sm:p-5 space-y-2 sm:space-y-3">
           {/* Header Row: Index & Audio button */}
           <div className="flex items-center justify-between gap-2">
             <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200">

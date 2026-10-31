@@ -109,21 +109,21 @@ export const WordList: React.FC<WordListProps> = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
+    <div className="max-w-4xl mx-auto px-3 sm:px-4 py-3 sm:py-6">
       {/* App Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-purple-700 via-indigo-600 to-emerald-600 p-6 text-white shadow-xl mb-6">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl bg-gradient-to-r from-purple-700 via-indigo-600 to-emerald-600 p-3.5 sm:p-6 text-white shadow-xl mb-3 sm:mb-6">
         <div className="relative z-10">
-          <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
-            <span className="px-3 py-1 rounded-full bg-white/20 backdrop-blur text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
+          <div className="flex items-center justify-between gap-1.5 mb-1 flex-wrap">
+            <span className="px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-white/20 backdrop-blur text-[11px] sm:text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-yellow-300" />
               Cấp độ HSK {currentLevel} ({totalInLevel} từ vựng)
             </span>
 
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="flex items-center gap-1.5 flex-wrap">
               {onOpenQuiz && (
                 <button
                   onClick={onOpenQuiz}
-                  className="text-xs bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-3 py-1.5 rounded-full transition-all shadow-md flex items-center gap-1.5 active:scale-95"
+                  className="text-xs bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shadow-md flex items-center gap-1 active:scale-95"
                 >
                   <Gamepad2 className="w-3.5 h-3.5" />
                   <span>Trắc nghiệm HSK {currentLevel}</span>
@@ -133,7 +133,7 @@ export const WordList: React.FC<WordListProps> = ({
               {onOpenSentenceScramble && (
                 <button
                   onClick={onOpenSentenceScramble}
-                  className="text-xs bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold px-3 py-1.5 rounded-full transition-all shadow-md flex items-center gap-1.5 active:scale-95"
+                  className="text-xs bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shadow-md flex items-center gap-1 active:scale-95"
                 >
                   <Layers className="w-3.5 h-3.5" />
                   <span>Xếp câu HSK {currentLevel}</span>
@@ -143,51 +143,51 @@ export const WordList: React.FC<WordListProps> = ({
               {onBackToLanding && (
                 <button
                   onClick={onBackToLanding}
-                  className="text-xs bg-white/20 hover:bg-white/30 text-white font-semibold px-3 py-1.5 rounded-full transition-colors backdrop-blur flex items-center gap-1 shadow-sm"
+                  className="text-xs bg-white/20 hover:bg-white/30 text-white font-semibold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-colors backdrop-blur flex items-center gap-1 shadow-sm"
                 >
                   <span>← Chọn cấp độ</span>
                 </button>
               )}
             </div>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight mt-1">
+          <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight mt-1">
             Luyện Viết Chữ Hán & Phát Âm HSK {currentLevel}
           </h1>
-          <p className="text-purple-100 text-sm mt-1 max-w-xl">
+          <p className="hidden sm:block text-purple-100 text-sm mt-1 max-w-xl">
             Tập viết theo đúng thứ tự nét bút trên ô chữ Mễ, luyện phát âm chuẩn Bắc Kinh với 3 câu ví dụ cho mỗi từ và tính năng ghi âm chấm điểm trực tiếp.
           </p>
 
           {/* Quick stats grid for currentLevel ONLY */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-4 pt-4 border-t border-white/15">
-            <div className="bg-white/10 backdrop-blur rounded-2xl p-2.5">
-              <div className="text-xs text-purple-200">Tổng từ HSK {currentLevel}</div>
-              <div className="text-xl font-bold flex items-center gap-1">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 sm:gap-2.5 mt-2.5 sm:mt-4 pt-2.5 sm:pt-4 border-t border-white/15">
+            <div className="bg-white/10 backdrop-blur rounded-xl sm:rounded-2xl p-2 sm:p-2.5">
+              <div className="text-[11px] sm:text-xs text-purple-200">Tổng từ HSK {currentLevel}</div>
+              <div className="text-lg sm:text-xl font-bold flex items-center gap-1">
                 <span>{totalInLevel}</span>
-                <span className="text-xs font-normal text-purple-200">từ</span>
+                <span className="text-[11px] sm:text-xs font-normal text-purple-200">từ</span>
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur rounded-2xl p-2.5">
-              <div className="text-xs text-purple-200">Đã thuộc</div>
-              <div className="text-xl font-bold flex items-center gap-1">
+            <div className="bg-white/10 backdrop-blur rounded-xl sm:rounded-2xl p-2 sm:p-2.5">
+              <div className="text-[11px] sm:text-xs text-purple-200">Đã thuộc</div>
+              <div className="text-lg sm:text-xl font-bold flex items-center gap-1">
                 <span>{learnedInLevel}</span>
-                <span className="text-xs font-normal text-purple-200">/ {totalInLevel}</span>
+                <span className="text-[11px] sm:text-xs font-normal text-purple-200">/ {totalInLevel}</span>
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur rounded-2xl p-2.5">
-              <div className="text-xs text-purple-200">Đã luyện viết</div>
-              <div className="text-xl font-bold flex items-center gap-1">
+            <div className="bg-white/10 backdrop-blur rounded-xl sm:rounded-2xl p-2 sm:p-2.5">
+              <div className="text-[11px] sm:text-xs text-purple-200">Đã luyện viết</div>
+              <div className="text-lg sm:text-xl font-bold flex items-center gap-1">
                 <span>{practicedInLevel}</span>
-                <span className="text-xs font-normal text-purple-200">từ</span>
+                <span className="text-[11px] sm:text-xs font-normal text-purple-200">từ</span>
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur rounded-2xl p-2.5">
-              <div className="text-xs text-purple-200">Yêu thích</div>
-              <div className="text-xl font-bold flex items-center gap-1">
+            <div className="bg-white/10 backdrop-blur rounded-xl sm:rounded-2xl p-2.5">
+              <div className="text-[11px] sm:text-xs text-purple-200">Yêu thích</div>
+              <div className="text-lg sm:text-xl font-bold flex items-center gap-1">
                 <span>{favInLevel}</span>
-                <span className="text-xs font-normal text-purple-200">từ</span>
+                <span className="text-[11px] sm:text-xs font-normal text-purple-200">từ</span>
               </div>
             </div>
           </div>
