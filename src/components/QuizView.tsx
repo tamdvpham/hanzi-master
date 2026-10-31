@@ -55,6 +55,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
   const [selectedLevel, setSelectedLevel] = useState<1 | 2 | 3 | 4 | 'all'>(initialLevel);
   const [selectedMode, setSelectedMode] = useState<QuizMode>('meaning');
   const [questionCount, setQuestionCount] = useState<number>(20);
+  const [speedMinutes, setSpeedMinutes] = useState<number>(1);
   const [gameState, setGameState] = useState<'lobby' | 'playing' | 'result'>('lobby');
 
   // Track tested words to guarantee NO DUPLICATES across consecutive learning sessions
@@ -103,10 +104,11 @@ export const QuizView: React.FC<QuizViewProps> = ({
     }
   }, [gameState, currentIndex, questions]);
 
-  // Speed mode countdown timer
+  // Speed mode countdown timer (counts down from selected minutes)
   useEffect(() => {
     if (gameState === 'playing' && selectedMode === 'speed') {
-      setTimeLeft(60);
+      const totalSeconds = speedMinutes * 60;
+      setTimeLeft(totalSeconds);
       speedTimerRef.current = setInterval(() => {
         setTimeLeft((prev) => {
           if (prev <= 1) {
@@ -122,7 +124,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
         if (speedTimerRef.current) clearInterval(speedTimerRef.current);
       };
     }
-  }, [gameState, selectedMode]);
+  }, [gameState, selectedMode, speedMinutes]);
 
   // Reset cycle for the current level pool
   const handleResetCycle = () => {
@@ -147,7 +149,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
     const count = specificWords
       ? specificWords.length
       : selectedMode === 'speed'
-      ? 30
+      ? Math.min(speedMinutes * 30, pool.length)
       : questionCount === -1
       ? pool.length
       : questionCount;
@@ -415,11 +417,11 @@ export const QuizView: React.FC<QuizViewProps> = ({
                 </div>
               </button>
 
-              {/* Mode 4: Thử Thách Tốc Độ 60s */}
+              {/* Mode 4: Thử Thách Tốc Độ Tính Giờ */}
               <button
                 type="button"
                 onClick={() => setSelectedMode('speed')}
-                className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border transition-all flex items-center gap-2.5 text-left active:scale-95 ${
+                className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border transition-all flex items-center gap-2.5 text-left active:scale-95 cursor-pointer ${
                   selectedMode === 'speed'
                     ? 'border-amber-500 bg-amber-50/70 shadow-xs ring-1 ring-amber-300'
                     : 'border-slate-200 hover:border-slate-300 bg-slate-50/50 hover:bg-white'
@@ -429,17 +431,55 @@ export const QuizView: React.FC<QuizViewProps> = ({
                   <Zap className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
-                  <h4 className="text-xs sm:text-sm font-bold text-slate-800 leading-tight">Tốc Độ 60s</h4>
+                  <h4 className="text-xs sm:text-sm font-bold text-slate-800 leading-tight">
+                    Tốc Độ {speedMinutes} Phút
+                  </h4>
                   <p className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 leading-tight">
-                    Combo điểm cao
+                    Đếm ngược & Combo
                   </p>
                 </div>
               </button>
             </div>
           </div>
 
-          {/* 3. Số lượng câu hỏi (5 Pills cân đối, KHÔNG BỊ HỤT CHỮ "Toàn...") */}
-          {selectedMode !== 'speed' && (
+          {/* 3. Lựa chọn: Số phút (khi ở chế độ Tốc độ) HOẶC Số lượng câu hỏi (chế độ thường) */}
+          {selectedMode === 'speed' ? (
+            <div className="space-y-1 sm:space-y-1.5">
+              <div className="flex items-center justify-between px-0.5">
+                <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-amber-500" />
+                  <span>3. Chọn thời gian thi đấu</span>
+                </label>
+                <span className="text-[10px] text-slate-400">
+                  Trả lời càng nhiều càng tốt
+                </span>
+              </div>
+
+              <div className="grid grid-cols-5 gap-1 sm:gap-1.5">
+                {[1, 2, 3, 4, 5].map((mins) => (
+                  <button
+                    key={mins}
+                    type="button"
+                    onClick={() => setSpeedMinutes(mins)}
+                    className={`py-2 px-0.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center active:scale-95 cursor-pointer ${
+                      speedMinutes === mins
+                        ? 'bg-amber-500 text-white border-amber-600 shadow-xs font-bold ring-1 ring-amber-300'
+                        : 'bg-slate-50 hover:bg-white text-slate-700 border-slate-200 font-semibold'
+                    }`}
+                  >
+                    <span className="text-xs sm:text-sm leading-tight font-bold">{mins}</span>
+                    <span
+                      className={`text-[9px] sm:text-[10px] mt-0.5 leading-none ${
+                        speedMinutes === mins ? 'text-amber-100' : 'text-slate-400'
+                      }`}
+                    >
+                      phút
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : (
             <div className="space-y-1 sm:space-y-1.5">
               <div className="flex items-center justify-between px-0.5">
                 <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
@@ -463,7 +503,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
                     key={item.val}
                     type="button"
                     onClick={() => setQuestionCount(item.val)}
-                    className={`py-2 px-0.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center active:scale-95 ${
+                    className={`py-2 px-0.5 rounded-xl border text-center transition-all flex flex-col items-center justify-center active:scale-95 cursor-pointer ${
                       questionCount === item.val
                         ? 'bg-purple-600 text-white border-purple-600 shadow-xs font-bold ring-1 ring-purple-300'
                         : 'bg-slate-50 hover:bg-white text-slate-700 border-slate-200 font-semibold'
@@ -487,11 +527,13 @@ export const QuizView: React.FC<QuizViewProps> = ({
           <div className="pt-2">
             <button
               onClick={() => handleStartGame()}
-              className="w-full py-3 sm:py-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-emerald-600 hover:brightness-105 text-white font-bold text-sm sm:text-base shadow-md shadow-purple-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+              className="w-full py-3 sm:py-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-emerald-600 hover:brightness-105 text-white font-bold text-sm sm:text-base shadow-md shadow-purple-200 transition-all active:scale-[0.98] flex items-center justify-center gap-2 cursor-pointer"
             >
               <Play className="w-4 h-4 fill-white" />
               <span>
-                {remainingInPoolCount > 0
+                {selectedMode === 'speed'
+                  ? `Bắt Đầu Thi Tốc Độ (${speedMinutes} phút)`
+                  : remainingInPoolCount > 0
                   ? `Bắt Đầu Bài Test (${questionCount === -1 ? levelPool.length : Math.min(questionCount, levelPool.length)} câu mới)`
                   : 'Bắt Đầu Vòng Test Mới'}
               </span>
@@ -524,14 +566,17 @@ export const QuizView: React.FC<QuizViewProps> = ({
           <div className="flex-1 flex items-center justify-center gap-2.5">
             {selectedMode === 'speed' ? (
               <div
-                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold border ${
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
                   timeLeft <= 10
                     ? 'bg-rose-100 text-rose-700 border-rose-300 animate-pulse'
                     : 'bg-amber-100 text-amber-800 border-amber-200'
                 }`}
               >
-                <Clock className="w-3.5 h-3.5" />
-                <span>00:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}</span>
+                <Clock className="w-3.5 h-3.5 text-amber-600" />
+                <span>
+                  {Math.floor(timeLeft / 60) < 10 ? '0' : ''}{Math.floor(timeLeft / 60)}:
+                  {timeLeft % 60 < 10 ? '0' : ''}{timeLeft % 60}
+                </span>
               </div>
             ) : (
               <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">

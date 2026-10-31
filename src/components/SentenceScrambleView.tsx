@@ -75,13 +75,16 @@ export const SentenceScrambleView: React.FC<SentenceScrambleViewProps> = ({
   const [level, setLevel] = useState<1 | 2 | 3 | 4>(initialLevel);
   const [filterMode, setFilterMode] = useState<'all' | 'uncompleted' | 'mistakes'>('all');
   const [savedProgress, setSavedProgress] = useState<SavedProgress>(getSavedProgress);
+  const [shuffleKey, setShuffleKey] = useState<number>(0);
 
   const [streak, setStreak] = useState<number>(0);
   const [bestStreak, setBestStreak] = useState<number>(0);
 
+  // Automatically randomize sentence sequence on each visit / level change so learning is always fresh & engaging
   const levelQuestions = useMemo(() => {
-    return SENTENCE_SCRAMBLE_DATA.filter((q) => q.level === level);
-  }, [level]);
+    const raw = SENTENCE_SCRAMBLE_DATA.filter((q) => q.level === level);
+    return shuffleArray(raw);
+  }, [level, shuffleKey]);
 
   const activeQuestions = useMemo(() => {
     if (filterMode === 'uncompleted') {
@@ -335,15 +338,29 @@ export const SentenceScrambleView: React.FC<SentenceScrambleViewProps> = ({
             )}
           </div>
 
-          <button
-            onClick={() => setShowGridModal(true)}
-            className="shrink-0 text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg transition-all border border-purple-200 flex items-center gap-1 active:scale-95"
-            title="Xem danh sách 100 câu"
-          >
-            <BookOpen className="w-3.5 h-3.5 text-purple-600" />
-            <span className="hidden sm:inline">100 câu</span>
-            <span>({progressPercent}%)</span>
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => {
+                setShuffleKey((k) => k + 1);
+                setCurrentIndex(0);
+              }}
+              className="shrink-0 text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-2 py-0.5 sm:py-1 rounded-lg transition-all border border-slate-200 flex items-center gap-1 active:scale-95 cursor-pointer"
+              title="Xáo trộn thứ tự các câu ngẫu nhiên"
+            >
+              <RotateCcw className="w-3 h-3 text-purple-600" />
+              <span>Đảo câu</span>
+            </button>
+
+            <button
+              onClick={() => setShowGridModal(true)}
+              className="shrink-0 text-xs bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-lg transition-all border border-purple-200 flex items-center gap-1 active:scale-95 cursor-pointer"
+              title="Xem danh sách 100 câu"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-purple-600" />
+              <span className="hidden sm:inline">100 câu</span>
+              <span>({progressPercent}%)</span>
+            </button>
+          </div>
         </div>
       </div>
 

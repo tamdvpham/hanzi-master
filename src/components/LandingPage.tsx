@@ -164,28 +164,28 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
         )}
 
-        {/* Quick Challenge Mode Buttons */}
+        {/* Quick Challenge Mode Buttons: Trắc Nghiệm bên trái, Xếp Câu bên phải */}
         <div className="grid grid-cols-2 gap-2 max-w-md mx-auto w-full pt-0.5">
+          {onOpenQuiz && (
+            <button
+              onClick={onOpenQuiz}
+              className="group flex items-center justify-center gap-1.5 py-1.5 sm:py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:brightness-110 text-white font-bold text-xs shadow-md shadow-emerald-950/40 border border-emerald-400/30 transition-all active:scale-95 cursor-pointer"
+            >
+              <Gamepad2 className="w-3.5 h-3.5 text-amber-300 group-hover:scale-110 transition-transform shrink-0" />
+              <span className="whitespace-nowrap">Trắc Nghiệm 4 Chế Độ</span>
+            </button>
+          )}
+
           {onOpenSentenceScramble && (
             <button
               onClick={onOpenSentenceScramble}
-              className="group flex items-center justify-center gap-1.5 py-1.5 sm:py-2 px-3 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:brightness-110 text-white font-bold text-xs shadow-md shadow-purple-950/40 border border-purple-400/30 transition-all active:scale-95"
+              className="group flex items-center justify-center gap-1.5 py-1.5 sm:py-2 px-3 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:brightness-110 text-white font-bold text-xs shadow-md shadow-purple-950/40 border border-purple-400/30 transition-all active:scale-95 cursor-pointer"
             >
               <Layers className="w-3.5 h-3.5 text-amber-300 group-hover:scale-110 transition-transform shrink-0" />
               <span className="whitespace-nowrap">Xếp Câu (400)</span>
               <span className="bg-amber-400 text-slate-950 text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase ml-0.5">
                 Mới
               </span>
-            </button>
-          )}
-
-          {onOpenQuiz && (
-            <button
-              onClick={onOpenQuiz}
-              className="group flex items-center justify-center gap-1.5 py-1.5 sm:py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:brightness-110 text-white font-bold text-xs shadow-md shadow-emerald-950/40 border border-emerald-400/30 transition-all active:scale-95"
-            >
-              <Gamepad2 className="w-3.5 h-3.5 text-amber-300 group-hover:scale-110 transition-transform shrink-0" />
-              <span className="whitespace-nowrap">Trắc Nghiệm 4 Chế Độ</span>
             </button>
           )}
         </div>
