@@ -422,12 +422,7 @@ export const App: React.FC = () => {
         )}
       </main>
 
-      {/* Footer (Hidden on sentence scramble & quiz for full single-screen experience) */}
-      {currentView !== 'sentence' && (
-        <footer className="py-2.5 sm:py-3 border-t border-white/10 bg-[#161518] text-center text-[11px] sm:text-xs text-slate-400">
-          Ứng dụng Học Tiếng Trung HSK 1, HSK 2, HSK 3 & HSK 4 • Luyện viết nét chuẩn, Phát âm & Chấm điểm AI
-        </footer>
-      )}
+
 
       {/* Authentication Modal (Đăng ký / Đăng nhập) */}
       <AuthModal
