@@ -12,7 +12,8 @@ import {
   Layers,
   Flame,
   Mic,
-  Gamepad2
+  Gamepad2,
+  ArrowRight
 } from 'lucide-react';
 import { HSKWord, UserStats } from '../types';
 import { CATEGORIES } from '../data/hskData';
@@ -397,25 +398,37 @@ export const WordList: React.FC<WordListProps> = ({
                   </div>
                 </div>
 
-                {/* Bottom card footer: Action call & Practice stats */}
-                <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-1.5 text-purple-600 font-semibold group-hover:translate-x-1 transition-transform">
-                    <PenTool className="w-3.5 h-3.5" />
+                {/* Bottom card footer: Vibrant Action Bar & Gamified Stats */}
+                <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs min-h-[32px]">
+                  {/* Interactive Vibrant Action Button */}
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-purple-50 group-hover:bg-gradient-to-r group-hover:from-purple-600 group-hover:to-indigo-600 text-purple-700 group-hover:text-white font-bold text-[11px] transition-all duration-200 shadow-2xs group-hover:shadow-xs group-hover:translate-x-0.5">
+                    <div className="flex items-center gap-1">
+                      <PenTool className="w-3 h-3 text-purple-600 group-hover:text-white transition-colors" />
+                      <Mic className="w-3 h-3 text-indigo-500 group-hover:text-amber-300 transition-colors" />
+                    </div>
                     <span>Luyện viết & nói</span>
+                    <ArrowRight className="w-3 h-3 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
                   </div>
 
+                  {/* Achievements: Pronunciation Score & Practice Flame Count */}
                   <div className="flex items-center gap-1.5">
                     {userStats.pronunciationScores?.[word.id] !== undefined && userStats.pronunciationScores[word.id] > 0 && (
-                      <span className="flex items-center gap-0.5 text-[11px] font-bold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-md">
-                        <Award className="w-3 h-3 text-amber-500" />
-                        {userStats.pronunciationScores[word.id]}đ
+                      <span className="inline-flex items-center gap-1 text-[11px] font-extrabold text-amber-700 bg-amber-50 border border-amber-200/90 px-2 py-0.5 rounded-lg shadow-2xs">
+                        <Award className="w-3 h-3 text-amber-500 fill-amber-400" />
+                        <span>{userStats.pronunciationScores[word.id]}đ</span>
                       </span>
                     )}
 
                     {practiceCount > 0 && (
-                      <span className="flex items-center gap-1 text-[11px] font-medium text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">
-                        <Flame className="w-3 h-3 text-orange-500" />
-                        {practiceCount} lần
+                      <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-orange-700 bg-orange-50 border border-orange-200/90 px-1.5 py-0.5 rounded-lg shadow-2xs">
+                        <Flame className="w-3 h-3 text-orange-500 fill-orange-400" />
+                        <span>{practiceCount}</span>
+                      </span>
+                    )}
+
+                    {practiceCount === 0 && (!userStats.pronunciationScores?.[word.id] || userStats.pronunciationScores[word.id] === 0) && (
+                      <span className="text-[10px] font-medium text-slate-400 italic hidden sm:inline">
+                        Chưa học
                       </span>
                     )}
                   </div>
