@@ -135,10 +135,6 @@ function levenshteinDistance(a: string, b: string): number {
 /**
  * Score Chinese pronunciation accurately based on recognized speech vs expected text.
  * Strictly awards 0 points if speech is not recognized or not heard.
- *
- * @param recognizedList List of candidate transcripts from speech recognition
- * @param expectedText The target Chinese phrase or sentence
- * @param highlightWord Optional key vocabulary word in the sentence
  */
 export const evaluatePronunciation = (
   recognizedList: string[],
@@ -289,13 +285,13 @@ export interface RecorderCallbacks {
   onLiveTranscript?: (transcript: string) => void;
   onSpeechResult?: (alternatives: string[], primaryText: string) => void;
   onError?: (errorMessage: string, code?: string) => void;
-  onAutoEnd?: (alternatives: string[], transcript: string) => void;
+  onAutoEnd?: (alternatives: string[], transcript: string, audioBlobUrl: string | null) => void;
 }
 
 /**
  * Bulletproof Voice Recorder & Mandarin Speech Recognition Manager
  * Optimized for Mobile Safari (iOS) and Mobile Chrome (Android)
- * Includes auto-restart for Android silence-timeout handling
+ * Records audio for instant playback while transcribing speech in real-time
  */
 export class VoiceRecorderManager {
   private recognition: any = null;
@@ -305,12 +301,17 @@ export class VoiceRecorderManager {
   private restartCount: number = 0;
   private maxRestarts: number = 5;
 
+  private mediaRecorder: MediaRecorder | null = null;
+  private mediaStream: MediaStream | null = null;
+  private audioChunks: Blob[] = [];
+
   /**
-   * Start speech recognition immediately (synchronous user gesture for iOS Safari)
+   * Start speech recognition and audio recording simultaneously
    */
   startRecording(callbacks?: RecorderCallbacks): void {
     this.latestAlternatives = [];
     this.latestTranscript = '';
+    this.audioChunks = [];
     this.isListening = true;
     this.restartCount = 0;
 
@@ -408,7 +409,6 @@ export class VoiceRecorderManager {
               'language-not-supported'
             );
           }
-          // Note: 'no-speech' is intentionally handled by auto-restart in onend
         };
 
         recognition.onend = () => {
@@ -417,7 +417,9 @@ export class VoiceRecorderManager {
           // If we have captured a transcript, we finalize naturally
           if (this.latestTranscript.trim().length > 0 || this.latestAlternatives.length > 0) {
             this.isListening = false;
-            callbacks?.onAutoEnd?.(this.latestAlternatives, this.latestTranscript);
+            this.finalizeAudio().then((userAudioUrl) => {
+              callbacks?.onAutoEnd?.(this.latestAlternatives, this.latestTranscript, userAudioUrl);
+            });
           } else {
             // Android premature cutoff before speech was transcribed: auto-restart while listening
             if (this.restartCount < this.maxRestarts) {
@@ -425,7 +427,6 @@ export class VoiceRecorderManager {
               try {
                 recognition.start();
               } catch (e) {
-                // If restarting existing instance throws, recreate cleanly
                 setTimeout(() => {
                   if (this.isListening) {
                     initAndStart();
@@ -434,7 +435,9 @@ export class VoiceRecorderManager {
               }
             } else {
               this.isListening = false;
-              callbacks?.onAutoEnd?.([], '');
+              this.finalizeAudio().then((userAudioUrl) => {
+                callbacks?.onAutoEnd?.([], '', userAudioUrl);
+              });
             }
           }
         };
@@ -447,34 +450,122 @@ export class VoiceRecorderManager {
       }
     };
 
+    // 2. Start speech recognition synchronously
     initAndStart();
+
+    // 3. Simultaneously capture audio for user playback (non-blocking)
+    if (typeof navigator !== 'undefined' && navigator.mediaDevices?.getUserMedia) {
+      navigator.mediaDevices
+        .getUserMedia({ audio: true })
+        .then((stream) => {
+          if (!this.isListening) {
+            stream.getTracks().forEach((t) => t.stop());
+            return;
+          }
+
+          this.mediaStream = stream;
+          this.audioChunks = [];
+
+          let mimeType = '';
+          if (typeof MediaRecorder !== 'undefined') {
+            if (MediaRecorder.isTypeSupported('audio/webm;codecs=opus')) {
+              mimeType = 'audio/webm;codecs=opus';
+            } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+              mimeType = 'audio/webm';
+            } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+              mimeType = 'audio/mp4';
+            } else if (MediaRecorder.isTypeSupported('audio/aac')) {
+              mimeType = 'audio/aac';
+            }
+
+            try {
+              const mr = mimeType
+                ? new MediaRecorder(stream, { mimeType })
+                : new MediaRecorder(stream);
+              this.mediaRecorder = mr;
+
+              mr.ondataavailable = (e) => {
+                if (e.data && e.data.size > 0) {
+                  this.audioChunks.push(e.data);
+                }
+              };
+
+              mr.start(100); // 100ms chunks
+            } catch (mrErr) {
+              console.warn('MediaRecorder init error (non-fatal):', mrErr);
+            }
+          }
+        })
+        .catch((err) => {
+          console.warn('getUserMedia audio capture notice (non-fatal):', err);
+        });
+    }
   }
 
   /**
-   * Stop recording and return captured speech alternatives
+   * Stop MediaRecorder cleanly and assemble audio blob URL
    */
-  stopRecording(): Promise<{
+  private finalizeAudio(): Promise<string | null> {
+    return new Promise((resolve) => {
+      if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+        this.mediaRecorder.onstop = () => {
+          let url: string | null = null;
+          if (this.audioChunks.length > 0) {
+            const mimeType = this.mediaRecorder?.mimeType || 'audio/webm';
+            const blob = new Blob(this.audioChunks, { type: mimeType });
+            url = URL.createObjectURL(blob);
+          }
+          if (this.mediaStream) {
+            this.mediaStream.getTracks().forEach((t) => t.stop());
+            this.mediaStream = null;
+          }
+          resolve(url);
+        };
+
+        try {
+          this.mediaRecorder.stop();
+        } catch (e) {
+          if (this.mediaStream) {
+            this.mediaStream.getTracks().forEach((t) => t.stop());
+            this.mediaStream = null;
+          }
+          resolve(null);
+        }
+      } else {
+        if (this.mediaStream) {
+          this.mediaStream.getTracks().forEach((t) => t.stop());
+          this.mediaStream = null;
+        }
+        resolve(null);
+      }
+    });
+  }
+
+  /**
+   * Stop recording and return captured speech alternatives along with audio URL
+   */
+  async stopRecording(): Promise<{
     speechAlternatives: string[];
     transcript: string;
+    audioBlobUrl: string | null;
   }> {
     this.isListening = false;
 
-    return new Promise((resolve) => {
-      if (this.recognition) {
-        try {
-          this.recognition.stop();
-        } catch (e) {}
-      }
+    if (this.recognition) {
+      try {
+        this.recognition.stop();
+      } catch (e) {}
+    }
 
-      // Small delay to let any trailing result buffer flush
-      setTimeout(() => {
-        const alternatives = [...this.latestAlternatives];
-        const transcript = this.latestTranscript;
-        resolve({
-          speechAlternatives: alternatives,
-          transcript
-        });
-      }, 200);
-    });
+    const audioBlobUrl = await this.finalizeAudio();
+
+    // Small delay to let any trailing result buffer flush
+    await new Promise((r) => setTimeout(r, 200));
+
+    return {
+      speechAlternatives: [...this.latestAlternatives],
+      transcript: this.latestTranscript,
+      audioBlobUrl
+    };
   }
 }

@@ -239,7 +239,7 @@ const speakWithWebSpeech = (text: string, rate: number): Promise<void> => {
   });
 };
 
-// Pleasant success chime when character writing is finished
+// Pleasant success chime when character writing or 100-score is achieved
 export const playSuccessSound = () => {
   try {
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
@@ -268,6 +268,13 @@ export const playSuccessSound = () => {
       osc.start(audioCtx.currentTime + i * 0.08);
       osc.stop(audioCtx.currentTime + i * 0.08 + 0.35);
     });
+
+    // Close AudioContext as soon as chime ends (700ms) to release audio focus back to HTML5 Audio
+    setTimeout(() => {
+      try {
+        audioCtx.close().catch(() => {});
+      } catch (e) {}
+    }, 700);
   } catch (e) {
     // Ignore audio context error
   }

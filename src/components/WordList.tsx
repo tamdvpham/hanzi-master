@@ -189,11 +189,11 @@ export const WordList: React.FC<WordListProps> = ({
           )}
         </div>
 
-        {/* Level & Status Tabs: ONLY for this HSK level */}
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Level & Status Tabs: ONLY for this HSK level - single row, no awkward wrap */}
+        <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 pt-0.5">
           <button
             onClick={() => setStatusFilter('all')}
-            className={`px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all ${
+            className={`shrink-0 whitespace-nowrap px-3 sm:px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all ${
               statusFilter === 'all'
                 ? 'bg-purple-600 text-white shadow-md shadow-purple-200'
                 : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'
@@ -203,24 +203,24 @@ export const WordList: React.FC<WordListProps> = ({
           </button>
           <button
             onClick={() => setStatusFilter('learned')}
-            className={`px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5 ${
+            className={`shrink-0 whitespace-nowrap px-3 sm:px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 ${
               statusFilter === 'learned'
                 ? 'bg-emerald-600 text-white shadow-md shadow-emerald-200'
                 : 'bg-white text-emerald-700 hover:bg-emerald-50 border border-slate-200'
             }`}
           >
-            <CheckCircle2 className="w-4 h-4" />
+            <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>Đã thuộc ({learnedInLevel})</span>
           </button>
           <button
             onClick={() => setStatusFilter('favorites')}
-            className={`px-3.5 py-1.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5 ${
+            className={`shrink-0 whitespace-nowrap px-3 sm:px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-1.5 ${
               statusFilter === 'favorites'
                 ? 'bg-amber-500 text-white shadow-md shadow-amber-200'
                 : 'bg-white text-amber-700 hover:bg-amber-50 border border-slate-200'
             }`}
           >
-            <Bookmark className="w-4 h-4" />
+            <Bookmark className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             <span>Yêu thích ({favInLevel})</span>
           </button>
         </div>

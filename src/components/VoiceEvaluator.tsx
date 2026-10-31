@@ -10,7 +10,9 @@ import {
   Copy,
   Check,
   ShieldAlert,
-  Radio
+  Radio,
+  Play,
+  Pause
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { PronunciationScoreResult } from '../types';
@@ -64,13 +66,18 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
   const [micError, setMicError] = useState<string | null>(null);
   const [isCopied, setIsCopied] = useState(false);
   const [result, setResult] = useState<PronunciationScoreResult | null>(null);
+
+  // Audio Playback states
   const [isPlayingNativeAudio, setIsPlayingNativeAudio] = useState(false);
+  const [isPlayingUserAudio, setIsPlayingUserAudio] = useState(false);
+  const [userAudioUrl, setUserAudioUrl] = useState<string | null>(null);
 
   const isZaloOrFB = isInAppBrowser();
   const isCriOS = isIOSChrome();
   const isSupported = isSpeechRecognitionSupported() && !isCriOS;
 
   const recorderRef = useRef<VoiceRecorderManager | null>(null);
+  const userAudioPlayerRef = useRef<HTMLAudioElement | null>(null);
   const timerIntervalRef = useRef<any>(null);
   const timeoutTimerRef = useRef<any>(null);
   const speechAlternativesRef = useRef<string[]>([]);
@@ -83,6 +90,10 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
 
     return () => {
       stopAllChineseAudio();
+      if (userAudioPlayerRef.current) {
+        userAudioPlayerRef.current.pause();
+        userAudioPlayerRef.current = null;
+      }
       if (recorderRef.current && isRecording) {
         recorderRef.current.stopRecording();
       }
@@ -91,6 +102,9 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
       }
       if (timeoutTimerRef.current) {
         clearTimeout(timeoutTimerRef.current);
+      }
+      if (userAudioUrl) {
+        URL.revokeObjectURL(userAudioUrl);
       }
     };
   }, [targetText]);
@@ -108,7 +122,7 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
   };
 
   // Perform scoring evaluation - STRICT: 0 points if not recognized
-  const finalizeEvaluation = (alts: string[], primary: string) => {
+  const finalizeEvaluation = (alts: string[], primary: string, audioUrl: string | null = null) => {
     const candidates = Array.from(
       new Set([
         ...alts,
@@ -117,6 +131,10 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
         latestLiveTranscriptRef.current
       ])
     ).filter(Boolean);
+
+    if (audioUrl) {
+      setUserAudioUrl(audioUrl);
+    }
 
     const evaluation = evaluatePronunciation(candidates, targetText, highlightWord);
     setResult(evaluation);
@@ -137,13 +155,18 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
 
   // Start recording
   const handleStartRecording = () => {
-    // Stop any currently playing audio so iOS audio session frees the microphone
+    // Stop any playing audio
     stopAllChineseAudio();
+    if (userAudioPlayerRef.current) {
+      userAudioPlayerRef.current.pause();
+      setIsPlayingUserAudio(false);
+    }
 
     setResult(null);
     setMicError(null);
     setLiveTranscript('');
     latestLiveTranscriptRef.current = '';
+    setUserAudioUrl(null);
     setRecordingSeconds(0);
     setListenStatus('Đang mở micro...');
     speechAlternativesRef.current = [];
@@ -177,7 +200,7 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
       handleStopRecording();
     }, effectiveTimeout * 1000);
 
-    // Start speech recognition synchronously in the tap turn (maintains iOS Safari gesture token)
+    // Start speech recognition & audio recording
     recorderRef.current.startRecording({
       onStartListening: () => {
         setListenStatus('Đang lắng nghe... hãy đọc to vào micro');
@@ -200,7 +223,7 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
       onError: (errMessage) => {
         setMicError(errMessage);
       },
-      onAutoEnd: (alternatives, transcript) => {
+      onAutoEnd: (alternatives, transcript, audioUrl) => {
         setIsRecording(false);
         if (timerIntervalRef.current) {
           clearInterval(timerIntervalRef.current);
@@ -210,12 +233,12 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
           clearTimeout(timeoutTimerRef.current);
           timeoutTimerRef.current = null;
         }
-        finalizeEvaluation(alternatives, transcript);
+        finalizeEvaluation(alternatives, transcript, audioUrl);
       }
     });
   };
 
-  // Stop recording and evaluate
+  // Stop recording manually
   const handleStopRecording = async () => {
     if (!recorderRef.current) return;
     setIsRecording(false);
@@ -229,12 +252,19 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
       timeoutTimerRef.current = null;
     }
 
-    const { speechAlternatives, transcript } = await recorderRef.current.stopRecording();
-    finalizeEvaluation(speechAlternatives, transcript);
+    const { speechAlternatives, transcript, audioBlobUrl } =
+      await recorderRef.current.stopRecording();
+    finalizeEvaluation(speechAlternatives, transcript, audioBlobUrl);
   };
 
   // Play teacher native audio
   const handlePlayNativeAudio = async () => {
+    // Stop user voice playback if active
+    if (userAudioPlayerRef.current) {
+      userAudioPlayerRef.current.pause();
+      setIsPlayingUserAudio(false);
+    }
+
     setIsPlayingNativeAudio(true);
     try {
       await playChineseAudio(targetText);
@@ -243,6 +273,28 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
     } finally {
       setIsPlayingNativeAudio(false);
     }
+  };
+
+  // Play user recorded audio
+  const handlePlayUserAudio = () => {
+    if (!userAudioUrl) return;
+
+    // Stop teacher native audio if playing
+    stopAllChineseAudio();
+    setIsPlayingNativeAudio(false);
+
+    if (userAudioPlayerRef.current) {
+      userAudioPlayerRef.current.pause();
+      userAudioPlayerRef.current = null;
+    }
+
+    const audio = new Audio(userAudioUrl);
+    userAudioPlayerRef.current = audio;
+    setIsPlayingUserAudio(true);
+
+    audio.onended = () => setIsPlayingUserAudio(false);
+    audio.onerror = () => setIsPlayingUserAudio(false);
+    audio.play().catch(() => setIsPlayingUserAudio(false));
   };
 
   return (
@@ -476,35 +528,55 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="w-full flex items-center gap-2 mt-4">
+              {/* Action Buttons: 2 comparison audio buttons side by side */}
+              <div className="w-full grid grid-cols-2 gap-2 mt-4">
+                {/* Play user audio */}
+                <button
+                  onClick={handlePlayUserAudio}
+                  disabled={!userAudioUrl}
+                  className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-semibold border transition-all ${
+                    !userAudioUrl
+                      ? 'bg-slate-50 text-slate-400 border-slate-200 cursor-not-allowed opacity-60'
+                      : isPlayingUserAudio
+                      ? 'bg-purple-100 text-purple-700 border-purple-300 ring-2 ring-purple-200'
+                      : 'bg-white text-purple-700 border-purple-200 hover:bg-purple-50 shadow-sm'
+                  }`}
+                >
+                  {isPlayingUserAudio ? (
+                    <Pause className="w-3.5 h-3.5 animate-pulse text-purple-600" />
+                  ) : (
+                    <Play className="w-3.5 h-3.5 text-purple-600" />
+                  )}
+                  <span>{isPlayingUserAudio ? 'Đang phát...' : 'Nghe giọng bạn'}</span>
+                </button>
+
                 {/* Play native teacher audio */}
                 <button
                   onClick={handlePlayNativeAudio}
                   disabled={isPlayingNativeAudio}
-                  className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold border transition-all ${
+                  className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-semibold border transition-all ${
                     isPlayingNativeAudio
                       ? 'bg-emerald-100 text-emerald-700 border-emerald-300 ring-2 ring-emerald-200'
-                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
+                      : 'bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50 shadow-sm'
                   }`}
                 >
                   <Volume2
                     className={`w-3.5 h-3.5 ${
-                      isPlayingNativeAudio ? 'text-emerald-600 animate-pulse' : ''
+                      isPlayingNativeAudio ? 'text-emerald-600 animate-pulse' : 'text-emerald-600'
                     }`}
                   />
-                  <span>Nghe giọng mẫu</span>
-                </button>
-
-                {/* Retry button */}
-                <button
-                  onClick={handleStartRecording}
-                  className="flex-1 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-purple-200 transition-all active:scale-95"
-                >
-                  <RotateCcw className="w-3.5 h-3.5" />
-                  <span>Đọc lại</span>
+                  <span>{isPlayingNativeAudio ? 'Đang phát...' : 'Nghe giọng mẫu'}</span>
                 </button>
               </div>
+
+              {/* Retry button */}
+              <button
+                onClick={handleStartRecording}
+                className="w-full mt-3 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-purple-200 transition-all active:scale-95"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Thử đọc lại</span>
+              </button>
             </div>
           )}
         </div>
