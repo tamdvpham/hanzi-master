@@ -7,8 +7,10 @@ import {
   Mic,
   CheckCircle2,
   Layers,
-  Gamepad2
+  Gamepad2,
+  User
 } from 'lucide-react';
+import { UserProfile } from '../types';
 
 interface LandingPageProps {
   onSelectLevel: (level: '1' | '2' | '3' | '4') => void;
@@ -19,6 +21,9 @@ interface LandingPageProps {
   totalLearned: number;
   onOpenQuiz?: () => void;
   onOpenSentenceScramble?: () => void;
+  currentUser?: UserProfile | null;
+  onOpenAuth?: () => void;
+  onOpenProfile?: () => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
@@ -29,7 +34,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   hsk4Total,
   totalLearned,
   onOpenQuiz,
-  onOpenSentenceScramble
+  onOpenSentenceScramble,
+  currentUser,
+  onOpenAuth,
+  onOpenProfile
 }) => {
   const cards = [
     {
@@ -95,11 +103,35 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           Bấm vào cấp độ mong muốn để mở kho từ vựng riêng biệt (luyện viết nét chữ Mễ, 3 câu ví dụ và chấm điểm phát âm AI).
         </p>
 
-        {totalLearned > 0 && (
-          <div className="mt-1.5 inline-flex items-center gap-1.5 bg-emerald-950/60 border border-emerald-500/30 px-2.5 py-0.5 rounded-full text-[11px] text-emerald-300">
-            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+        {currentUser ? (
+          <button
+            onClick={onOpenProfile}
+            className="mt-1.5 inline-flex items-center gap-1.5 bg-emerald-950/70 hover:bg-emerald-900/80 border border-emerald-500/40 px-3 py-1 rounded-full text-xs text-emerald-300 transition-all cursor-pointer active:scale-95 shadow-sm"
+            title="Bấm để xem chi tiết hồ sơ học tập"
+          >
+            <span className="text-sm select-none">{currentUser.avatar}</span>
+            <span><strong>{currentUser.displayName}</strong> • Đã thuộc <strong>{totalLearned}</strong> từ vựng</span>
+          </button>
+        ) : totalLearned > 0 ? (
+          <button
+            onClick={onOpenAuth}
+            className="mt-1.5 inline-flex items-center gap-1.5 bg-emerald-950/70 hover:bg-emerald-900/80 border border-emerald-500/40 px-3 py-1 rounded-full text-xs text-emerald-300 transition-all cursor-pointer active:scale-95 shadow-sm group"
+            title="Bấm để đăng ký tài khoản và lưu 2 từ vựng này trên điện thoại của bạn"
+          >
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform" />
             <span>Bạn đã thuộc <strong>{totalLearned}</strong> từ vựng</span>
-          </div>
+            <span className="bg-emerald-400 text-slate-950 text-[10px] font-black px-1.5 py-0.2 rounded-full uppercase ml-1">
+              Lưu tài khoản
+            </span>
+          </button>
+        ) : (
+          <button
+            onClick={onOpenAuth}
+            className="mt-1.5 inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/15 border border-white/10 px-3 py-1 rounded-full text-xs text-purple-200 transition-all cursor-pointer active:scale-95"
+          >
+            <User className="w-3 h-3 text-amber-300" />
+            <span>Đăng ký / Đăng nhập để ghi nhớ tiến trình</span>
+          </button>
         )}
 
         {/* Quick Challenge Modes Shortcut */}

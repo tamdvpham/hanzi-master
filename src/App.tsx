@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { HSK_WORDS } from './data/hskData';
-import { HSKWord, UserStats } from './types';
+import { HSKWord, UserStats, UserProfile } from './types';
 import { WordList } from './components/WordList';
 import { HanziPractice } from './components/HanziPractice';
 import { LandingPage } from './components/LandingPage';
 import { QuizView } from './components/QuizView';
 import { SentenceScrambleView } from './components/SentenceScrambleView';
+import { AuthModal } from './components/AuthModal';
+import { UserProfileModal } from './components/UserProfileModal';
+import { getActiveUser, updateActiveUserStats } from './utils/authManager';
 import {
   Smartphone,
   Monitor,
@@ -15,7 +18,8 @@ import {
   Award,
   Home,
   Gamepad2,
-  Layers
+  Layers,
+  User
 } from 'lucide-react';
 
 const STATS_STORAGE_KEY = 'chinese_hsk_user_stats_v1';
@@ -46,20 +50,48 @@ const getInitialStats = (): UserStats => {
 };
 
 export const App: React.FC = () => {
+  const initialActiveUser = getActiveUser();
+  const [currentUser, setCurrentUser] = useState<UserProfile | null>(initialActiveUser);
   const [currentView, setCurrentView] = useState<'landing' | 'study' | 'quiz' | 'sentence'>('landing');
   const [currentLevel, setCurrentLevel] = useState<1 | 2 | 3 | 4>(1);
   const [selectedWord, setSelectedWord] = useState<HSKWord | null>(null);
-  const [userStats, setUserStats] = useState<UserStats>(getInitialStats);
+  const [userStats, setUserStats] = useState<UserStats>(() => {
+    if (initialActiveUser?.stats) {
+      return initialActiveUser.stats;
+    }
+    return getInitialStats();
+  });
   const [phoneFrame, setPhoneFrame] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showProfileModal, setShowProfileModal] = useState(false);
 
-  // Save stats to localStorage
+  // Save stats to localStorage & update active user's DB entry
   useEffect(() => {
     try {
       localStorage.setItem(STATS_STORAGE_KEY, JSON.stringify(userStats));
+      if (currentUser) {
+        updateActiveUserStats(userStats);
+      }
     } catch (e) {
       console.error('Failed to save stats:', e);
     }
-  }, [userStats]);
+  }, [userStats, currentUser]);
+
+  const handleAuthSuccess = (user: UserProfile) => {
+    setCurrentUser(user);
+    if (user.stats) {
+      setUserStats(user.stats);
+    }
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setUserStats(getInitialStats());
+  };
+
+  const handleUserUpdated = (updated: UserProfile) => {
+    setCurrentUser(updated);
+  };
 
   // Toggle favorite
   const handleToggleFavorite = (wordId: string) => {
@@ -241,6 +273,28 @@ export const App: React.FC = () => {
               <span>Sắp xếp câu</span>
             </button>
 
+            {/* User Account / Profile Button */}
+            {currentUser ? (
+              <button
+                onClick={() => setShowProfileModal(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-400/30 text-white text-xs font-semibold transition-all active:scale-95"
+                title="Hồ sơ & Tiến trình đã lưu trên điện thoại"
+              >
+                <span className="text-base select-none">{currentUser.avatar}</span>
+                <span className="max-w-[70px] sm:max-w-[110px] truncate font-bold">{currentUser.displayName}</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => setShowAuthModal(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white text-xs font-bold shadow-sm transition-all active:scale-95"
+                title="Đăng ký hoặc Đăng nhập để tự động ghi nhớ tiến trình trên thiết bị này"
+              >
+                <User className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Đăng nhập</span>
+                <span className="sm:hidden">Login</span>
+              </button>
+            )}
+
             {/* View Mode Toggle: Phone Frame vs Full Responsive (when in practice mode) */}
             {selectedWord && (
               <button
@@ -344,6 +398,9 @@ export const App: React.FC = () => {
             totalLearned={totalLearned}
             onOpenQuiz={() => setCurrentView('quiz')}
             onOpenSentenceScramble={() => setCurrentView('sentence')}
+            currentUser={currentUser}
+            onOpenAuth={() => setShowAuthModal(true)}
+            onOpenProfile={() => setShowProfileModal(true)}
           />
         ) : (
           // Word List and Filters strictly scoped to currentLevel
@@ -367,6 +424,25 @@ export const App: React.FC = () => {
       <footer className="py-4 border-t border-white/10 bg-[#161518] text-center text-xs text-slate-400">
         Ứng dụng Học Tiếng Trung HSK 1, HSK 2, HSK 3 & HSK 4 • Luyện viết nét chuẩn, Phát âm & Chấm điểm AI
       </footer>
+
+      {/* Authentication Modal (Đăng ký / Đăng nhập) */}
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onAuthSuccess={handleAuthSuccess}
+        currentGuestStats={userStats}
+      />
+
+      {/* User Profile & Progress Modal */}
+      {currentUser && (
+        <UserProfileModal
+          isOpen={showProfileModal}
+          onClose={() => setShowProfileModal(false)}
+          user={currentUser}
+          onUserUpdated={handleUserUpdated}
+          onLogout={handleLogout}
+        />
+      )}
     </div>
   );
 };

@@ -78,3 +78,14 @@ export interface SentenceScrambleQuestion {
 }
 
 export type MainView = 'landing' | 'study' | 'quiz' | 'sentence';
+
+export interface UserProfile {
+  id: string;
+  username: string;
+  displayName: string;
+  passwordHash?: string;
+  avatar: string;
+  createdAt: string;
+  lastLoginAt: string;
+  stats: UserStats;
+}
