@@ -27,6 +27,7 @@ interface WordListProps {
   onToggleLearned: (wordId: string) => void;
   onBackToLanding?: () => void;
   onOpenQuiz?: () => void;
+  onOpenSentenceScramble?: () => void;
 }
 
 export const WordList: React.FC<WordListProps> = ({
@@ -37,7 +38,8 @@ export const WordList: React.FC<WordListProps> = ({
   onToggleFavorite,
   onToggleLearned,
   onBackToLanding,
-  onOpenQuiz
+  onOpenQuiz,
+  onOpenSentenceScramble
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'learned' | 'favorites'>('all');
@@ -117,7 +119,7 @@ export const WordList: React.FC<WordListProps> = ({
               Cấp độ HSK {currentLevel} ({totalInLevel} từ vựng)
             </span>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               {onOpenQuiz && (
                 <button
                   onClick={onOpenQuiz}
@@ -125,6 +127,16 @@ export const WordList: React.FC<WordListProps> = ({
                 >
                   <Gamepad2 className="w-3.5 h-3.5" />
                   <span>Trắc nghiệm HSK {currentLevel}</span>
+                </button>
+              )}
+
+              {onOpenSentenceScramble && (
+                <button
+                  onClick={onOpenSentenceScramble}
+                  className="text-xs bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-bold px-3 py-1.5 rounded-full transition-all shadow-md flex items-center gap-1.5 active:scale-95"
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  <span>Xếp câu HSK {currentLevel}</span>
                 </button>
               )}
 

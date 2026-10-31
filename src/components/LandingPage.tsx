@@ -9,7 +9,8 @@ import {
   TrendingUp,
   CheckCircle2,
   Award,
-  Layers
+  Layers,
+  Gamepad2
 } from 'lucide-react';
 
 interface LandingPageProps {
@@ -19,6 +20,8 @@ interface LandingPageProps {
   hsk3Total: number;
   hsk4Total: number;
   totalLearned: number;
+  onOpenQuiz?: () => void;
+  onOpenSentenceScramble?: () => void;
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({
@@ -27,7 +30,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   hsk2Total,
   hsk3Total,
   hsk4Total,
-  totalLearned
+  totalLearned,
+  onOpenQuiz,
+  onOpenSentenceScramble
 }) => {
   const cards = [
     {
@@ -150,6 +155,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <span>Bạn đã thuộc <strong>{totalLearned}</strong> từ vựng</span>
             </div>
           )}
+
+          {/* Quick Challenge Modes Shortcut */}
+          <div className="mt-5 flex items-center justify-center gap-3 flex-wrap">
+            {onOpenSentenceScramble && (
+              <button
+                onClick={onOpenSentenceScramble}
+                className="group flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-lg shadow-purple-900/30 border border-purple-400/30 transition-all active:scale-95"
+              >
+                <Layers className="w-4 h-4 text-amber-300 group-hover:scale-110 transition-transform" />
+                <span>Luyện Sắp Xếp Câu (400 Câu)</span>
+                <span className="bg-amber-400 text-slate-950 text-[10px] font-black px-1.5 py-0.2 rounded-full uppercase">
+                  Mới
+                </span>
+              </button>
+            )}
+
+            {onOpenQuiz && (
+              <button
+                onClick={onOpenQuiz}
+                className="group flex items-center gap-2 px-4 py-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs shadow-lg shadow-emerald-900/30 border border-emerald-400/30 transition-all active:scale-95"
+              >
+                <Gamepad2 className="w-4 h-4 text-amber-300 group-hover:scale-110 transition-transform" />
+                <span>Trắc Nghiệm 4 Chế Độ</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* 4 Cards Grid: HSK 1, HSK 2, HSK 3, HSK 4 */}

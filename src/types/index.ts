@@ -58,3 +58,23 @@ export interface PronunciationScoreResult {
   audioBlobUrl?: string;
   isCorrect: boolean;
 }
+
+export interface TargetWord {
+  hanzi: string;
+  pinyin: string;
+  meaning: string;
+}
+
+export interface SentenceScrambleQuestion {
+  id: string;
+  level: 1 | 2 | 3 | 4;
+  targetSentence: string;
+  cleanSentence: string;
+  pinyin: string;
+  translation: string;
+  segments: string[];
+  targetWords: TargetWord[];
+  grammarTip: string;
+}
+
+export type MainView = 'landing' | 'study' | 'quiz' | 'sentence';

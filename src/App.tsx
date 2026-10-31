@@ -5,6 +5,7 @@ import { WordList } from './components/WordList';
 import { HanziPractice } from './components/HanziPractice';
 import { LandingPage } from './components/LandingPage';
 import { QuizView } from './components/QuizView';
+import { SentenceScrambleView } from './components/SentenceScrambleView';
 import {
   Smartphone,
   Monitor,
@@ -13,7 +14,8 @@ import {
   Sparkles,
   Award,
   Home,
-  Gamepad2
+  Gamepad2,
+  Layers
 } from 'lucide-react';
 
 const STATS_STORAGE_KEY = 'chinese_hsk_user_stats_v1';
@@ -44,7 +46,7 @@ const getInitialStats = (): UserStats => {
 };
 
 export const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<'landing' | 'study' | 'quiz'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'study' | 'quiz' | 'sentence'>('landing');
   const [currentLevel, setCurrentLevel] = useState<1 | 2 | 3 | 4>(1);
   const [selectedWord, setSelectedWord] = useState<HSKWord | null>(null);
   const [userStats, setUserStats] = useState<UserStats>(getInitialStats);
@@ -223,6 +225,22 @@ export const App: React.FC = () => {
               <span>Trắc nghiệm</span>
             </button>
 
+            {/* Sentence Scramble Button */}
+            <button
+              onClick={() => {
+                setSelectedWord(null);
+                setCurrentView('sentence');
+              }}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                currentView === 'sentence' && !selectedWord
+                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md'
+                  : 'bg-white/10 text-white hover:bg-white/20'
+              }`}
+            >
+              <Layers className="w-3.5 h-3.5 text-amber-300" />
+              <span>Sắp xếp câu</span>
+            </button>
+
             {/* View Mode Toggle: Phone Frame vs Full Responsive (when in practice mode) */}
             {selectedWord && (
               <button
@@ -286,6 +304,22 @@ export const App: React.FC = () => {
               </div>
             )}
           </div>
+        ) : currentView === 'sentence' ? (
+          // Sentence Scramble View (400 câu sắp xếp HSK 1 - 4)
+          <div className="bg-slate-100 flex-1">
+            <SentenceScrambleView
+              initialLevel={currentLevel}
+              onBack={() => setCurrentView('study')}
+              onSelectWordToPractice={(wordHanzi) => {
+                const found = HSK_WORDS.find((w) => w.hanzi === wordHanzi);
+                if (found) {
+                  setSelectedWord(found);
+                  setCurrentLevel(found.level);
+                  setCurrentView('study');
+                }
+              }}
+            />
+          </div>
         ) : currentView === 'quiz' ? (
           // Quiz Arena View (Trắc nghiệm 4 chế độ)
           <div className="bg-slate-100 flex-1">
@@ -308,6 +342,8 @@ export const App: React.FC = () => {
             hsk3Total={hsk3Total}
             hsk4Total={hsk4Total}
             totalLearned={totalLearned}
+            onOpenQuiz={() => setCurrentView('quiz')}
+            onOpenSentenceScramble={() => setCurrentView('sentence')}
           />
         ) : (
           // Word List and Filters strictly scoped to currentLevel
@@ -321,6 +357,7 @@ export const App: React.FC = () => {
               onToggleLearned={handleToggleLearned}
               onBackToLanding={() => setCurrentView('landing')}
               onOpenQuiz={() => setCurrentView('quiz')}
+              onOpenSentenceScramble={() => setCurrentView('sentence')}
             />
           </div>
         )}
