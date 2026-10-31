@@ -90,39 +90,33 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           Chọn Cấp Độ HSK Để Bắt Đầu Học
         </h1>
 
-        {/* User Stats / Login Status Pill */}
-        <div className="mt-2 flex items-center justify-center">
-          {currentUser ? (
-            <button
-              onClick={onOpenProfile}
-              className="inline-flex items-center gap-1.5 bg-emerald-950/70 hover:bg-emerald-900/80 border border-emerald-500/40 px-3 py-1 rounded-full text-xs text-emerald-300 transition-all cursor-pointer active:scale-95 shadow-xs"
-              title="Bấm để xem chi tiết hồ sơ học tập"
-            >
-              <span className="text-sm select-none">{currentUser.avatar}</span>
-              <span className="text-xs"><strong>{currentUser.displayName}</strong> • Đã thuộc <strong>{totalLearned}</strong> từ vựng</span>
-            </button>
-          ) : totalLearned > 0 ? (
-            <button
-              onClick={onOpenAuth}
-              className="inline-flex items-center gap-1.5 bg-emerald-950/70 hover:bg-emerald-900/80 border border-emerald-500/40 px-3 py-1 rounded-full text-xs text-emerald-300 transition-all cursor-pointer active:scale-95 shadow-xs group"
-              title="Bấm để đăng ký tài khoản và lưu tiến trình này"
-            >
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform shrink-0" />
-              <span className="text-xs">Bạn đã thuộc <strong>{totalLearned}</strong> từ vựng</span>
-              <span className="bg-emerald-400 text-slate-950 text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase ml-1">
-                Lưu tài khoản
-              </span>
-            </button>
-          ) : (
-            <button
-              onClick={onOpenAuth}
-              className="inline-flex items-center gap-1 bg-white/10 hover:bg-white/15 border border-white/10 px-3 py-1 rounded-full text-xs text-purple-200 transition-all cursor-pointer active:scale-95"
-            >
-              <User className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-              <span>Đăng nhập ghi nhớ tiến trình</span>
-            </button>
-          )}
-        </div>
+        {/* User Stats / Progress Pill (chỉ hiện khi đã đăng nhập hoặc đã học thuộc từ vựng) */}
+        {(currentUser || totalLearned > 0) && (
+          <div className="mt-2 flex items-center justify-center">
+            {currentUser ? (
+              <button
+                onClick={onOpenProfile}
+                className="inline-flex items-center gap-1.5 bg-emerald-950/70 hover:bg-emerald-900/80 border border-emerald-500/40 px-3 py-1 rounded-full text-xs text-emerald-300 transition-all cursor-pointer active:scale-95 shadow-xs"
+                title="Bấm để xem chi tiết hồ sơ học tập"
+              >
+                <span className="text-sm select-none">{currentUser.avatar}</span>
+                <span className="text-xs"><strong>{currentUser.displayName}</strong> • Đã thuộc <strong>{totalLearned}</strong> từ vựng</span>
+              </button>
+            ) : (
+              <button
+                onClick={onOpenAuth}
+                className="inline-flex items-center gap-1.5 bg-emerald-950/70 hover:bg-emerald-900/80 border border-emerald-500/40 px-3 py-1 rounded-full text-xs text-emerald-300 transition-all cursor-pointer active:scale-95 shadow-xs group"
+                title="Bấm để đăng ký tài khoản và lưu tiến trình này"
+              >
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 group-hover:scale-110 transition-transform shrink-0" />
+                <span className="text-xs">Bạn đã thuộc <strong>{totalLearned}</strong> từ vựng</span>
+                <span className="bg-emerald-400 text-slate-950 text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase ml-1">
+                  Lưu tài khoản
+                </span>
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Quick Challenge Modes Shortcut */}
         <div className="mt-2.5 flex items-center justify-center gap-2 overflow-x-auto no-scrollbar py-0.5 whitespace-nowrap">

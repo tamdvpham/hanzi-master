@@ -188,120 +188,66 @@ export const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col font-sans">
       {/* Top Global Navigation Bar */}
-      <header className="sticky top-0 z-50 bg-[#1c1b1f] text-white border-b border-white/10 h-14 min-h-[56px] max-h-[56px] overflow-hidden">
-        <div className="max-w-5xl mx-auto px-2 sm:px-4 h-full flex items-center justify-between gap-1 overflow-hidden">
+      <header className="sticky top-0 z-50 bg-[#1c1b1f] text-white border-b border-white/10 h-14 min-h-[56px] max-h-[56px]">
+        <div className="max-w-5xl mx-auto px-3 sm:px-4 h-full flex items-center justify-between">
+          {/* Logo & Brand Name */}
           <div
             onClick={() => {
               setSelectedWord(null);
               setCurrentView('landing');
             }}
-            className="flex items-center gap-1.5 cursor-pointer select-none group shrink-0"
+            className="flex items-center gap-2 cursor-pointer select-none group shrink-0"
           >
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-400 to-rose-500 text-white flex items-center justify-center font-bold text-base font-chinese shadow-md shadow-amber-500/20 group-hover:scale-105 transition-transform shrink-0">
               文
             </div>
-            <div className="shrink-0">
-              <span className="font-bold text-white text-sm sm:text-base whitespace-nowrap">
-                <span className="hidden sm:inline">Hán Tự Master</span>
-                <span className="sm:hidden">Hán Tự</span>
-              </span>
-            </div>
+            <span className="font-bold text-white text-base tracking-tight whitespace-nowrap">
+              Hán Tự Master
+            </span>
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-1.5 overflow-x-auto no-scrollbar py-1 shrink min-w-0">
-            {/* Home / Landing Page Toggle Button */}
-            <button
-              onClick={() => {
-                setSelectedWord(null);
-                setCurrentView('landing');
-              }}
-              className={`shrink-0 whitespace-nowrap flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                currentView === 'landing' && !selectedWord
-                  ? 'bg-amber-400 text-slate-950 shadow-md font-bold'
-                  : 'bg-white/10 text-white hover:bg-white/20'
-              }`}
-            >
-              <LayoutGrid className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden sm:inline">4 Cấp độ HSK</span>
-              <span className="sm:hidden">4 Cấp độ</span>
-            </button>
-
-            {/* Current Level Vocabulary Button */}
-            <button
-              onClick={() => {
-                setSelectedWord(null);
-                setCurrentView('study');
-              }}
-              className={`shrink-0 whitespace-nowrap flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                currentView === 'study' && !selectedWord
-                  ? 'bg-purple-600 text-white shadow-md font-bold'
-                  : 'bg-white/10 text-white hover:bg-white/20'
-              }`}
-            >
-              <BookOpen className="w-3.5 h-3.5 shrink-0" />
-              <span>HSK {currentLevel}</span>
-            </button>
-
-            {/* Quiz Challenge Button */}
-            <button
-              onClick={() => {
-                setSelectedWord(null);
-                setCurrentView('quiz');
-              }}
-              className={`shrink-0 whitespace-nowrap flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                currentView === 'quiz' && !selectedWord
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md font-bold'
-                  : 'bg-white/10 text-white hover:bg-white/20'
-              }`}
-            >
-              <Gamepad2 className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-              <span className="hidden sm:inline">Trắc nghiệm</span>
-              <span className="sm:hidden">Quiz</span>
-            </button>
-
-            {/* Sentence Scramble Button */}
-            <button
-              onClick={() => {
-                setSelectedWord(null);
-                setCurrentView('sentence');
-              }}
-              className={`shrink-0 whitespace-nowrap flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                currentView === 'sentence' && !selectedWord
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md font-bold'
-                  : 'bg-white/10 text-white hover:bg-white/20'
-              }`}
-            >
-              <Layers className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-              <span className="hidden sm:inline">Sắp xếp câu</span>
-              <span className="sm:hidden">Xếp câu</span>
-            </button>
-
-            {/* User Account / Profile Button */}
-            {currentUser ? (
-              <button
-                onClick={() => setShowProfileModal(true)}
-                className="shrink-0 whitespace-nowrap flex items-center gap-1 px-2 sm:px-2.5 py-1.5 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-400/30 text-white text-xs font-semibold transition-all active:scale-95"
-                title="Hồ sơ & Tiến trình"
-              >
-                <span className="text-sm select-none shrink-0">{currentUser.avatar}</span>
-                <span className="max-w-[65px] sm:max-w-[110px] truncate font-bold">{currentUser.displayName}</span>
-              </button>
+          {/* Right Action: Nút Đăng nhập CHỈ HIỂN THỊ Ở TRANG CHỦ */}
+          <div className="flex items-center gap-2 shrink-0">
+            {currentView === 'landing' && !selectedWord ? (
+              currentUser ? (
+                <button
+                  onClick={() => setShowProfileModal(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-400/30 text-white text-xs font-semibold transition-all active:scale-95 shadow-xs"
+                  title="Hồ sơ & Tiến trình"
+                >
+                  <span className="text-sm select-none">{currentUser.avatar}</span>
+                  <span className="font-bold max-w-[100px] truncate">{currentUser.displayName}</span>
+                </button>
+              ) : (
+                <button
+                  onClick={() => setShowAuthModal(true)}
+                  className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white text-xs font-bold shadow-sm transition-all active:scale-95"
+                  title="Đăng ký hoặc Đăng nhập để tự động lưu tiến trình"
+                >
+                  <User className="w-3.5 h-3.5" />
+                  <span>Đăng nhập</span>
+                </button>
+              )
             ) : (
+              /* Khi đang ở các màn hình khác (học, trắc nghiệm, xếp câu): Nút về Trang chủ */
               <button
-                onClick={() => setShowAuthModal(true)}
-                className="shrink-0 whitespace-nowrap flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white text-xs font-bold shadow-sm transition-all active:scale-95"
-                title="Đăng ký hoặc Đăng nhập"
+                onClick={() => {
+                  setSelectedWord(null);
+                  setCurrentView('landing');
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-semibold transition-all active:scale-95 border border-white/10"
+                title="Quay về trang chủ"
               >
-                <User className="w-3.5 h-3.5 shrink-0" />
-                <span>Đăng nhập</span>
+                <LayoutGrid className="w-3.5 h-3.5 text-amber-400" />
+                <span>Trang chủ</span>
               </button>
             )}
 
-            {/* View Mode Toggle: Phone Frame vs Full Responsive (when in practice mode) */}
+            {/* View Mode Toggle: Phone Frame vs Full Responsive (when in practice mode on desktop) */}
             {selectedWord && (
               <button
                 onClick={() => setPhoneFrame(!phoneFrame)}
-                className="shrink-0 whitespace-nowrap hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white transition-colors"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white transition-colors"
                 title="Chuyển đổi kiểu khung điện thoại"
               >
                 {phoneFrame ? <Monitor className="w-3.5 h-3.5 text-amber-400 shrink-0" /> : <Smartphone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
