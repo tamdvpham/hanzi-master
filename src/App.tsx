@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { HSK_WORDS } from './data/hskData';
 import { HSKWord, UserStats, UserProfile } from './types';
 import { WordList } from './components/WordList';
@@ -163,6 +163,15 @@ export const App: React.FC = () => {
   const hsk3Total = HSK_WORDS.filter((w) => w.level === 3).length;
   const hsk4Total = HSK_WORDS.filter((w) => w.level === 4).length;
   const totalLearned = userStats.learnedWordIds.length;
+
+  const learnedByLevel = useMemo(() => {
+    return {
+      1: HSK_WORDS.filter((w) => w.level === 1 && userStats.learnedWordIds.includes(w.id)).length,
+      2: HSK_WORDS.filter((w) => w.level === 2 && userStats.learnedWordIds.includes(w.id)).length,
+      3: HSK_WORDS.filter((w) => w.level === 3 && userStats.learnedWordIds.includes(w.id)).length,
+      4: HSK_WORDS.filter((w) => w.level === 4 && userStats.learnedWordIds.includes(w.id)).length
+    };
+  }, [userStats.learnedWordIds]);
 
   // Navigation between words in practice mode (strictly within current HSK level)
   const currentIndex = selectedWord
@@ -344,6 +353,7 @@ export const App: React.FC = () => {
             hsk3Total={hsk3Total}
             hsk4Total={hsk4Total}
             totalLearned={totalLearned}
+            learnedByLevel={learnedByLevel}
             onOpenQuiz={() => setCurrentView('quiz')}
             onOpenSentenceScramble={() => setCurrentView('sentence')}
             currentUser={currentUser}
