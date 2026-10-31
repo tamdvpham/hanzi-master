@@ -3,7 +3,7 @@ import { HSKWord, QuizMode, QuizOption, QuizQuestion } from '../types';
 /**
  * Shuffle an array randomly using Fisher-Yates
  */
-function shuffleArray<T>(array: T[]): T[] {
+export function shuffleArray<T>(array: T[]): T[] {
   const result = [...array];
   for (let i = result.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -13,18 +13,26 @@ function shuffleArray<T>(array: T[]): T[] {
 }
 
 /**
- * Generate diverse, balanced quiz questions from word dataset
+ * Generate diverse, balanced quiz questions from word dataset.
+ * Supports smart no-repeat cycling across multiple sessions.
  */
 export function generateQuizQuestions(
   poolWords: HSKWord[],
   allWords: HSKWord[],
   mode: QuizMode,
-  count: number = 10
+  count: number = 10,
+  recentTestedIds: string[] = []
 ): QuizQuestion[] {
   if (!poolWords || poolWords.length === 0) return [];
 
-  const shuffledPool = shuffleArray(poolWords);
-  const selectedPool = shuffledPool.slice(0, Math.min(count, shuffledPool.length));
+  // Partition pool into fresh words (not recently tested) and already tested words
+  const freshWords = poolWords.filter((w) => !recentTestedIds.includes(w.id));
+  const testedWords = poolWords.filter((w) => recentTestedIds.includes(w.id));
+
+  // Prioritize fresh words first to guarantee no duplicate questions across sessions
+  const orderedPool = [...shuffleArray(freshWords), ...shuffleArray(testedWords)];
+  const actualCount = count <= 0 ? orderedPool.length : Math.min(count, orderedPool.length);
+  const selectedPool = orderedPool.slice(0, actualCount);
 
   const questions: QuizQuestion[] = [];
 
@@ -38,9 +46,12 @@ export function generateQuizQuestions(
       effectiveMode = mode;
     }
 
-    // Pick 3 distractors
-    const otherWords = allWords.filter((w) => w.id !== targetWord.id);
-    const shuffledOthers = shuffleArray(otherWords).slice(0, 3);
+    // Pick 3 distractors from the same level if possible, else from all words
+    const sameLevelOthers = allWords.filter(
+      (w) => w.id !== targetWord.id && w.level === targetWord.level
+    );
+    const poolOthers = sameLevelOthers.length >= 3 ? sameLevelOthers : allWords.filter((w) => w.id !== targetWord.id);
+    const shuffledOthers = shuffleArray(poolOthers).slice(0, 3);
 
     let questionTitle = '';
     let promptDisplay = '';
