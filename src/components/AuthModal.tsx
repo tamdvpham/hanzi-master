@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
-import { Html5Qrcode } from 'html5-qrcode';
 import { UserProfile, UserStats } from '../types';
 import { HSK_WORDS } from '../data/hskData';
 import {
@@ -83,7 +82,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const html5QrCodeRef = useRef<Html5Qrcode | null>(null);
+  const html5QrCodeRef = useRef<any>(null);
 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -301,47 +300,50 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   };
 
   // Upload QR image file
-  const handleFileQRChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileQRChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setErrorMessage(null);
     setIsLoading(true);
 
-    const tempScanner = html5QrCodeRef.current || new Html5Qrcode('qr-camera-viewport');
-    tempScanner.scanFile(file, true)
-      .then((decodedText) => {
-        handleQRSuccess(decodedText);
-      })
-      .catch((err) => {
-        console.warn('Scan file error:', err);
-        setErrorMessage('Không nhận diện được mã QR trong ảnh này. Vui lòng thử ảnh rõ nét hơn hoặc dùng camera.');
-        setIsLoading(false);
-      });
+    try {
+      const { Html5Qrcode } = await import('html5-qrcode');
+      const tempScanner = html5QrCodeRef.current || new Html5Qrcode('qr-camera-viewport');
+      const decodedText = await tempScanner.scanFile(file, true);
+      handleQRSuccess(decodedText);
+    } catch (err) {
+      console.warn('Scan file error:', err);
+      setErrorMessage('Không nhận diện được mã QR trong ảnh này. Vui lòng thử ảnh rõ nét hơn hoặc dùng camera.');
+      setIsLoading(false);
+    }
   };
 
-  // Camera QR scanner lifecycle
+  // Camera QR scanner lifecycle (dynamically loaded only in scan-qr view)
   useEffect(() => {
-    let scanner: Html5Qrcode | null = null;
+    let scanner: any = null;
     let isMounted = true;
 
     if (isOpen && view === 'scan-qr') {
       setCameraError(null);
       setIsCameraActive(false);
 
-      const timer = setTimeout(() => {
+      const timer = setTimeout(async () => {
         if (!isMounted) return;
         const elem = document.getElementById('qr-camera-viewport');
         if (!elem) return;
 
         try {
+          const { Html5Qrcode } = await import('html5-qrcode');
+          if (!isMounted) return;
+
           scanner = new Html5Qrcode('qr-camera-viewport');
           html5QrCodeRef.current = scanner;
 
           scanner.start(
             { facingMode: 'environment' },
             { fps: 10, qrbox: { width: 220, height: 220 } },
-            (decodedText) => {
+            (decodedText: string) => {
               if (scanner && scanner.isScanning) {
                 scanner.stop().then(() => {
                   handleQRSuccess(decodedText);
@@ -355,7 +357,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             () => {}
           ).then(() => {
             if (isMounted) setIsCameraActive(true);
-          }).catch((err) => {
+          }).catch((err: any) => {
             console.warn('Camera start error:', err);
             if (isMounted) {
               setCameraError('Không thể mở camera. Bạn có thể cho phép quyền máy ảnh, hoặc bấm "Tải ảnh mã QR" bên dưới.');
@@ -491,7 +493,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
 
             <div className="space-y-1.5 max-h-36 overflow-y-auto no-scrollbar">
-              {savedAccounts.map((acc) => {
+              {savedAccounts.filter((acc) => Boolean(acc && acc.id)).map((acc) => {
                 const wordsLearned = acc.stats?.learnedWordIds?.length || 0;
                 return (
                   <div

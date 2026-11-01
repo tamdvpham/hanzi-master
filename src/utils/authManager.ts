@@ -89,7 +89,10 @@ export const getUsersDB = (): Record<string, UserProfile> => {
   try {
     const raw = localStorage.getItem(DB_KEY);
     if (raw) {
-      return JSON.parse(raw);
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return parsed;
+      }
     }
   } catch (e) {
     console.error('Failed to load users DB:', e);
@@ -240,12 +243,20 @@ async function callCloudAuth(action: string, payload: any = {}): Promise<any> {
  * Get all saved accounts on this device sorted by most recently used
  */
 export const getSavedAccountsOnDevice = (): UserProfile[] => {
-  const db = getUsersDB();
-  return Object.values(db).sort((a, b) => {
-    const timeA = new Date(a.lastLoginAt || 0).getTime();
-    const timeB = new Date(b.lastLoginAt || 0).getTime();
-    return timeB - timeA;
-  });
+  try {
+    const db = getUsersDB();
+    if (!db || typeof db !== 'object') return [];
+    return Object.values(db)
+      .filter((u): u is UserProfile => Boolean(u && typeof u === 'object' && u.username))
+      .sort((a, b) => {
+        const timeA = new Date(a.lastLoginAt || 0).getTime() || 0;
+        const timeB = new Date(b.lastLoginAt || 0).getTime() || 0;
+        return timeB - timeA;
+      });
+  } catch (e) {
+    console.error('Failed to get saved accounts:', e);
+    return [];
+  }
 };
 
 /**
@@ -254,7 +265,7 @@ export const getSavedAccountsOnDevice = (): UserProfile[] => {
 export const deleteAccountFromDevice = (userId: string): boolean => {
   try {
     const db = getUsersDB();
-    if (db[userId]) {
+    if (db && db[userId]) {
       delete db[userId];
       saveUsersDB(db);
 
@@ -279,8 +290,8 @@ export const getActiveUser = (): UserProfile | null => {
     if (!activeId) return null;
 
     const db = getUsersDB();
-    const user = db[activeId];
-    if (user) {
+    const user = db && db[activeId];
+    if (user && typeof user === 'object' && user.username) {
       return user;
     }
   } catch (e) {
@@ -429,9 +440,9 @@ export const loginUser = async (
 
   // 1. Try local cache first for instant response
   const db = getUsersDB();
-  const localId = Object.keys(db).find((id) => normalizeUsername(db[id].username) === username);
+  const localId = Object.keys(db).find((id) => db[id]?.username && normalizeUsername(db[id].username) === username);
 
-  if (localId) {
+  if (localId && db[localId]) {
     const localUser = db[localId];
     const isMatch = (localUser.password && localUser.password === password) ||
       (localUser.passwordHash && localUser.passwordHash === simpleHash(password));
