@@ -439,15 +439,17 @@ export const App: React.FC = () => {
 
 
       {/* Authentication Modal (Đăng ký / Đăng nhập) */}
-      <AuthModal
-        isOpen={showAuthModal}
-        onClose={() => setShowAuthModal(false)}
-        onAuthSuccess={handleAuthSuccess}
-        currentGuestStats={userStats}
-      />
+      {showAuthModal && (
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+          onAuthSuccess={handleAuthSuccess}
+          currentGuestStats={userStats}
+        />
+      )}
 
       {/* User Profile & Progress Modal */}
-      {currentUser && (
+      {currentUser && showProfileModal && (
         <UserProfileModal
           isOpen={showProfileModal}
           onClose={() => setShowProfileModal(false)}

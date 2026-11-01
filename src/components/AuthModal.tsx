@@ -99,8 +99,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({
     }
   }, [isOpen]);
 
-  if (!isOpen) return null;
-
   const learnedCount = currentGuestStats?.learnedWordIds?.length || 0;
 
   // 1-Tap select saved account
@@ -429,6 +427,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       setTimeout(() => setIsCopiedPassword(false), 2000);
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-xs flex items-center justify-center p-3 animate-in fade-in duration-200 overflow-y-auto">
