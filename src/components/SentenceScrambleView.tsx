@@ -17,7 +17,8 @@ import {
   Lightbulb,
   BookOpen,
   Check,
-  Eye
+  Eye,
+  Sparkles
 } from 'lucide-react';
 
 interface SentenceScrambleViewProps {
@@ -79,6 +80,7 @@ export const SentenceScrambleView: React.FC<SentenceScrambleViewProps> = ({
 
   const [streak, setStreak] = useState<number>(0);
   const [bestStreak, setBestStreak] = useState<number>(0);
+  const [correctEffectActive, setCorrectEffectActive] = useState<boolean>(false);
 
   // Automatically randomize sentence sequence on each visit / level change so learning is always fresh & engaging
   const levelQuestions = useMemo(() => {
@@ -164,6 +166,7 @@ export const SentenceScrambleView: React.FC<SentenceScrambleViewProps> = ({
     setPlacedBankIndices([]);
     setAnswerStatus('idle');
     setShowAnswer(false);
+    setCorrectEffectActive(false);
   };
 
   const handleCheckAnswer = () => {
@@ -173,6 +176,9 @@ export const SentenceScrambleView: React.FC<SentenceScrambleViewProps> = ({
 
     if (isCorrect) {
       setAnswerStatus('correct');
+      setCorrectEffectActive(true);
+      setTimeout(() => setCorrectEffectActive(false), 450);
+
       playCorrectSound();
       handlePlaySentenceAudio(currentQuestion.targetSentence);
 
@@ -193,6 +199,7 @@ export const SentenceScrambleView: React.FC<SentenceScrambleViewProps> = ({
       });
     } else {
       setAnswerStatus('wrong');
+      setCorrectEffectActive(false);
       playWrongSound();
       setStreak(0);
 
@@ -207,6 +214,7 @@ export const SentenceScrambleView: React.FC<SentenceScrambleViewProps> = ({
   };
 
   const handleNextQuestion = () => {
+    setCorrectEffectActive(false);
     if (currentIndex < activeQuestions.length - 1) {
       setCurrentIndex((prev) => prev + 1);
     } else {
@@ -215,6 +223,7 @@ export const SentenceScrambleView: React.FC<SentenceScrambleViewProps> = ({
   };
 
   const handlePrevQuestion = () => {
+    setCorrectEffectActive(false);
     if (currentIndex > 0) {
       setCurrentIndex((prev) => prev - 1);
     } else {
@@ -450,53 +459,76 @@ export const SentenceScrambleView: React.FC<SentenceScrambleViewProps> = ({
                 )}
               </div>
 
-              <div
-                className={`min-h-[64px] sm:min-h-[80px] p-2 sm:p-2.5 rounded-xl border-2 transition-all flex flex-wrap items-center gap-1.5 sm:gap-2 ${
-                  answerStatus === 'correct'
-                    ? 'bg-emerald-50/70 border-emerald-400'
-                    : answerStatus === 'wrong'
-                    ? 'bg-rose-50/70 border-rose-400'
-                    : placedBankIndices.length === 0
-                    ? 'border-dashed border-slate-300 bg-slate-50/50 justify-center'
-                    : 'border-purple-300 bg-purple-50/30'
-                }`}
-              >
-                {placedBankIndices.length === 0 ? (
-                  <div className="text-slate-400 text-xs italic text-center py-2 select-none">
-                    👉 Chạm vào các từ bên dưới theo thứ tự để ghép câu...
+              <div className="relative">
+                {/* 0.3s Floating Ribbon Pill */}
+                {correctEffectActive && (
+                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 pointer-events-none z-30">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white font-extrabold text-xs shadow-lg shadow-emerald-600/30 border border-emerald-300 animate-sentence-ribbon whitespace-nowrap">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-spin" />
+                      <span>Hoàn hảo! Ghép câu chính xác</span>
+                      <Check className="w-3.5 h-3.5 text-white" />
+                    </div>
                   </div>
-                ) : (
-                  <>
-                    {placedBankIndices.map((bankIndex, orderIdx) => {
-                      const word = shuffledBank[bankIndex];
-                      return (
-                        <button
-                          key={`${bankIndex}-${orderIdx}`}
-                          onClick={() => handleRemovePlacedWord(orderIdx)}
-                          disabled={answerStatus === 'correct'}
-                          className={`group px-3 py-1.5 sm:py-2 rounded-lg font-chinese font-bold text-sm sm:text-base transition-all shadow-xs flex items-center gap-1 active:scale-95 ${
-                            answerStatus === 'correct'
-                              ? 'bg-emerald-600 text-white cursor-default'
-                              : answerStatus === 'wrong'
-                              ? 'bg-rose-600 text-white cursor-pointer hover:bg-rose-700'
-                              : 'bg-purple-600 text-white hover:bg-purple-700 cursor-pointer shadow-purple-200'
-                          }`}
-                          title="Bấm để đưa từ này trở lại kho từ"
-                        >
-                          <span>{word}</span>
-                          {answerStatus !== 'correct' && (
-                            <span className="text-[10px] opacity-75 group-hover:opacity-100">
-                              ✕
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                    <span className="text-slate-400 font-bold text-base select-none">
-                      {currentQuestion.targetSentence.endsWith('？') ? '？' : '。'}
-                    </span>
-                  </>
                 )}
+
+                <div
+                  className={`relative overflow-hidden min-h-[64px] sm:min-h-[80px] p-2 sm:p-2.5 rounded-xl border-2 transition-all flex flex-wrap items-center gap-1.5 sm:gap-2 ${
+                    answerStatus === 'correct'
+                      ? 'bg-emerald-50/80 border-emerald-500 shadow-sm'
+                      : answerStatus === 'wrong'
+                      ? 'bg-rose-50/70 border-rose-400'
+                      : placedBankIndices.length === 0
+                      ? 'border-dashed border-slate-300 bg-slate-50/50 justify-center'
+                      : 'border-purple-300 bg-purple-50/30'
+                  }`}
+                >
+                  {/* Shimmer light sweep across sentence */}
+                  {correctEffectActive && (
+                    <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
+                      <div className="w-1/2 h-full bg-gradient-to-r from-transparent via-white/80 to-transparent animate-shimmer-sweep" />
+                    </div>
+                  )}
+
+                  {placedBankIndices.length === 0 ? (
+                    <div className="text-slate-400 text-xs italic text-center py-2 select-none w-full">
+                      👉 Chạm vào các từ bên dưới theo thứ tự để ghép câu...
+                    </div>
+                  ) : (
+                    <>
+                      {placedBankIndices.map((bankIndex, orderIdx) => {
+                        const word = shuffledBank[bankIndex];
+                        return (
+                          <button
+                            key={`${bankIndex}-${orderIdx}`}
+                            onClick={() => handleRemovePlacedWord(orderIdx)}
+                            disabled={answerStatus === 'correct'}
+                            style={correctEffectActive ? { animationDelay: `${orderIdx * 0.04}s` } : undefined}
+                            className={`group px-3 py-1.5 sm:py-2 rounded-lg font-chinese font-bold text-sm sm:text-base transition-all shadow-xs flex items-center gap-1 active:scale-95 ${
+                              correctEffectActive ? 'animate-magnetic-snap' : ''
+                            } ${
+                              answerStatus === 'correct'
+                                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white cursor-default shadow-sm shadow-emerald-200'
+                                : answerStatus === 'wrong'
+                                ? 'bg-rose-600 text-white cursor-pointer hover:bg-rose-700'
+                                : 'bg-purple-600 text-white hover:bg-purple-700 cursor-pointer shadow-purple-200'
+                            }`}
+                            title="Bấm để đưa từ này trở lại kho từ"
+                          >
+                            <span>{word}</span>
+                            {answerStatus !== 'correct' && (
+                              <span className="text-[10px] opacity-75 group-hover:opacity-100">
+                                ✕
+                              </span>
+                            )}
+                          </button>
+                        );
+                      })}
+                      <span className="text-slate-400 font-bold text-base select-none">
+                        {currentQuestion.targetSentence.endsWith('？') ? '？' : '。'}
+                      </span>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
 

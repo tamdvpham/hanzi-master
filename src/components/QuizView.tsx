@@ -74,6 +74,9 @@ export const QuizView: React.FC<QuizViewProps> = ({
   const [maxStreak, setMaxStreak] = useState(0);
   const [timeLeft, setTimeLeft] = useState(60);
 
+  // 0.3s snappy non-blocking celebration effect for Quiz
+  const [correctEffect, setCorrectEffect] = useState<{ optionId: string; points: number } | null>(null);
+
   const speedTimerRef = useRef<any>(null);
 
   // Save tested words to localStorage
@@ -221,15 +224,35 @@ export const QuizView: React.FC<QuizViewProps> = ({
       if (newStreak > maxStreak) setMaxStreak(newStreak);
 
       const multiplier = newStreak >= 3 ? 1.5 : 1;
-      setScore((prev) => prev + Math.round(10 * multiplier));
+      const pointsEarned = Math.round(10 * multiplier);
+      setScore((prev) => prev + pointsEarned);
+
+      // Trigger 0.3s snappy non-blocking burst & pop
+      setCorrectEffect({ optionId, points: pointsEarned });
+      setTimeout(() => setCorrectEffect(null), 380);
+
+      try {
+        confetti({
+          particleCount: 16,
+          spread: 45,
+          ticks: 90,
+          gravity: 1.4,
+          scalar: 0.8,
+          origin: { y: 0.65 },
+          colors: ['#10b981', '#34d399', '#f59e0b', '#3b82f6'],
+          disableForReducedMotion: true
+        });
+      } catch (e) {}
     } else {
       playWrongSound();
       setStreak(0);
+      setCorrectEffect(null);
     }
   };
 
   // Next Question
   const handleNextQuestion = () => {
+    setCorrectEffect(null);
     if (currentIndex < questions.length - 1) {
       setCurrentIndex((prev) => prev + 1);
       setSelectedOptionId(null);
@@ -657,6 +680,7 @@ export const QuizView: React.FC<QuizViewProps> = ({
           {currentQ.options.map((option, idx) => {
             const letter = ['A', 'B', 'C', 'D'][idx];
             const isSelected = selectedOptionId === option.id;
+            const isThisOptionPop = correctEffect?.optionId === option.id;
 
             let btnStyle = 'bg-white border-slate-200 text-slate-800 hover:border-purple-300 hover:bg-purple-50/30';
 
@@ -675,8 +699,19 @@ export const QuizView: React.FC<QuizViewProps> = ({
                 key={option.id}
                 onClick={() => handleSelectOption(option.id)}
                 disabled={isAnswerRevealed}
-                className={`p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border-2 text-left font-semibold transition-all flex items-center gap-2.5 active:scale-[0.99] ${btnStyle}`}
+                className={`relative p-2.5 sm:p-3 rounded-xl sm:rounded-2xl border-2 text-left font-semibold transition-all flex items-center gap-2.5 active:scale-[0.99] cursor-pointer ${btnStyle} ${
+                  isThisOptionPop ? 'animate-quiz-pop animate-ripple-shockwave z-10' : ''
+                }`}
               >
+                {/* 0.3s Floating Score Pop */}
+                {isThisOptionPop && (
+                  <div className="absolute -top-3.5 right-3 animate-float-score pointer-events-none z-30 flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-600 text-white font-extrabold text-[11px] shadow-lg shadow-emerald-600/40 border border-emerald-300">
+                    <Sparkles className="w-3 h-3 text-amber-300 animate-spin" />
+                    <span>+{correctEffect.points}</span>
+                    {streak >= 3 && <Flame className="w-3 h-3 text-orange-400 fill-orange-400" />}
+                  </div>
+                )}
+
                 <div
                   className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
                     isAnswerRevealed && option.isCorrect
