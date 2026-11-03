@@ -14,7 +14,7 @@ export const HighlightText: React.FC<HighlightTextProps> = ({
   text,
   highlight,
   className = '',
-  highlightClassName = 'text-red-500 font-bold'
+  highlightClassName = 'text-purple-600 font-bold'
 }) => {
   if (!text || !highlight) {
     return <span className={className}>{text}</span>;

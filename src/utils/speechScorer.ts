@@ -397,23 +397,32 @@ export const evaluatePronunciation = (
     const volBonus = Math.min(8, Math.round((audioStats.maxVolume / 255) * 15));
     const durBonus = Math.min(5, Math.round(Math.min(audioStats.speechDurationMs, 2000) / 400));
     const calculatedScore = Math.min(95, 82 + volBonus + durBonus);
+    const expChars = Array.from(normalizeChineseText(expectedText));
 
     return {
       score: calculatedScore,
       recognizedText: targetPinyin ? `${expectedText} [${targetPinyin}]` : expectedText,
       expectedText,
       feedback: 'Xuất sắc! Đã thu âm giọng đọc to, rõ ràng và chuẩn thanh điệu.',
-      isCorrect: true
+      isCorrect: true,
+      charScores: expChars.map((char) => ({ char, isCorrect: true })),
+      correctCount: expChars.length,
+      totalCount: expChars.length
     };
   }
 
   // Completely silent (user did not speak into the microphone at all)
+  // Mark ALL characters as incorrect (Red) so feedback accurately reflects 0 points
+  const expChars = Array.from(normalizeChineseText(expectedText));
   return {
     score: 0,
     recognizedText: 'Không có âm thanh',
     expectedText,
     feedback: 'Micro chưa ghi nhận được tiếng nói. Hãy đọc to, rõ ràng vào mic và thử lại nhé!',
-    isCorrect: false
+    isCorrect: false,
+    charScores: expChars.map((char) => ({ char, isCorrect: false })),
+    correctCount: 0,
+    totalCount: expChars.length
   };
 };
 

@@ -576,7 +576,7 @@ export const HanziPractice: React.FC<HanziPracticeProps> = ({
                             <HighlightText
                               text={ex.hz}
                               highlight={word.hanzi}
-                              highlightClassName="text-red-500 font-bold"
+                              highlightClassName="text-purple-600 font-bold"
                             />
                           </div>
                           <div className="text-xs text-purple-600 font-medium mt-1">
@@ -830,7 +830,7 @@ export const HanziPractice: React.FC<HanziPracticeProps> = ({
                           <HighlightText
                             text={ex.hz}
                             highlight={word.hanzi}
-                            highlightClassName="text-red-500 font-bold"
+                            highlightClassName="text-purple-600 font-bold"
                           />
                         </div>
                         {/* Pinyin */}

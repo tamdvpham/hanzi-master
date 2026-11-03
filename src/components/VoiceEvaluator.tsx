@@ -114,6 +114,58 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
   // Format seconds to 00:0X
   const formatTime = (sec: number) => `00:${sec < 10 ? '0' : ''}${sec}`;
 
+  // Helper to render the target sentence with Red + Green pronunciation feedback
+  const renderSentenceWithFeedback = () => {
+    if (!result || !result.charScores || result.charScores.length === 0) {
+      // Before speaking: highlight target keyword with purple accent so it's not confused with red error
+      return (
+        <HighlightText
+          text={targetText}
+          highlight={highlightWord}
+          highlightClassName="text-purple-600 font-bold"
+        />
+      );
+    }
+
+    // After evaluation: Map each character to its score (Green if correct, Red if wrong)
+    const charScoreQueue = [...result.charScores];
+
+    return (
+      <span className="inline-flex items-center flex-wrap justify-center gap-x-0.5">
+        {Array.from(targetText).map((char, index) => {
+          // Check if char is Chinese
+          const isChinese = /[\u4e00-\u9fa5]/.test(char);
+          if (!isChinese) {
+            // Punctuation or space
+            return <span key={index} className="text-slate-400 font-normal">{char}</span>;
+          }
+
+          // Find corresponding char in queue
+          const queueIdx = charScoreQueue.findIndex((item) => item.char === char);
+          let isCorrect = false;
+          if (queueIdx !== -1) {
+            isCorrect = charScoreQueue[queueIdx].isCorrect;
+            charScoreQueue.splice(queueIdx, 1);
+          }
+
+          return (
+            <span
+              key={index}
+              className={`transition-colors font-bold ${
+                isCorrect
+                  ? 'text-emerald-600'
+                  : 'text-rose-600 font-black underline decoration-rose-500 decoration-2'
+              }`}
+              title={isCorrect ? `${char}: Đúng (Xanh)` : `${char}: Sai (Đỏ)`}
+            >
+              {char}
+            </span>
+          );
+        })}
+      </span>
+    );
+  };
+
   // Copy current URL for users stuck in In-App WebView
   const handleCopyLink = () => {
     try {
@@ -383,7 +435,7 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
               <div className="text-sm font-semibold text-purple-600 mb-1">{targetPinyin}</div>
             )}
             <div className="text-2xl sm:text-3xl font-bold font-chinese text-slate-900 tracking-wide">
-              <HighlightText text={targetText} highlight={highlightWord} />
+              {renderSentenceWithFeedback()}
             </div>
             {targetMeaning && (
               <div className="text-xs text-slate-500 mt-2 font-medium">{targetMeaning}</div>
@@ -533,14 +585,19 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
                   <span>{result.feedback}</span>
                 </div>
 
-                {/* Character-by-Character Visual Breakdown (Bôi đỏ từ bị sai) */}
+                {/* Character-by-Character Visual Breakdown (Bôi đỏ từ bị sai, Bôi xanh từ đúng) */}
                 {result.charScores && result.charScores.length > 0 && (
                   <div className="mt-3 p-3 bg-white rounded-2xl border-2 border-slate-100 shadow-xs">
                     <div className="text-xs font-bold text-slate-500 mb-2 flex items-center justify-between">
-                      <span>Chi tiết từng từ bạn đã đọc:</span>
-                      <span className="text-[11px] font-normal text-slate-400">
-                        {result.correctCount === result.totalCount ? 'Đúng toàn bộ' : 'Từ đỏ = cần sửa'}
-                      </span>
+                      <span>Chi tiết từng chữ:</span>
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold">
+                        <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                          Xanh = Đúng
+                        </span>
+                        <span className="text-rose-700 bg-rose-50 px-2 py-0.5 rounded-md border border-rose-200">
+                          Đỏ = Sai
+                        </span>
+                      </div>
                     </div>
 
                     <div className="flex flex-wrap items-center justify-center gap-2">
@@ -572,13 +629,25 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
                       <div className="mt-2.5 p-2.5 rounded-xl bg-rose-50 border border-rose-200/90 text-left flex items-start gap-2">
                         <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                         <div className="text-xs text-rose-900 leading-relaxed">
-                          <span className="font-bold">Từ bôi đỏ chưa đúng: </span>
-                          <span className="font-chinese font-black text-rose-700 text-sm">
-                            {result.charScores.filter((cs) => !cs.isCorrect).map((cs) => cs.char).join(' ')}
-                          </span>
-                          <div className="text-[11px] text-rose-700 mt-0.5">
-                            👉 Bấm nút <strong>"Nghe mẫu chuẩn"</strong> bên dưới để luyện sửa lại từ này nhé!
-                          </div>
+                          {result.score === 0 ? (
+                            <>
+                              <span className="font-bold">Chưa nhận diện được giọng nói: </span>
+                              Toàn bộ câu chưa được đọc (bôi đỏ).
+                              <div className="text-[11px] text-rose-700 mt-0.5">
+                                👉 Hãy bấm <strong>"Thử đọc lại"</strong> bên dưới và đọc to, rõ ràng vào mic nhé!
+                              </div>
+                            </>
+                          ) : (
+                            <>
+                              <span className="font-bold">Từ bôi đỏ chưa đúng: </span>
+                              <span className="font-chinese font-black text-rose-700 text-sm">
+                                {result.charScores.filter((cs) => !cs.isCorrect).map((cs) => cs.char).join(' ')}
+                              </span>
+                              <div className="text-[11px] text-rose-700 mt-0.5">
+                                👉 Bấm nút <strong>"Nghe giọng mẫu"</strong> bên dưới để luyện phát âm chính xác các chữ bôi đỏ nhé!
+                              </div>
+                            </>
+                          )}
                         </div>
                       </div>
                     )}
@@ -599,8 +668,8 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
                   </div>
                   <div className="flex items-start gap-1">
                     <span className="font-semibold text-slate-500 shrink-0">Mẫu chuẩn:</span>
-                    <span className="font-chinese font-bold text-emerald-700">
-                      「{result.expectedText}」
+                    <span className="font-chinese font-bold text-slate-800">
+                      「{renderSentenceWithFeedback()}」
                     </span>
                   </div>
                 </div>
