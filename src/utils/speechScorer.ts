@@ -193,6 +193,112 @@ export interface AudioStats {
 }
 
 /**
+ * Helper to check if two Chinese characters match (exact, homophone, or same pinyin)
+ */
+function isCharMatch(expectedChar: string, actualChar: string): boolean {
+  if (expectedChar === actualChar) return true;
+  if (HOMOPHONE_MAP[expectedChar]?.includes(actualChar)) return true;
+  const pyE = HANZI_PINYIN_MAP[expectedChar];
+  const pyA = HANZI_PINYIN_MAP[actualChar];
+  if (pyE && pyA && pyE === pyA) return true;
+  return false;
+}
+
+/**
+ * Character-by-character alignment and scoring:
+ * Identifies exactly which words were pronounced correctly and which were mispronounced.
+ */
+export function alignChineseCharacters(
+  expectedText: string,
+  candidates: string[]
+): {
+  charScores: { char: string; isCorrect: boolean }[];
+  correctCount: number;
+  totalCount: number;
+  score: number;
+  bestTranscript: string;
+} {
+  const normExpected = normalizeChineseText(expectedText);
+  const expChars = Array.from(normExpected);
+  const totalCount = expChars.length;
+
+  if (totalCount === 0) {
+    return { charScores: [], correctCount: 0, totalCount: 0, score: 100, bestTranscript: '' };
+  }
+
+  const cleanCandidates = (candidates || []).map((t) => t.trim()).filter(Boolean);
+  if (cleanCandidates.length === 0) {
+    return {
+      charScores: expChars.map((char) => ({ char, isCorrect: false })),
+      correctCount: 0,
+      totalCount,
+      score: 0,
+      bestTranscript: ''
+    };
+  }
+
+  let bestMatchedIndices = new Set<number>();
+  let bestCandidate = cleanCandidates[0];
+  let maxMatched = -1;
+
+  for (const cand of cleanCandidates) {
+    const actChars = Array.from(normalizeChineseText(cand));
+    const n = expChars.length;
+    const m = actChars.length;
+
+    // DP LCS with character equivalence
+    const dp = Array.from({ length: n + 1 }, () => Array(m + 1).fill(0));
+    for (let i = 1; i <= n; i++) {
+      for (let j = 1; j <= m; j++) {
+        if (isCharMatch(expChars[i - 1], actChars[j - 1])) {
+          dp[i][j] = dp[i - 1][j - 1] + 1;
+        } else {
+          dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+        }
+      }
+    }
+
+    const matched = new Set<number>();
+    let i = n,
+      j = m;
+    while (i > 0 && j > 0) {
+      if (isCharMatch(expChars[i - 1], actChars[j - 1])) {
+        matched.add(i - 1);
+        i--;
+        j--;
+      } else if (dp[i - 1][j] >= dp[i][j - 1]) {
+        i--;
+      } else {
+        j--;
+      }
+    }
+
+    if (matched.size > maxMatched) {
+      maxMatched = matched.size;
+      bestMatchedIndices = matched;
+      bestCandidate = cand;
+    }
+  }
+
+  const charScores = expChars.map((char, idx) => ({
+    char,
+    isCorrect: bestMatchedIndices.has(idx)
+  }));
+
+  const correctCount = bestMatchedIndices.size;
+  const isPerfect = correctCount === totalCount;
+  const score = isPerfect ? 100 : Math.round((correctCount / totalCount) * 100);
+
+  return {
+    charScores,
+    correctCount,
+    totalCount,
+    score,
+    bestTranscript: bestCandidate
+  };
+}
+
+/**
  * Score Chinese pronunciation accurately based on recognized speech vs expected text,
  * phonetic Pinyin equivalence, homophone matching, and audio acoustic verification.
  */
@@ -214,11 +320,15 @@ export const evaluatePronunciation = (
     .map((t) => t.trim())
     .filter((t) => t.length > 0);
 
+  // Character-by-character alignment
+  const alignment = alignChineseCharacters(expectedText, candidates);
+
   // If SpeechRecognition produced transcribed candidates
   if (candidates.length > 0) {
-    let bestScore = 0;
-    let bestTranscript = candidates[0];
+    let bestScore = alignment.score;
+    let bestTranscript = alignment.bestTranscript || candidates[0];
 
+    // Check exact matches or homophone whole-phrase matches
     const aliases = HOMOPHONE_MAP[expectedText] || [];
     const highlightAliases = highlightWord ? HOMOPHONE_MAP[highlightWord] || [] : [];
 
@@ -226,130 +336,57 @@ export const evaluatePronunciation = (
       const normActual = normalizeChineseText(transcript);
       if (!normActual) continue;
 
-      // 1. Exact Hanzi match
       if (normActual === normExpected) {
         bestScore = 100;
         bestTranscript = transcript;
         break;
       }
 
-      // 2. Phonetic Pinyin exact match (both sound identical!)
       const actualPinyin = HANZI_PINYIN_MAP[normActual] || '';
       if (expectedPinyin && actualPinyin && expectedPinyin === actualPinyin) {
-        const score = 98;
-        if (score > bestScore) {
-          bestScore = score;
-          bestTranscript = transcript;
-        }
-        continue;
+        bestScore = 100;
+        bestTranscript = transcript;
+        break;
       }
 
-      // 3. Match with homophone aliases
       if (aliases.some((a) => normalizeChineseText(a) === normActual)) {
-        const score = 96;
-        if (score > bestScore) {
-          bestScore = score;
-          bestTranscript = transcript;
-        }
-        continue;
+        bestScore = 100;
+        bestTranscript = transcript;
+        break;
       }
 
-      // 4. Match with highlight word or its homophones
       if (normHighlight && normActual === normHighlight) {
-        const score = 95;
-        if (score > bestScore) {
-          bestScore = score;
-          bestTranscript = transcript;
-        }
-        continue;
-      }
-
-      if (highlightAliases.some((a) => normalizeChineseText(a) === normActual)) {
-        const score = 92;
-        if (score > bestScore) {
-          bestScore = score;
-          bestTranscript = transcript;
-        }
-        continue;
-      }
-
-      // 5. Target sentence contains actual speech (e.g. key clause)
-      if (normExpected.includes(normActual)) {
-        const ratio = normActual.length / Math.max(1, normExpected.length);
-        const score = Math.max(70, Math.round(ratio * 95));
-        if (score > bestScore) {
-          bestScore = score;
-          bestTranscript = transcript;
-        }
-        continue;
-      }
-
-      // 6. Actual speech contains target text (e.g. user said "你好啊")
-      if (normActual.includes(normExpected)) {
-        const extraLen = normActual.length - normExpected.length;
-        const score = Math.max(85, Math.round(100 - extraLen * 4));
-        if (score > bestScore) {
-          bestScore = score;
-          bestTranscript = transcript;
-        }
-        continue;
-      }
-
-      // 7. Pinyin Levenshtein phonetic similarity
-      if (expectedPinyin && actualPinyin) {
-        const pyDist = levenshteinDistance(expectedPinyin, actualPinyin);
-        const pyMax = Math.max(expectedPinyin.length, actualPinyin.length);
-        if (pyMax > 0 && !isNaN(pyDist)) {
-          const pySim = Math.max(0, 1 - pyDist / pyMax);
-          const pyScore = Math.round(pySim * 95);
-          if (pyScore > bestScore) {
-            bestScore = pyScore;
-            bestTranscript = transcript;
-          }
-        }
-      }
-
-      // 8. Hanzi Levenshtein similarity
-      const maxLen = Math.max(normExpected.length, normActual.length);
-      if (maxLen > 0) {
-        const distance = levenshteinDistance(normExpected, normActual);
-        if (!isNaN(distance)) {
-          const similarity = Math.max(0, 1 - distance / maxLen);
-          const score = Math.round(similarity * 90);
-          if (score > bestScore) {
-            bestScore = score;
-            bestTranscript = transcript;
-          }
-        }
+        bestScore = Math.max(bestScore, 95);
+        bestTranscript = transcript;
       }
     }
 
-    if (bestScore > 0) {
-      let feedback = '';
-      let isCorrect = false;
+    const isAllCorrect = alignment.correctCount === alignment.totalCount || bestScore === 100;
+    const finalScore = isAllCorrect ? 100 : alignment.score;
 
-      if (bestScore >= 90) {
-        isCorrect = true;
-        feedback = 'Xuất sắc! Phát âm cực kỳ chuẩn xác như người bản xứ.';
-      } else if (bestScore >= 75) {
-        isCorrect = true;
-        feedback = 'Rất tốt! Phát âm tương đối chuẩn, bạn hãy phát huy nhé.';
-      } else if (bestScore >= 55) {
-        isCorrect = true;
-        feedback = 'Tạm được! Cần chú ý nhấn đúng thanh điệu và mở to khẩu hình.';
-      } else {
-        isCorrect = false;
-        feedback = 'Chưa chính xác! Hãy bấm nghe lại phát âm mẫu và luyện tập lại nhé.';
-      }
-
-      return {
-        score: bestScore,
-        recognizedText: bestTranscript,
-        expectedText,
-        feedback,
-        isCorrect
-      };
+    let feedback = '';
+    if (finalScore === 100) {
+      feedback = 'Xuất sắc! Bạn đã phát âm chuẩn 100/100 tất cả các từ!';
+    } else if (finalScore >= 75) {
+      feedback = `Rất tốt! Đúng ${alignment.correctCount}/${alignment.totalCount} từ (${finalScore}đ). Chú ý các từ bôi đỏ để hoàn thiện nhé.`;
+    } else if (finalScore >= 50) {
+      feedback = `Đạt ${alignment.correctCount}/${alignment.totalCount} từ (${finalScore}đ). Các từ bôi đỏ chưa chính xác, hãy luyện đọc lại nhé!`;
+    } else {
+      feedback = `Chưa chính xác! Chỉ đúng ${alignment.correctCount}/${alignment.totalCount} từ. Hãy nghe phát âm mẫu và luyện lại nhé.`;
     }
+
+    return {
+      score: finalScore,
+      recognizedText: bestTranscript,
+      expectedText,
+      feedback,
+      isCorrect: finalScore >= 70,
+      charScores: isAllCorrect
+        ? alignment.charScores.map((c) => ({ ...c, isCorrect: true }))
+        : alignment.charScores,
+      correctCount: isAllCorrect ? alignment.totalCount : alignment.correctCount,
+      totalCount: alignment.totalCount
+    };
   }
 
   // FALLBACK: SpeechRecognition returned empty (due to mobile device language pack,

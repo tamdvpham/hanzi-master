@@ -577,19 +577,19 @@ export const generateRecoveryQuizQuestion = (allWords: HSKWord[]): RecoveryQuizQ
 };
 
 /**
- * Generate a complete QR login URL for 1-tap scanning with phone camera or web scanner
+ * Generate a complete, compact QR login URL for 1-tap scanning with phone camera or web scanner
  */
 export const generateQRLoginUrl = (user: UserProfile): string => {
   try {
     const payload = JSON.stringify({
-      v: 2,
       u: user.username,
-      p: user.password,
-      d: user.displayName,
-      a: user.avatar,
-      t: Date.now()
+      p: user.password
     });
-    const token = btoa(encodeURIComponent(payload));
+    // Compact, URL-safe base64 without padding or problematic URL characters
+    const token = btoa(unescape(encodeURIComponent(payload)))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/, '');
     const baseUrl = typeof window !== 'undefined' && window.location.origin
       ? window.location.origin
       : 'https://hanzi-master-web-a121.vercel.app';
@@ -601,7 +601,9 @@ export const generateQRLoginUrl = (user: UserProfile): string => {
 };
 
 /**
- * Parse QR auth token from either URL (?qr_auth=...), raw token, or legacy HSK_SYNC_ key
+ * Universal Parser for QR auth token:
+ * Supports full URL (?qr_auth=...), URL-safe Base64, standard Base64 with padding/spaces,
+ * raw JSON string, legacy HSK_SYNC_ keys, and URL-decoded strings.
  */
 export const parseQRAuthToken = (
   rawInput: string
@@ -612,14 +614,34 @@ export const parseQRAuthToken = (
   try {
     let token = str;
 
-    // 1. If scanned input is a URL with ?qr_auth=...
+    // 1. If scanned input is a URL containing ?qr_auth=... or &qr_auth=...
     if (str.includes('qr_auth=')) {
-      const url = new URL(str.startsWith('http') ? str : `https://dummy.com${str.startsWith('/') ? '' : '/'}${str}`);
-      const param = url.searchParams.get('qr_auth');
-      if (param) token = param;
+      try {
+        const url = new URL(str.startsWith('http') ? str : `https://dummy.com${str.startsWith('/') ? '' : '/'}${str}`);
+        const param = url.searchParams.get('qr_auth');
+        if (param) token = param;
+      } catch (e) {
+        const m = str.match(/qr_auth=([^&#]+)/);
+        if (m) token = decodeURIComponent(m[1]);
+      }
     }
 
-    // 2. If it's legacy HSK_SYNC_...
+    // 2. Direct JSON check (if scanner extracted raw JSON)
+    if (token.startsWith('{') && token.endsWith('}')) {
+      try {
+        const d = JSON.parse(token);
+        if (d.u || d.username) {
+          return {
+            username: normalizeUsername(d.u || d.username),
+            password: d.p || d.password,
+            displayName: d.d || d.displayName,
+            avatar: d.a || d.avatar
+          };
+        }
+      } catch (e) {}
+    }
+
+    // 3. Legacy HSK_SYNC_ prefix
     if (token.startsWith('HSK_SYNC_')) {
       const base64Data = token.replace('HSK_SYNC_', '');
       const jsonStr = decodeURIComponent(atob(base64Data));
@@ -634,16 +656,40 @@ export const parseQRAuthToken = (
       }
     }
 
-    // 3. Standard base64 token
-    const jsonStr = decodeURIComponent(atob(token));
-    const data = JSON.parse(jsonStr);
-    if (data?.u) {
-      return {
-        username: normalizeUsername(data.u),
-        password: data.p,
-        displayName: data.d,
-        avatar: data.a
-      };
+    // 4. Base64 decode (normalize URL-safe and spaces from query strings)
+    let cleanB64 = token.replace(/-/g, '+').replace(/_/g, '/').replace(/ /g, '+');
+    while (cleanB64.length % 4 !== 0) {
+      cleanB64 += '=';
+    }
+
+    let decodedStr = '';
+    try {
+      decodedStr = atob(cleanB64);
+    } catch (e) {
+      try {
+        decodedStr = atob(decodeURIComponent(cleanB64));
+      } catch (e2) {}
+    }
+
+    if (decodedStr) {
+      let jsonStr = decodedStr;
+      try {
+        jsonStr = decodeURIComponent(escape(decodedStr));
+      } catch (e) {
+        try {
+          jsonStr = decodeURIComponent(decodedStr);
+        } catch (e2) {}
+      }
+
+      const data = JSON.parse(jsonStr);
+      if (data?.u || data?.username) {
+        return {
+          username: normalizeUsername(data.u || data.username),
+          password: data.p || data.password,
+          displayName: data.d || data.displayName,
+          avatar: data.a || data.avatar
+        };
+      }
     }
   } catch (e) {
     console.error('Failed to parse QR auth:', e);

@@ -260,8 +260,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <div className="p-3 bg-white rounded-2xl border-2 border-purple-300 shadow-md">
                   <QRCodeSVG
                     value={qrLoginUrl}
-                    size={190}
-                    level="M"
+                    size={210}
+                    level="L"
                     includeMargin={true}
                   />
                 </div>

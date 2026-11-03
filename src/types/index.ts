@@ -50,6 +50,12 @@ export interface UserStats {
   pronunciationScores: Record<string, number>; // wordId -> highest score (0-100)
 }
 
+export interface CharacterScore {
+  char: string;
+  isCorrect: boolean;
+  pinyin?: string;
+}
+
 export interface PronunciationScoreResult {
   score: number; // 0 - 100
   recognizedText: string;
@@ -57,6 +63,9 @@ export interface PronunciationScoreResult {
   feedback: string;
   audioBlobUrl?: string;
   isCorrect: boolean;
+  charScores?: CharacterScore[];
+  correctCount?: number;
+  totalCount?: number;
 }
 
 export interface TargetWord {

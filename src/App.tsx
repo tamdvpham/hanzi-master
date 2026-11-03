@@ -65,6 +65,7 @@ export const App: React.FC = () => {
   const [phoneFrame, setPhoneFrame] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [qrLoginStatus, setQrLoginStatus] = useState<string | null>(null);
 
   // Save stats to localStorage & update active user's DB entry
   useEffect(() => {
@@ -78,27 +79,38 @@ export const App: React.FC = () => {
     }
   }, [userStats, currentUser]);
 
-  // Auto-login from QR Code link (when scanned with phone's native camera)
+  // Auto-login from QR Code link (when scanned with phone's native camera or external apps)
   useEffect(() => {
     try {
       const params = new URLSearchParams(window.location.search);
       const qrAuth = params.get('qr_auth');
       if (qrAuth) {
+        setQrLoginStatus('Đang xác thực và đăng nhập tự động từ mã QR...');
         const parsed = parseQRAuthToken(qrAuth);
         if (parsed?.username) {
           window.history.replaceState({}, document.title, window.location.pathname);
           loginUser(parsed.username, parsed.password || '', userStats).then((res) => {
             if (res.success && res.user) {
               handleAuthSuccess(res.user);
+              setQrLoginStatus(`Đăng nhập thành công tài khoản @${res.user.username}! 🎉`);
+              setTimeout(() => setQrLoginStatus(null), 3500);
               try {
                 confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
               } catch (e) {}
+            } else {
+              setQrLoginStatus(res.error || 'Đăng nhập từ mã QR không thành công.');
+              setTimeout(() => setQrLoginStatus(null), 4000);
             }
           });
+        } else {
+          setQrLoginStatus('Mã QR không hợp lệ hoặc đã hết hạn.');
+          setTimeout(() => setQrLoginStatus(null), 4000);
         }
       }
     } catch (e) {
       console.error('QR auto login error:', e);
+      setQrLoginStatus('Có lỗi khi xử lý mã QR.');
+      setTimeout(() => setQrLoginStatus(null), 3000);
     }
   }, []);
 
@@ -325,7 +337,10 @@ export const App: React.FC = () => {
       <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
         {selectedWord ? (
           // Practice Mode
-          <div className="flex-1 flex flex-col items-center justify-center h-[calc(100dvh-56px)] max-h-[calc(100dvh-56px)] overflow-hidden bg-slate-100 p-0 sm:py-3 sm:px-4">
+          <div
+            key={`view-practice-${selectedWord.id}`}
+            className="flex-1 flex flex-col items-center justify-center h-[calc(100dvh-56px)] max-h-[calc(100dvh-56px)] overflow-hidden bg-slate-100 p-0 sm:py-3 sm:px-4"
+          >
             {phoneFrame ? (
               // Mobile Mockup Frame
               <div className="relative border-[10px] border-slate-900 rounded-[44px] shadow-2xl overflow-hidden bg-slate-900 w-full max-w-[390px] ring-1 ring-slate-800">
@@ -334,6 +349,7 @@ export const App: React.FC = () => {
                 </div>
                 <div className="pt-3 h-[720px] overflow-hidden bg-white rounded-[34px] flex flex-col w-full min-w-0">
                   <HanziPractice
+                    key={`practice-${selectedWord.id}`}
                     word={selectedWord}
                     onBack={() => setSelectedWord(null)}
                     onNextWord={handleNextWord}
@@ -355,6 +371,7 @@ export const App: React.FC = () => {
               // Standard Clean Responsive Studio View for Mobile & Desktop
               <div className="w-full max-w-4xl h-full flex flex-col justify-center min-h-0">
                 <HanziPractice
+                  key={`practice-${selectedWord.id}`}
                   word={selectedWord}
                   onBack={() => setSelectedWord(null)}
                   onNextWord={handleNextWord}
@@ -375,8 +392,9 @@ export const App: React.FC = () => {
           </div>
         ) : currentView === 'sentence' ? (
           // Sentence Scramble View (400 câu sắp xếp HSK 1 - 4)
-          <div className="bg-slate-100 flex-1 flex flex-col">
+          <div key={`view-sentence-${currentLevel}`} className="bg-slate-100 flex-1 flex flex-col">
             <SentenceScrambleView
+              key={`scramble-${currentLevel}`}
               initialLevel={currentLevel}
               onBack={() => setCurrentView('study')}
               onSelectWordToPractice={(wordHanzi) => {
@@ -391,10 +409,12 @@ export const App: React.FC = () => {
           </div>
         ) : currentView === 'quiz' ? (
           // Quiz Arena View (Trắc nghiệm 4 chế độ)
-          <div className="bg-slate-100 flex-1 flex flex-col">
+          <div key={`view-quiz-${currentLevel}`} className="bg-slate-100 flex-1 flex flex-col">
             <QuizView
+              key={`quiz-${currentLevel}`}
               allWords={HSK_WORDS}
               initialLevel={currentLevel}
+              learnedWordIds={userStats.learnedWordIds || []}
               onSelectWordToPractice={(word) => {
                 setSelectedWord(word);
                 setCurrentView('study');
@@ -405,6 +425,7 @@ export const App: React.FC = () => {
         ) : currentView === 'landing' ? (
           // Landing Page with 4 HSK cards (matching user's uploaded screenshot)
           <LandingPage
+            key="view-landing"
             onSelectLevel={handleSelectLevelGroup}
             hsk1Total={hsk1Total}
             hsk2Total={hsk2Total}
@@ -420,8 +441,9 @@ export const App: React.FC = () => {
           />
         ) : (
           // Word List and Filters strictly scoped to currentLevel
-          <div className="bg-slate-100 flex-1">
+          <div key={`view-study-${currentLevel}`} className="bg-slate-100 flex-1">
             <WordList
+              key={`wordlist-${currentLevel}`}
               words={HSK_WORDS}
               currentLevel={currentLevel}
               userStats={userStats}
@@ -437,6 +459,16 @@ export const App: React.FC = () => {
       </main>
 
 
+
+      {/* QR Auto-Login Toast Notification */}
+      {qrLoginStatus && (
+        <div className="fixed top-3 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top duration-200">
+          <div className="flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-slate-900/95 text-white text-xs font-bold shadow-xl border border-purple-500/50 backdrop-blur-md">
+            <Sparkles className="w-4 h-4 text-amber-400 animate-spin" />
+            <span>{qrLoginStatus}</span>
+          </div>
+        </div>
+      )}
 
       {/* Authentication Modal (Đăng ký / Đăng nhập) */}
       {showAuthModal && (

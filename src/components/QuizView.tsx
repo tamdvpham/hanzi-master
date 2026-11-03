@@ -30,6 +30,7 @@ import { playChineseAudio, playCorrectSound, playWrongSound, playSuccessSound, s
 interface QuizViewProps {
   allWords: HSKWord[];
   initialLevel?: 1 | 2 | 3 | 4;
+  learnedWordIds?: string[];
   onSelectWordToPractice?: (word: HSKWord) => void;
   onBackToStudy: () => void;
 }
@@ -48,6 +49,7 @@ const getInitialTestedIds = (): string[] => {
 export const QuizView: React.FC<QuizViewProps> = ({
   allWords,
   initialLevel = 1,
+  learnedWordIds = [],
   onSelectWordToPractice,
   onBackToStudy
 }) => {
@@ -74,6 +76,9 @@ export const QuizView: React.FC<QuizViewProps> = ({
   const [maxStreak, setMaxStreak] = useState(0);
   const [timeLeft, setTimeLeft] = useState(60);
 
+  // Option to review already mastered words if all are learned or if user toggles
+  const [includeLearned, setIncludeLearned] = useState<boolean>(false);
+
   // 0.3s snappy non-blocking celebration effect for Quiz
   const [correctEffect, setCorrectEffect] = useState<{ optionId: string; points: number } | null>(null);
 
@@ -86,11 +91,18 @@ export const QuizView: React.FC<QuizViewProps> = ({
     } catch (e) {}
   }, [testedWordIds]);
 
-  // Filter pool based on selectedLevel
-  const levelPool =
+  // Filter pool based on selectedLevel (Excluding words the user has already learned!)
+  const rawLevelPool =
     selectedLevel === 'all'
       ? allWords
       : allWords.filter((w) => w.level === selectedLevel);
+
+  // Split into unlearned words (to quiz) and learned words (already mastered by user account)
+  const unlearnedInPool = rawLevelPool.filter((w) => !learnedWordIds.includes(w.id));
+  const learnedInPool = rawLevelPool.filter((w) => learnedWordIds.includes(w.id));
+
+  // Effective quiz pool: only unlearned words (unless user chooses or all are learned)
+  const levelPool = includeLearned || unlearnedInPool.length === 0 ? rawLevelPool : unlearnedInPool;
 
   // Count how many words in this pool have been tested in current cycle
   const poolIds = levelPool.map((w) => w.id);
@@ -366,6 +378,45 @@ export const QuizView: React.FC<QuizViewProps> = ({
                   </button>
                 );
               })}
+            </div>
+
+            {/* Smart Word Sync Based on User Account (Excludes Learned Words) */}
+            <div className="mt-2.5 bg-purple-50/70 border border-purple-200/80 rounded-2xl p-2.5 sm:p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                  <Target className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-slate-800 flex items-center gap-1.5 flex-wrap">
+                    <span>Kho từ trắc nghiệm:</span>
+                    <span className="text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full text-[11px] font-black">
+                      {unlearnedInPool.length} từ chưa thuộc
+                    </span>
+                    {learnedInPool.length > 0 && (
+                      <span className="text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full text-[11px] font-bold">
+                        ✓ Đã ẩn {learnedInPool.length} từ đã thuộc
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[10px] text-slate-500 mt-0.5">
+                    Ghi nhớ theo tài khoản: các từ bạn đã thuộc sẽ không xuất hiện trong bài trắc nghiệm.
+                  </div>
+                </div>
+              </div>
+
+              {learnedInPool.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setIncludeLearned(!includeLearned)}
+                  className={`px-2.5 py-1 rounded-xl text-[11px] font-bold border transition-all shrink-0 cursor-pointer ${
+                    includeLearned
+                      ? 'bg-purple-600 text-white border-purple-700 shadow-2xs'
+                      : 'bg-white text-slate-600 border-slate-200 hover:bg-purple-50 hover:text-purple-700'
+                  }`}
+                >
+                  {includeLearned ? '✓ Đang ôn cả từ đã thuộc' : '+ Ôn lại từ đã thuộc'}
+                </button>
+              )}
             </div>
           </div>
 

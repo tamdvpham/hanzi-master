@@ -340,7 +340,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
           scanner.start(
             { facingMode: 'environment' },
-            { fps: 10, qrbox: { width: 220, height: 220 } },
+            {
+              fps: 15,
+              qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+                const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+                const size = Math.max(160, Math.floor(minEdge * 0.82));
+                return { width: size, height: size };
+              }
+            },
             (decodedText: string) => {
               if (scanner && scanner.isScanning) {
                 scanner.stop().then(() => {

@@ -12,7 +12,8 @@ import {
   ShieldAlert,
   Radio,
   Play,
-  Pause
+  Pause,
+  AlertTriangle
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { PronunciationScoreResult } from '../types';
@@ -506,6 +507,19 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
 
               {/* Feedback text */}
               <div className="text-center mt-3 w-full">
+                {/* Accuracy Summary Pill */}
+                {result.totalCount !== undefined && result.totalCount > 0 && (
+                  <div className="mb-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 border border-slate-200 text-xs font-bold shadow-2xs">
+                    <span className={result.score === 100 ? 'text-emerald-700' : 'text-slate-700'}>
+                      Đúng {result.correctCount}/{result.totalCount} từ
+                    </span>
+                    <span className="text-slate-300">•</span>
+                    <span className={result.score === 100 ? 'text-emerald-600 font-extrabold' : 'text-purple-600'}>
+                      {result.score} điểm {result.score === 100 ? '🎉' : ''}
+                    </span>
+                  </div>
+                )}
+
                 <div
                   className={`text-sm font-bold flex items-center justify-center gap-1.5 ${
                     result.score >= 70 ? 'text-emerald-600' : 'text-amber-600'
@@ -518,6 +532,58 @@ export const VoiceEvaluator: React.FC<VoiceEvaluatorProps> = ({
                   )}
                   <span>{result.feedback}</span>
                 </div>
+
+                {/* Character-by-Character Visual Breakdown (Bôi đỏ từ bị sai) */}
+                {result.charScores && result.charScores.length > 0 && (
+                  <div className="mt-3 p-3 bg-white rounded-2xl border-2 border-slate-100 shadow-xs">
+                    <div className="text-xs font-bold text-slate-500 mb-2 flex items-center justify-between">
+                      <span>Chi tiết từng từ bạn đã đọc:</span>
+                      <span className="text-[11px] font-normal text-slate-400">
+                        {result.correctCount === result.totalCount ? 'Đúng toàn bộ' : 'Từ đỏ = cần sửa'}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-center gap-2">
+                      {result.charScores.map((cs, idx) => (
+                        <div
+                          key={idx}
+                          className={`flex flex-col items-center justify-center min-w-[52px] px-2.5 py-1.5 rounded-xl border-2 transition-all ${
+                            cs.isCorrect
+                              ? 'bg-emerald-50/90 border-emerald-400 text-emerald-800 shadow-2xs'
+                              : 'bg-rose-50 border-rose-500 text-rose-700 shadow-md ring-2 ring-rose-200/80 animate-pulse'
+                          }`}
+                        >
+                          <span className="text-2xl font-chinese font-bold leading-tight">
+                            {cs.char}
+                          </span>
+                          <span
+                            className={`text-[10px] font-extrabold mt-0.5 flex items-center gap-0.5 ${
+                              cs.isCorrect ? 'text-emerald-700' : 'text-rose-600'
+                            }`}
+                          >
+                            {cs.isCorrect ? '✓ Đúng' : '✕ Sai'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Tip banner for incorrect characters */}
+                    {result.charScores.some((cs) => !cs.isCorrect) && (
+                      <div className="mt-2.5 p-2.5 rounded-xl bg-rose-50 border border-rose-200/90 text-left flex items-start gap-2">
+                        <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                        <div className="text-xs text-rose-900 leading-relaxed">
+                          <span className="font-bold">Từ bôi đỏ chưa đúng: </span>
+                          <span className="font-chinese font-black text-rose-700 text-sm">
+                            {result.charScores.filter((cs) => !cs.isCorrect).map((cs) => cs.char).join(' ')}
+                          </span>
+                          <div className="text-[11px] text-rose-700 mt-0.5">
+                            👉 Bấm nút <strong>"Nghe mẫu chuẩn"</strong> bên dưới để luyện sửa lại từ này nhé!
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Recognized vs Expected comparison */}
                 <div className="mt-3 p-3 bg-slate-50 rounded-xl border border-slate-200/80 text-left text-xs space-y-1.5">
