@@ -297,15 +297,20 @@ export const WordList: React.FC<WordListProps> = ({
         </div>
       </div>
 
-      {/* Banner Mẹo học: Nhấp nháy nhẹ nhàng, thu hút sự chú ý của người học */}
-      <div className="mb-3.5 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl bg-gradient-to-r from-purple-500/[0.12] via-indigo-500/[0.08] to-pink-500/[0.06] border border-purple-300 shadow-sm flex items-center gap-3 ring-2 ring-purple-400/25 animate-pulse">
+      {/* Banner Mẹo học: Luminous breathing glow & sweeping shimmer, text stays 100% crisp */}
+      <div className="relative overflow-hidden mb-3.5 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl bg-gradient-to-r from-purple-50 via-indigo-50/70 to-pink-50/50 border border-purple-300 shadow-sm flex items-center gap-3 animate-tip-glow">
+        {/* Continuous soft sweeping light shimmer */}
+        <div className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-white/50 to-transparent pointer-events-none animate-banner-shimmer" />
+
         <div className="relative flex items-center justify-center shrink-0">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center shadow-md shadow-purple-500/30">
+          <span className="absolute inline-flex h-full w-full rounded-xl bg-purple-400 opacity-40 animate-ping" />
+          <div className="relative w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 via-indigo-600 to-purple-500 text-white flex items-center justify-center shadow-md shadow-purple-500/30">
             <Sparkles className="w-4 h-4 text-amber-300" />
           </div>
         </div>
-        <p className="text-xs sm:text-sm text-slate-800 leading-normal">
-          <span className="font-extrabold text-purple-950">💡 Mẹo học:</span> Bấm vào thẻ từ bất kỳ để mở studio <strong className="font-bold text-purple-700">✍️ Luyện viết nét bút</strong> và <strong className="font-bold text-indigo-700">🎙️ Chấm điểm phát âm</strong>.
+
+        <p className="relative z-10 text-xs sm:text-sm text-slate-800 leading-normal">
+          <span className="font-extrabold text-purple-950">💡 Mẹo học:</span> Bấm vào thẻ từ bất kỳ để mở studio <strong className="font-extrabold text-purple-700">✍️ Luyện viết nét bút</strong> và <strong className="font-extrabold text-indigo-700">🎙️ Chấm điểm phát âm</strong>.
         </p>
       </div>
 
