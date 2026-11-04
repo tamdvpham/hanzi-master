@@ -13,7 +13,8 @@ import {
   Flame,
   Mic,
   Gamepad2,
-  ArrowRight
+  ArrowRight,
+  Headphones
 } from 'lucide-react';
 import { HSKWord, UserStats } from '../types';
 import { CATEGORIES } from '../data/hskData';
@@ -29,6 +30,7 @@ interface WordListProps {
   onBackToLanding?: () => void;
   onOpenQuiz?: () => void;
   onOpenSentenceScramble?: () => void;
+  onOpenHandsFree?: () => void;
 }
 
 export const WordList: React.FC<WordListProps> = ({
@@ -40,7 +42,8 @@ export const WordList: React.FC<WordListProps> = ({
   onToggleLearned,
   onBackToLanding,
   onOpenQuiz,
-  onOpenSentenceScramble
+  onOpenSentenceScramble,
+  onOpenHandsFree
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'learned' | 'favorites'>('all');
@@ -132,6 +135,17 @@ export const WordList: React.FC<WordListProps> = ({
             </span>
 
             <div className="flex items-center gap-1.5 flex-wrap">
+              {onOpenHandsFree && (
+                <button
+                  onClick={onOpenHandsFree}
+                  className="text-xs bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white font-bold px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full transition-all shadow-md flex items-center gap-1 active:scale-95 border border-amber-300/40"
+                  title="Tự động phát âm và đọc nghĩa rảnh tay"
+                >
+                  <Headphones className="w-3.5 h-3.5 text-white" />
+                  <span>Nghe rảnh tay</span>
+                </button>
+              )}
+
               {onOpenQuiz && (
                 <button
                   onClick={onOpenQuiz}

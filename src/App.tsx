@@ -6,6 +6,7 @@ import { HanziPractice } from './components/HanziPractice';
 import { LandingPage } from './components/LandingPage';
 import { QuizView } from './components/QuizView';
 import { SentenceScrambleView } from './components/SentenceScrambleView';
+import { HandsFreePlayerView } from './components/HandsFreePlayerView';
 import { AuthModal } from './components/AuthModal';
 import { UserProfileModal } from './components/UserProfileModal';
 import confetti from 'canvas-confetti';
@@ -20,7 +21,8 @@ import {
   Home,
   Gamepad2,
   Layers,
-  User
+  User,
+  Headphones
 } from 'lucide-react';
 
 const STATS_STORAGE_KEY = 'chinese_hsk_user_stats_v1';
@@ -53,7 +55,7 @@ const getInitialStats = (): UserStats => {
 export const App: React.FC = () => {
   const initialActiveUser = getActiveUser();
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(initialActiveUser);
-  const [currentView, setCurrentView] = useState<'landing' | 'study' | 'quiz' | 'sentence'>('landing');
+  const [currentView, setCurrentView] = useState<'landing' | 'study' | 'quiz' | 'sentence' | 'handsfree'>('landing');
   const [currentLevel, setCurrentLevel] = useState<1 | 2 | 3 | 4>(1);
   const [selectedWord, setSelectedWord] = useState<HSKWord | null>(null);
   const [userStats, setUserStats] = useState<UserStats>(() => {
@@ -282,7 +284,24 @@ export const App: React.FC = () => {
           </div>
 
           {/* Right Action: Nút Đăng nhập CHỈ HIỂN THỊ Ở TRANG CHỦ */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Quick Hands-Free Listening Button */}
+            <button
+              onClick={() => {
+                setSelectedWord(null);
+                setCurrentView('handsfree');
+              }}
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 border cursor-pointer ${
+                currentView === 'handsfree'
+                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-300 shadow-md shadow-amber-500/30'
+                  : 'bg-white/10 hover:bg-white/20 text-white border-white/10'
+              }`}
+              title="Mở chế độ nghe rảnh tay tự động (đọc từ rồi 2s sau đọc nghĩa)"
+            >
+              <Headphones className="w-3.5 h-3.5 text-amber-300" />
+              <span className="hidden xs:inline">Rảnh tay</span>
+            </button>
+
             {currentView === 'landing' && !selectedWord ? (
               currentUser ? (
                 <button
@@ -422,6 +441,24 @@ export const App: React.FC = () => {
               onBackToStudy={() => setCurrentView('study')}
             />
           </div>
+        ) : currentView === 'handsfree' ? (
+          // Hands-Free Audio Player View (Phát audio tiếng Trung -> 2s -> đọc nghĩa tiếng Việt)
+          <div key={`view-handsfree-${currentLevel}`} className="bg-slate-950 flex-1 flex flex-col min-h-0">
+            <HandsFreePlayerView
+              allWords={HSK_WORDS}
+              initialLevel={currentLevel}
+              learnedWordIds={userStats.learnedWordIds || []}
+              favoriteWordIds={userStats.favoriteWordIds || []}
+              onToggleLearned={handleToggleLearned}
+              onToggleFavorite={handleToggleFavorite}
+              onBack={() => setCurrentView('landing')}
+              onSelectWordToPractice={(word) => {
+                setSelectedWord(word);
+                setCurrentLevel(word.level);
+                setCurrentView('study');
+              }}
+            />
+          </div>
         ) : currentView === 'landing' ? (
           // Landing Page with 4 HSK cards (matching user's uploaded screenshot)
           <LandingPage
@@ -435,6 +472,7 @@ export const App: React.FC = () => {
             learnedByLevel={learnedByLevel}
             onOpenQuiz={() => setCurrentView('quiz')}
             onOpenSentenceScramble={() => setCurrentView('sentence')}
+            onOpenHandsFree={() => setCurrentView('handsfree')}
             currentUser={currentUser}
             onOpenAuth={() => setShowAuthModal(true)}
             onOpenProfile={() => setShowProfileModal(true)}
@@ -453,6 +491,7 @@ export const App: React.FC = () => {
               onBackToLanding={() => setCurrentView('landing')}
               onOpenQuiz={() => setCurrentView('quiz')}
               onOpenSentenceScramble={() => setCurrentView('sentence')}
+              onOpenHandsFree={() => setCurrentView('handsfree')}
             />
           </div>
         )}

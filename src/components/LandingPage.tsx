@@ -4,7 +4,8 @@ import {
   CheckCircle2,
   Layers,
   Gamepad2,
-  Sparkles
+  Sparkles,
+  Headphones
 } from 'lucide-react';
 import { UserProfile } from '../types';
 
@@ -18,6 +19,7 @@ interface LandingPageProps {
   learnedByLevel?: Record<1 | 2 | 3 | 4, number>;
   onOpenQuiz?: () => void;
   onOpenSentenceScramble?: () => void;
+  onOpenHandsFree?: () => void;
   currentUser?: UserProfile | null;
   onOpenAuth?: () => void;
   onOpenProfile?: () => void;
@@ -33,6 +35,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   learnedByLevel,
   onOpenQuiz,
   onOpenSentenceScramble,
+  onOpenHandsFree,
   currentUser,
   onOpenAuth,
   onOpenProfile
@@ -164,28 +167,39 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
         )}
 
-        {/* Quick Challenge Mode Buttons: Trắc Nghiệm bên trái, Xếp Câu bên phải */}
-        <div className="grid grid-cols-2 gap-2 max-w-md mx-auto w-full pt-0.5">
+        {/* Quick Challenge & Audio Mode Buttons */}
+        <div className="grid grid-cols-3 gap-1.5 sm:gap-2 max-w-lg mx-auto w-full pt-0.5">
+          {onOpenHandsFree && (
+            <button
+              onClick={onOpenHandsFree}
+              className="group flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:brightness-110 text-white font-bold text-[11px] sm:text-xs shadow-md shadow-amber-950/40 border border-amber-400/40 transition-all active:scale-95 cursor-pointer"
+              title="Phát audio tự động từ và nghĩa rảnh tay"
+            >
+              <Headphones className="w-3.5 h-3.5 text-white group-hover:scale-110 transition-transform shrink-0" />
+              <span className="whitespace-nowrap">Rảnh Tay</span>
+              <span className="bg-white text-orange-600 text-[8px] font-black px-1 py-0.2 rounded-full uppercase hidden xs:inline">
+                Mới
+              </span>
+            </button>
+          )}
+
           {onOpenQuiz && (
             <button
               onClick={onOpenQuiz}
-              className="group flex items-center justify-center gap-1.5 py-1.5 sm:py-2 px-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:brightness-110 text-white font-bold text-xs shadow-md shadow-emerald-950/40 border border-emerald-400/30 transition-all active:scale-95 cursor-pointer"
+              className="group flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:brightness-110 text-white font-bold text-[11px] sm:text-xs shadow-md shadow-emerald-950/40 border border-emerald-400/30 transition-all active:scale-95 cursor-pointer"
             >
               <Gamepad2 className="w-3.5 h-3.5 text-amber-300 group-hover:scale-110 transition-transform shrink-0" />
-              <span className="whitespace-nowrap">Trắc Nghiệm 4 Chế Độ</span>
+              <span className="whitespace-nowrap">Trắc Nghiệm</span>
             </button>
           )}
 
           {onOpenSentenceScramble && (
             <button
               onClick={onOpenSentenceScramble}
-              className="group flex items-center justify-center gap-1.5 py-1.5 sm:py-2 px-3 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:brightness-110 text-white font-bold text-xs shadow-md shadow-purple-950/40 border border-purple-400/30 transition-all active:scale-95 cursor-pointer"
+              className="group flex items-center justify-center gap-1 sm:gap-1.5 py-1.5 sm:py-2 px-2 sm:px-3 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 hover:brightness-110 text-white font-bold text-[11px] sm:text-xs shadow-md shadow-purple-950/40 border border-purple-400/30 transition-all active:scale-95 cursor-pointer"
             >
               <Layers className="w-3.5 h-3.5 text-amber-300 group-hover:scale-110 transition-transform shrink-0" />
-              <span className="whitespace-nowrap">Xếp Câu (400)</span>
-              <span className="bg-amber-400 text-slate-950 text-[9px] font-black px-1.5 py-0.2 rounded-full uppercase ml-0.5">
-                Mới
-              </span>
+              <span className="whitespace-nowrap">Xếp Câu</span>
             </button>
           )}
         </div>

@@ -31,6 +31,8 @@ export const stopAllChineseAudio = (): void => {
   }
 };
 
+export const stopAllAudio = stopAllChineseAudio;
+
 /**
  * Preload Chinese audio in the background so clicks are 100% instant
  */
@@ -227,6 +229,204 @@ const speakWithWebSpeech = (text: string, rate: number): Promise<void> => {
       );
       if (zhVoice) {
         utterance.voice = zhVoice;
+      }
+
+      utterance.onend = () => resolve();
+      utterance.onerror = () => resolve();
+
+      window.speechSynthesis.speak(utterance);
+    } catch {
+      resolve();
+    }
+  });
+};
+
+/**
+ * Preload Vietnamese audio in the background for instant zero-latency playback
+ */
+export const preloadVietnameseAudio = async (text: string): Promise<void> => {
+  const trimmed = text.trim();
+  const cacheKey = `vi_${trimmed}`;
+  if (!trimmed || audioBlobCache.has(cacheKey)) return;
+
+  try {
+    const encoded = encodeURIComponent(trimmed);
+    const res = await fetch(`/api/tts?text=${encoded}&tl=vi`);
+    if (res.ok) {
+      const blob = await res.blob();
+      if (blob.size > 200) {
+        const blobUrl = URL.createObjectURL(blob);
+        audioBlobCache.set(cacheKey, blobUrl);
+      }
+    }
+  } catch (e) {
+    // Non-fatal
+  }
+};
+
+/**
+ * Play Vietnamese pronunciation for word meaning
+ * @param text Vietnamese text (e.g. "Bố, cha", "Trong cốc có nước.")
+ * @param rate playback speed (default 1.0)
+ */
+export const playVietnameseAudio = async (text: string, rate: number = 1.0): Promise<void> => {
+  return new Promise(async (resolve) => {
+    // 1. Stop any currently playing audio
+    if (currentAudio) {
+      try {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+      } catch (e) {}
+      currentAudio = null;
+    }
+
+    if (currentSafetyTimer) {
+      clearTimeout(currentSafetyTimer);
+      currentSafetyTimer = null;
+    }
+
+    if ('speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+      } catch (e) {}
+    }
+
+    const trimmed = text.trim();
+    if (!trimmed) {
+      resolve();
+      return;
+    }
+
+    let isResolved = false;
+    const finish = () => {
+      if (isResolved) return;
+      isResolved = true;
+      if (currentSafetyTimer) {
+        clearTimeout(currentSafetyTimer);
+        currentSafetyTimer = null;
+      }
+      resolve();
+    };
+
+    // Safety timer: maximum 7s
+    currentSafetyTimer = setTimeout(finish, 7000);
+
+    const playAudioSrc = (src: string): Promise<boolean> => {
+      return new Promise((resPlay) => {
+        const audio = new Audio();
+        try {
+          (audio as any).referrerPolicy = 'no-referrer';
+        } catch (e) {}
+        currentAudio = audio;
+
+        if (rate && rate !== 1.0) {
+          try {
+            audio.playbackRate = Math.max(0.5, Math.min(2.0, rate));
+          } catch (e) {}
+        }
+
+        let hasStarted = false;
+        const localTimer = setTimeout(() => {
+          if (!hasStarted) {
+            try { audio.pause(); } catch (e) {}
+            resPlay(false);
+          }
+        }, 2500);
+
+        audio.onplaying = () => {
+          hasStarted = true;
+          clearTimeout(localTimer);
+        };
+
+        audio.onended = () => {
+          clearTimeout(localTimer);
+          currentAudio = null;
+          finish();
+          resPlay(true);
+        };
+
+        audio.onerror = () => {
+          clearTimeout(localTimer);
+          resPlay(false);
+        };
+
+        audio.src = src;
+        const p = audio.play();
+        if (p !== undefined) {
+          p.catch(() => {
+            clearTimeout(localTimer);
+            resPlay(false);
+          });
+        }
+      });
+    };
+
+    const cacheKey = `vi_${trimmed}`;
+    if (audioBlobCache.has(cacheKey)) {
+      const cachedUrl = audioBlobCache.get(cacheKey)!;
+      const success = await playAudioSrc(cachedUrl);
+      if (success) return;
+    }
+
+    // Try fetching via /api/tts?text=...&tl=vi
+    try {
+      const encoded = encodeURIComponent(trimmed);
+      const res = await fetch(`/api/tts?text=${encoded}&tl=vi`);
+      if (res.ok) {
+        const blob = await res.blob();
+        if (blob.size > 200) {
+          const blobUrl = URL.createObjectURL(blob);
+          audioBlobCache.set(cacheKey, blobUrl);
+          const success = await playAudioSrc(blobUrl);
+          if (success) return;
+        }
+      }
+    } catch (e) {}
+
+    // Fallback direct links
+    const encoded = encodeURIComponent(trimmed);
+    const directUrls: string[] = [
+      `https://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=${encoded}`,
+      `https://translate.googleapis.com/translate_tts?client=gtx&ie=UTF-8&tl=vi&q=${encoded}`
+    ];
+
+    for (const url of directUrls) {
+      if (isResolved) return;
+      const success = await playAudioSrc(url);
+      if (success) return;
+    }
+
+    // Final fallback: Web Speech API with Vietnamese voice
+    if (!isResolved) {
+      await speakVietnameseWithWebSpeech(trimmed, rate);
+      finish();
+    }
+  });
+};
+
+const speakVietnameseWithWebSpeech = (text: string, rate: number): Promise<void> => {
+  return new Promise((resolve) => {
+    if (!('speechSynthesis' in window)) {
+      resolve();
+      return;
+    }
+
+    try {
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'vi-VN';
+      utterance.rate = rate;
+
+      const voices = window.speechSynthesis.getVoices();
+      const viVoice = voices.find(
+        (v) =>
+          v.lang === 'vi-VN' ||
+          v.lang === 'vi_VN' ||
+          v.lang.startsWith('vi') ||
+          v.name.includes('Vietnamese') ||
+          v.name.includes('Vietnam')
+      );
+      if (viVoice) {
+        utterance.voice = viVoice;
       }
 
       utterance.onend = () => resolve();

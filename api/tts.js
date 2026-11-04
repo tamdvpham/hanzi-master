@@ -9,13 +9,14 @@ export default function handler(req, res) {
   }
 
   const text = req.query?.text;
+  const lang = req.query?.tl || req.query?.lang || 'zh-CN';
   if (!text) {
     res.status(400).send('Missing text parameter');
     return;
   }
 
   const encoded = encodeURIComponent(text);
-  const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=zh-CN&client=tw-ob&q=${encoded}`;
+  const googleUrl = `https://translate.google.com/translate_tts?ie=UTF-8&tl=${encodeURIComponent(lang)}&client=tw-ob&q=${encoded}`;
 
   const options = {
     headers: {
@@ -25,19 +26,23 @@ export default function handler(req, res) {
   };
 
   const fallbackToBaidu = () => {
-    const baiduUrl = `https://fanyi.baidu.com/gettts?lan=zh&text=${encoded}&spd=5&source=web`;
-    const baiduReq = https.get(baiduUrl, options, (baiduRes) => {
-      if (baiduRes.statusCode === 200) {
-        res.setHeader('Content-Type', 'audio/mpeg');
-        res.setHeader('Cache-Control', 'public, max-age=86400');
-        baiduRes.pipe(res);
-      } else {
-        res.status(502).send('Baidu TTS unavailable');
-      }
-    });
-    baiduReq.on('error', () => {
-      res.status(502).send('TTS Proxy Error');
-    });
+    if (lang.startsWith('zh')) {
+      const baiduUrl = `https://fanyi.baidu.com/gettts?lan=zh&text=${encoded}&spd=5&source=web`;
+      const baiduReq = https.get(baiduUrl, options, (baiduRes) => {
+        if (baiduRes.statusCode === 200) {
+          res.setHeader('Content-Type', 'audio/mpeg');
+          res.setHeader('Cache-Control', 'public, max-age=86400');
+          baiduRes.pipe(res);
+        } else {
+          res.status(502).send('Baidu TTS unavailable');
+        }
+      });
+      baiduReq.on('error', () => {
+        res.status(502).send('TTS Proxy Error');
+      });
+    } else {
+      res.status(502).send('TTS Unavailable');
+    }
   };
 
   const ttsReq = https.get(googleUrl, options, (ttsRes) => {
