@@ -99,8 +99,8 @@ export const playChineseAudio = async (text: string, rate: number = 1.0): Promis
       resolve();
     };
 
-    // Safety timer: maximum 5s
-    currentSafetyTimer = setTimeout(finish, 5000);
+    // Safety timer: maximum 8.5s for longer sentences
+    currentSafetyTimer = setTimeout(finish, 8500);
 
     // Play an HTMLAudioElement with given src
     const playAudioSrc = (src: string): Promise<boolean> => {
@@ -308,8 +308,8 @@ export const playVietnameseAudio = async (text: string, rate: number = 1.0): Pro
       resolve();
     };
 
-    // Safety timer: maximum 7s
-    currentSafetyTimer = setTimeout(finish, 7000);
+    // Safety timer: maximum 8.5s for longer sentences
+    currentSafetyTimer = setTimeout(finish, 8500);
 
     const playAudioSrc = (src: string): Promise<boolean> => {
       return new Promise((resPlay) => {
