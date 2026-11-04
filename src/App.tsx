@@ -21,8 +21,7 @@ import {
   Home,
   Gamepad2,
   Layers,
-  User,
-  Headphones
+  User
 } from 'lucide-react';
 
 const STATS_STORAGE_KEY = 'chinese_hsk_user_stats_v1';
@@ -285,23 +284,6 @@ export const App: React.FC = () => {
 
           {/* Right Action: Nút Đăng nhập CHỈ HIỂN THỊ Ở TRANG CHỦ */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-            {/* Quick Hands-Free Listening Button */}
-            <button
-              onClick={() => {
-                setSelectedWord(null);
-                setCurrentView('handsfree');
-              }}
-              className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl text-xs font-bold transition-all active:scale-95 border cursor-pointer ${
-                currentView === 'handsfree'
-                  ? 'bg-gradient-to-r from-amber-500 to-orange-500 text-white border-amber-300 shadow-md shadow-amber-500/30'
-                  : 'bg-white/10 hover:bg-white/20 text-white border-white/10'
-              }`}
-              title="Mở chế độ nghe rảnh tay tự động (đọc từ rồi 2s sau đọc nghĩa)"
-            >
-              <Headphones className="w-3.5 h-3.5 text-amber-300" />
-              <span className="hidden xs:inline">Rảnh tay</span>
-            </button>
-
             {currentView === 'landing' && !selectedWord ? (
               currentUser ? (
                 <button
