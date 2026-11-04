@@ -172,42 +172,42 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           {onOpenHandsFree && (
             <button
               onClick={onOpenHandsFree}
-              className="group relative flex items-center justify-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 px-2.5 sm:px-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-orange-600 hover:from-amber-400 hover:via-orange-400 hover:to-orange-500 text-white font-bold text-xs sm:text-[13px] tracking-normal border border-white/20 hover:border-white/40 shadow-md shadow-orange-950/40 hover:shadow-orange-500/30 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer overflow-hidden select-none"
+              className="group relative flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl sm:rounded-2xl bg-[#22160d]/95 hover:bg-[#2e1d11] border-2 border-amber-500/60 hover:border-amber-400 shadow-md shadow-amber-950/60 hover:shadow-amber-500/20 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer select-none"
               title="Phát audio tự động từ và nghĩa rảnh tay"
             >
-              {/* Soft Glint Wave */}
-              <div className="w-1/2 h-full absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none animate-glint-1" />
-
-              <Headphones className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-transform" />
-              <span className="whitespace-nowrap">Rảnh Tay</span>
+              <Headphones className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-amber-400 shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-transform" />
+              <span className="text-white font-bold text-xs sm:text-sm tracking-wide whitespace-nowrap">Rảnh Tay</span>
+              <span className="hidden sm:inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-amber-500/20 text-amber-300 border border-amber-500/30 uppercase">
+                Mới
+              </span>
             </button>
           )}
 
           {onOpenQuiz && (
             <button
               onClick={onOpenQuiz}
-              className="group relative flex items-center justify-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 px-2.5 sm:px-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-teal-600 hover:from-emerald-400 hover:via-teal-400 hover:to-teal-500 text-white font-bold text-xs sm:text-[13px] tracking-normal border border-white/20 hover:border-white/40 shadow-md shadow-teal-950/40 hover:shadow-teal-500/30 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer overflow-hidden select-none"
+              className="group relative flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl sm:rounded-2xl bg-[#0d221a]/95 hover:bg-[#132f24] border-2 border-emerald-500/60 hover:border-emerald-400 shadow-md shadow-emerald-950/60 hover:shadow-emerald-500/20 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer select-none"
               title="Trắc nghiệm từ vựng phản xạ"
             >
-              {/* Soft Glint Wave */}
-              <div className="w-1/2 h-full absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none animate-glint-2" />
-
-              <Gamepad2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white shrink-0 group-hover:scale-110 group-hover:-rotate-6 transition-transform" />
-              <span className="whitespace-nowrap">Trắc Nghiệm</span>
+              <Gamepad2 className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-emerald-400 shrink-0 group-hover:scale-110 group-hover:-rotate-6 transition-transform" />
+              <span className="text-white font-bold text-xs sm:text-sm tracking-wide whitespace-nowrap">Trắc Nghiệm</span>
+              <span className="hidden sm:inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase">
+                Quiz
+              </span>
             </button>
           )}
 
           {onOpenSentenceScramble && (
             <button
               onClick={onOpenSentenceScramble}
-              className="group relative flex items-center justify-center gap-1.5 sm:gap-2 py-2 sm:py-2.5 px-2.5 sm:px-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-700 hover:from-purple-500 hover:via-indigo-500 hover:to-indigo-600 text-white font-bold text-xs sm:text-[13px] tracking-normal border border-white/20 hover:border-white/40 shadow-md shadow-indigo-950/40 hover:shadow-indigo-500/30 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer overflow-hidden select-none"
+              className="group relative flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-2 sm:px-3 rounded-xl sm:rounded-2xl bg-[#1c1229]/95 hover:bg-[#27193a] border-2 border-purple-500/60 hover:border-purple-400 shadow-md shadow-purple-950/60 hover:shadow-purple-500/20 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 cursor-pointer select-none"
               title="Luyện xếp câu tiếng Trung"
             >
-              {/* Soft Glint Wave */}
-              <div className="w-1/2 h-full absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none animate-glint-3" />
-
-              <Layers className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-transform" />
-              <span className="whitespace-nowrap">Xếp Câu</span>
+              <Layers className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-purple-400 shrink-0 group-hover:scale-110 group-hover:rotate-6 transition-transform" />
+              <span className="text-white font-bold text-xs sm:text-sm tracking-wide whitespace-nowrap">Xếp Câu</span>
+              <span className="hidden sm:inline-flex items-center px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-purple-500/20 text-purple-300 border border-purple-500/30 uppercase">
+                Hot
+              </span>
             </button>
           )}
         </div>
