@@ -170,7 +170,7 @@ body {
     opacity: 0;
   }
   12% {
-    opacity: 0.85;
+    opacity: 0.45;
   }
   28%, 100% {
     transform: translateX(260%) skewX(-25deg);
