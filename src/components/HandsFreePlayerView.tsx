@@ -75,7 +75,11 @@ export const HandsFreePlayerView: React.FC<HandsFreePlayerViewProps> = ({
   // Filter mode: all words, only unlearned words, or only favorites
   const [filterMode, setFilterMode] = useState<'all' | 'unlearned' | 'favorite'>('all');
 
-  // Filter words based on selected level and filterMode
+  // Randomize list order: default TRUE (mỗi lần vào web / chuyển cấp độ danh sách tự động xáo trộn ngẫu nhiên)
+  const [isRandomOrder, setIsRandomOrder] = useState<boolean>(true);
+  const [shuffleSeed, setShuffleSeed] = useState<number>(() => Date.now());
+
+  // Filter words based on selected level, filterMode, and randomized order
   const activeWordList = useMemo(() => {
     let list =
       selectedLevel === 'all'
@@ -88,8 +92,18 @@ export const HandsFreePlayerView: React.FC<HandsFreePlayerViewProps> = ({
       list = list.filter((w) => favoriteWordIds.includes(w.id));
     }
 
+    if (isRandomOrder) {
+      // Fisher-Yates shuffle algorithm: creates a brand new random sequence on each visit / level switch
+      const shuffled = [...list];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    }
+
     return list;
-  }, [allWords, selectedLevel, filterMode, learnedWordIds, favoriteWordIds]);
+  }, [allWords, selectedLevel, filterMode, learnedWordIds, favoriteWordIds, isRandomOrder, shuffleSeed]);
 
   // Current playing word index
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -380,11 +394,22 @@ export const HandsFreePlayerView: React.FC<HandsFreePlayerViewProps> = ({
     }
   };
 
-  // Change HSK Level
+  // Re-shuffle the list immediately with fresh random order
+  const handleReshuffleList = () => {
+    stopAllAudio();
+    loopTokenRef.current++;
+    setShuffleSeed(Date.now());
+    setIsRandomOrder(true);
+    setCurrentIndex(0);
+    setIsPlaying(true);
+  };
+
+  // Change HSK Level (tự động xáo trộn ngẫu nhiên thứ tự cho level mới)
   const handleSelectLevel = (lvl: 1 | 2 | 3 | 4 | 'all') => {
     stopAllAudio();
     loopTokenRef.current++;
     setSelectedLevel(lvl);
+    setShuffleSeed(Date.now());
     setCurrentIndex(0);
     setIsPlaying(true);
   };
@@ -617,9 +642,21 @@ export const HandsFreePlayerView: React.FC<HandsFreePlayerViewProps> = ({
 
           {/* Top card row: Category, Word Count & Fav/Learned buttons */}
           <div className="w-full flex items-center justify-between mb-2 text-xs z-10">
-            <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-semibold border border-purple-500/30 text-[11px]">
-              HSK {currentWord?.level} • {currentWord?.category}
-            </span>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-semibold border border-purple-500/30 text-[11px]">
+                HSK {currentWord?.level} • {currentWord?.category}
+              </span>
+              {isRandomOrder && (
+                <button
+                  onClick={handleReshuffleList}
+                  className="px-2 py-0.5 rounded-full bg-indigo-500/20 hover:bg-indigo-500/35 text-indigo-300 border border-indigo-500/30 text-[10px] font-bold flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
+                  title="Đang bật thứ tự ngẫu nhiên. Bấm để xáo trộn lại!"
+                >
+                  <Shuffle className="w-2.5 h-2.5 text-indigo-300" />
+                  <span>Ngẫu nhiên</span>
+                </button>
+              )}
+            </div>
 
             <div className="flex items-center gap-2">
               {/* Word Count Index */}
@@ -880,17 +917,17 @@ export const HandsFreePlayerView: React.FC<HandsFreePlayerViewProps> = ({
 
         {/* Primary Music Player Controls */}
         <div className="w-full max-w-md flex items-center justify-between gap-3 my-1.5 z-10">
-          {/* Shuffle Toggle */}
+          {/* Shuffle / Re-randomize Button */}
           <button
             onClick={() => {
-              setPlayMode(playMode === 'shuffle' ? 'sequence' : 'shuffle');
+              handleReshuffleList();
             }}
             className={`p-2.5 rounded-full transition-all cursor-pointer ${
-              playMode === 'shuffle'
-                ? 'bg-purple-600/30 text-purple-300 border border-purple-400/40 shadow-xs'
+              isRandomOrder
+                ? 'bg-purple-600/30 text-purple-300 border border-purple-400/40 shadow-xs ring-1 ring-purple-400/30 hover:bg-purple-600/40'
                 : 'text-slate-400 hover:text-white'
             }`}
-            title={playMode === 'shuffle' ? 'Đang bật xáo trộn ngẫu nhiên' : 'Bật xáo trộn ngẫu nhiên'}
+            title="Đang bật thứ tự ngẫu nhiên (Bấm để xáo trộn lại danh sách mới)"
           >
             <Shuffle className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
@@ -1072,6 +1109,51 @@ export const HandsFreePlayerView: React.FC<HandsFreePlayerViewProps> = ({
               </div>
             </div>
 
+            {/* Thứ tự danh sách từ (Mặc định: Ngẫu nhiên mỗi lần mở) */}
+            <div>
+              <div className="flex items-center justify-between text-xs mb-1.5">
+                <span className="font-semibold text-slate-300">Thứ tự danh sách:</span>
+                <span className="font-bold text-indigo-400">
+                  {isRandomOrder ? '🎲 Ngẫu nhiên' : '📋 Thứ tự HSK'}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-1.5">
+                <button
+                  onClick={() => {
+                    setIsRandomOrder(true);
+                    setShuffleSeed(Date.now());
+                    setCurrentIndex(0);
+                  }}
+                  className={`py-1.5 px-2 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1 ${
+                    isRandomOrder
+                      ? 'bg-purple-600 text-white shadow-sm'
+                      : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                  }`}
+                >
+                  <Shuffle className="w-3.5 h-3.5" />
+                  <span>Ngẫu nhiên (Mặc định)</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setIsRandomOrder(false);
+                    setCurrentIndex(0);
+                  }}
+                  className={`py-1.5 px-2 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1 ${
+                    !isRandomOrder
+                      ? 'bg-purple-600 text-white shadow-sm'
+                      : 'bg-white/5 text-slate-400 hover:bg-white/10'
+                  }`}
+                >
+                  <span>Tuần tự #1 → #150</span>
+                </button>
+              </div>
+              <p className="text-[10px] text-slate-400 mt-1 italic">
+                {isRandomOrder
+                  ? 'Mỗi lần vào web danh sách sẽ tự động xáo trộn khác nhau để học không bị nhàm chán.'
+                  : 'Phát lần lượt theo số thứ tự từ điển HSK.'}
+              </p>
+            </div>
+
             <button
               onClick={() => setShowSettings(false)}
               className="w-full py-2.5 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 font-bold text-xs text-white shadow-md active:scale-95 cursor-pointer"
@@ -1087,19 +1169,36 @@ export const HandsFreePlayerView: React.FC<HandsFreePlayerViewProps> = ({
         <div className="absolute inset-0 bg-black/80 backdrop-blur-md z-40 flex flex-col animate-in fade-in duration-200">
           <div className="p-4 border-b border-white/10 flex items-center justify-between shrink-0 bg-black/40">
             <div>
-              <h3 className="font-bold text-sm text-white">
-                Danh sách từ {selectedLevel === 'all' ? 'tất cả HSK' : `HSK ${selectedLevel}`}
+              <h3 className="font-bold text-sm text-white flex items-center gap-1.5 flex-wrap">
+                <span>Danh sách từ {selectedLevel === 'all' ? 'tất cả HSK' : `HSK ${selectedLevel}`}</span>
+                {isRandomOrder && (
+                  <span className="px-1.5 py-0.2 rounded-md bg-indigo-500/20 text-indigo-300 font-bold text-[10px] border border-indigo-500/30">
+                    🎲 Ngẫu nhiên
+                  </span>
+                )}
               </h3>
               <p className="text-xs text-slate-400">
                 {activeWordList.length} từ vựng • Bấm từ bất kỳ để phát ngay
               </p>
             </div>
-            <button
-              onClick={() => setShowDrawer(false)}
-              className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            <div className="flex items-center gap-1.5">
+              {isRandomOrder && (
+                <button
+                  onClick={handleReshuffleList}
+                  className="px-2.5 py-1.5 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-400/40 text-purple-300 text-xs font-semibold flex items-center gap-1 transition-all active:scale-95 cursor-pointer"
+                  title="Xáo trộn thứ tự mới"
+                >
+                  <Shuffle className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Xáo trộn lại</span>
+                </button>
+              )}
+              <button
+                onClick={() => setShowDrawer(false)}
+                className="p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto p-3 space-y-2">
