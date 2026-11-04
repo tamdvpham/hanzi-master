@@ -297,24 +297,14 @@ export const WordList: React.FC<WordListProps> = ({
         </div>
       </div>
 
-      {/* Prominently Highlighted Banner: Hướng dẫn bấm vào từ để mở màn hình luyện viết & nói */}
-      <div className="mb-3.5 p-3 rounded-2xl bg-gradient-to-r from-purple-50 via-indigo-50/80 to-amber-50/60 border border-purple-200 shadow-xs flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center shadow-xs shrink-0">
-            <Sparkles className="w-4 h-4 text-amber-300" />
-          </div>
-          <div className="text-xs sm:text-sm text-slate-700 leading-snug">
-            <span className="font-extrabold text-purple-900">💡 Mẹo học: </span>
-            <span>Bấm vào thẻ từ bất kỳ để mở studio </span>
-            <span className="font-black text-purple-700 bg-purple-100/90 px-2 py-0.5 rounded-lg border border-purple-200 inline-block my-0.5">
-              ✍️ Luyện viết nét bút & 🎙️ Chấm điểm phát âm
-            </span>!
-          </div>
+      {/* Banner Mẹo học: Tinh tế, hiện đại, không bị gãy dòng */}
+      <div className="mb-3.5 px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-2xl bg-gradient-to-r from-purple-500/[0.08] via-indigo-500/[0.05] to-amber-500/[0.05] border border-purple-200/80 shadow-xs flex items-center gap-3">
+        <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center shadow-sm shadow-purple-500/25 shrink-0">
+          <Sparkles className="w-4 h-4 text-amber-300" />
         </div>
-
-        <span className="text-xs font-bold text-purple-700 bg-white border border-purple-200 px-2.5 py-1 rounded-xl shadow-2xs shrink-0 hidden md:inline-block font-mono">
-          Hiển thị {filteredWords.length} từ HSK {currentLevel}
-        </span>
+        <p className="text-xs sm:text-sm text-slate-700 leading-normal">
+          <span className="font-extrabold text-purple-900">💡 Mẹo học:</span> Bấm vào thẻ từ bất kỳ để mở studio <strong className="font-bold text-purple-700">✍️ Luyện viết nét bút</strong> &amp; <strong className="font-bold text-indigo-700">🎙️ Chấm điểm phát âm</strong>.
+        </p>
       </div>
 
       {/* Vocabulary Cards Grid */}
