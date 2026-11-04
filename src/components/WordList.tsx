@@ -2,7 +2,6 @@ import React, { useState, useMemo } from 'react';
 import {
   Search,
   Volume2,
-  PenTool,
   Bookmark,
   CheckCircle2,
   Filter,
@@ -11,9 +10,7 @@ import {
   Award,
   Layers,
   Flame,
-  Mic,
   Gamepad2,
-  ArrowRight,
   Headphones
 } from 'lucide-react';
 import { HSKWord, UserStats } from '../types';
@@ -300,10 +297,24 @@ export const WordList: React.FC<WordListProps> = ({
         </div>
       </div>
 
-      {/* Results Count & Quick Status */}
-      <div className="flex items-center justify-between text-xs text-slate-500 mb-3 px-1">
-        <span>Hiển thị {filteredWords.length} từ vựng HSK {currentLevel}</span>
-        <span>Bấm vào từ để mở màn hình luyện viết theo nét bút</span>
+      {/* Prominently Highlighted Banner: Hướng dẫn bấm vào từ để mở màn hình luyện viết & nói */}
+      <div className="mb-3.5 p-3 rounded-2xl bg-gradient-to-r from-purple-50 via-indigo-50/80 to-amber-50/60 border border-purple-200 shadow-xs flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center shadow-xs shrink-0">
+            <Sparkles className="w-4 h-4 text-amber-300" />
+          </div>
+          <div className="text-xs sm:text-sm text-slate-700 leading-snug">
+            <span className="font-extrabold text-purple-900">💡 Mẹo học: </span>
+            <span>Bấm vào thẻ từ bất kỳ để mở studio </span>
+            <span className="font-black text-purple-700 bg-purple-100/90 px-2 py-0.5 rounded-lg border border-purple-200 inline-block my-0.5">
+              ✍️ Luyện viết nét bút & 🎙️ Chấm điểm phát âm
+            </span>!
+          </div>
+        </div>
+
+        <span className="text-xs font-bold text-purple-700 bg-white border border-purple-200 px-2.5 py-1 rounded-xl shadow-2xs shrink-0 hidden md:inline-block font-mono">
+          Hiển thị {filteredWords.length} từ HSK {currentLevel}
+        </span>
       </div>
 
       {/* Vocabulary Cards Grid */}
@@ -412,17 +423,12 @@ export const WordList: React.FC<WordListProps> = ({
                   </div>
                 </div>
 
-                {/* Bottom card footer: Vibrant Action Bar & Gamified Stats */}
-                <div className="mt-2.5 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs min-h-[32px]">
-                  {/* Interactive Vibrant Action Button */}
-                  <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-purple-50 group-hover:bg-gradient-to-r group-hover:from-purple-600 group-hover:to-indigo-600 text-purple-700 group-hover:text-white font-bold text-[11px] transition-all duration-200 shadow-2xs group-hover:shadow-xs group-hover:translate-x-0.5">
-                    <div className="flex items-center gap-1">
-                      <PenTool className="w-3 h-3 text-purple-600 group-hover:text-white transition-colors" />
-                      <Mic className="w-3 h-3 text-indigo-500 group-hover:text-amber-300 transition-colors" />
-                    </div>
-                    <span>Luyện viết & nói</span>
-                    <ArrowRight className="w-3 h-3 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
-                  </div>
+                {/* Bottom card footer: Category Tag & Learning Progress */}
+                <div className="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between text-xs min-h-[28px]">
+                  {/* Category / Word Type Tag */}
+                  <span className="text-[11px] text-slate-500 bg-slate-50 border border-slate-200/80 px-2 py-0.5 rounded-md font-medium">
+                    {word.category || word.type || `HSK ${word.level}`}
+                  </span>
 
                   {/* Achievements: Pronunciation Score & Practice Flame Count */}
                   <div className="flex items-center gap-1.5">
@@ -441,7 +447,7 @@ export const WordList: React.FC<WordListProps> = ({
                     )}
 
                     {practiceCount === 0 && (!userStats.pronunciationScores?.[word.id] || userStats.pronunciationScores[word.id] === 0) && (
-                      <span className="text-[10px] font-medium text-slate-400 italic hidden sm:inline">
+                      <span className="text-[11px] font-medium text-slate-400 italic">
                         Chưa học
                       </span>
                     )}
